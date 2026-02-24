@@ -67,7 +67,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -175,9 +176,9 @@
   transition-delay: 400ms;
 }
 
-.stagger > .reveal:nth-child(n+7),
-.stagger > .reveal-left:nth-child(n+7),
-.stagger > .reveal-right:nth-child(n+7) {
+.stagger > .reveal:nth-child(n + 7),
+.stagger > .reveal-left:nth-child(n + 7),
+.stagger > .reveal-right:nth-child(n + 7) {
   transition-delay: 480ms;
 }
 
@@ -194,7 +195,7 @@
 }
 
 .separator::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -258,6 +259,8 @@
 
 .job-card {
   transition:
+    opacity var(--transition-smooth),
+    transform var(--transition-smooth),
     background-color var(--transition-base),
     box-shadow var(--transition-base);
 }
@@ -294,7 +297,7 @@
 }
 
 .btn-download::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
