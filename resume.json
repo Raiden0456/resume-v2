@@ -25,7 +25,7 @@
 
   "pdf": "Resume_V9.pdf",
 
-  "profile": "Results-driven Full-Stack Developer with 3+ years of experience building scalable, high-load web platforms using React, Next.js, Node.js, and NestJS. Proven track record delivering performant UIs, robust APIs, and scalable backend systems. Skilled in system design, database optimization, and integration of complex external services. Passionate about performance, maintainability, and developer experience.",
+  "profile": "Results-driven Full-Stack Developer with 4+ years of experience building scalable, high-load web platforms using React, Next.js, Node.js, and NestJS. Proven track record delivering performant UIs, robust APIs, and scalable backend systems. Skilled in system design, database optimization, and integration of complex external services. Passionate about performance, maintainability, and developer experience.",
 
   "highlights": [
     "Delivered high-load Telegram MiniApps serving 300k+ concurrent users using NestJS + gRPC",

@@ -255,7 +255,7 @@
 }
 
 .highlight-item::before {
-  content: '▸';
+  content: "▸";
   color: var(--accent-green);
   font-weight: var(--font-weight-bold);
   flex-shrink: 0;
@@ -309,9 +309,134 @@
 }
 
 .skill-tag:hover {
-  background-color: var(--accent-blue);
+  background-color: var(--tag-accent, var(--accent-blue));
   color: var(--bg-primary);
-  border-color: var(--accent-blue);
+  border-color: var(--tag-accent, var(--accent-blue));
+}
+
+/* TypeScript */
+[data-tech="typescript"] {
+  --tag-accent: var(--accent-blue);
+}
+
+/* React ecosystem */
+[data-tech="react"] {
+  --tag-accent: var(--accent-cyan);
+}
+[data-tech="next.js"] {
+  --tag-accent: var(--accent-blue);
+}
+[data-tech="redux"] {
+  --tag-accent: var(--accent-magenta);
+}
+[data-tech="refine"] {
+  --tag-accent: var(--accent-blue);
+}
+
+/* Build tools */
+[data-tech="vite"] {
+  --tag-accent: var(--accent-magenta);
+}
+[data-tech="webpack"] {
+  --tag-accent: var(--accent-blue);
+}
+
+/* Styling */
+[data-tech="scss"] {
+  --tag-accent: var(--accent-magenta);
+}
+
+/* Node / backend */
+[data-tech="node.js"] {
+  --tag-accent: var(--accent-green);
+}
+[data-tech="nestjs"] {
+  --tag-accent: var(--accent-red);
+}
+[data-tech="express"] {
+  --tag-accent: var(--accent-yellow);
+}
+[data-tech="grpc"] {
+  --tag-accent: var(--accent-blue);
+}
+[data-tech="typeorm"] {
+  --tag-accent: var(--accent-orange);
+}
+
+/* .NET / C# */
+[data-tech="c#/.net"] {
+  --tag-accent: var(--accent-magenta);
+}
+[data-tech="c#"] {
+  --tag-accent: var(--accent-magenta);
+}
+
+/* Other languages */
+[data-tech="php"] {
+  --tag-accent: var(--accent-magenta);
+}
+[data-tech="python"] {
+  --tag-accent: var(--accent-yellow);
+}
+[data-tech="c++"] {
+  --tag-accent: var(--accent-blue);
+}
+
+/* Databases */
+[data-tech="postgresql"] {
+  --tag-accent: var(--accent-blue);
+}
+[data-tech="mysql"] {
+  --tag-accent: var(--accent-orange);
+}
+[data-tech="clickhouse"] {
+  --tag-accent: var(--accent-yellow);
+}
+[data-tech="redis"] {
+  --tag-accent: var(--accent-red);
+}
+[data-tech="mongodb"] {
+  --tag-accent: var(--accent-green);
+}
+[data-tech="elasticsearch"] {
+  --tag-accent: var(--accent-yellow);
+}
+[data-tech="relational dbs"] {
+  --tag-accent: var(--accent-blue);
+}
+
+/* DevOps */
+[data-tech="docker"] {
+  --tag-accent: var(--accent-blue);
+}
+[data-tech="git"] {
+  --tag-accent: var(--accent-orange);
+}
+[data-tech="linux"] {
+  --tag-accent: var(--accent-yellow);
+}
+[data-tech="unix os"] {
+  --tag-accent: var(--accent-yellow);
+}
+[data-tech="ci/cd"] {
+  --tag-accent: var(--accent-cyan);
+}
+
+/* Other */
+[data-tech="swagger"] {
+  --tag-accent: var(--accent-green);
+}
+[data-tech="rest api"] {
+  --tag-accent: var(--accent-cyan);
+}
+[data-tech="json api"] {
+  --tag-accent: var(--accent-cyan);
+}
+[data-tech="web3"] {
+  --tag-accent: var(--accent-magenta);
+}
+[data-tech="ai algorithms"] {
+  --tag-accent: var(--accent-cyan);
 }
 
 /* ============================================
@@ -441,7 +566,7 @@
 }
 
 .job-detail-item::before {
-  content: '▸';
+  content: "▸";
   color: var(--accent-green);
   flex-shrink: 0;
   font-weight: var(--font-weight-bold);
@@ -450,7 +575,7 @@
 
 .result-item::before {
   color: var(--accent-cyan);
-  content: '✓';
+  content: "✓";
 }
 
 /* ============================================

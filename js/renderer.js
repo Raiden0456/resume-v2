@@ -38,7 +38,11 @@
   }
 
   function skillTag(text) {
-    return el("span", { className: "skill-tag" }, text);
+    return el(
+      "span",
+      { className: "skill-tag", "data-tech": text.toLowerCase() },
+      text,
+    );
   }
 
   function separator() {
