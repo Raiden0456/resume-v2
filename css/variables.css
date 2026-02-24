@@ -1,0 +1,186 @@
+/* ============================================
+   One Dark Theme Variables & Base Reset
+   ============================================ */
+
+:root {
+  /* One Dark Colors */
+  --bg-primary: #282c34;
+  --bg-secondary: #21252b;
+  --bg-tertiary: #2c313a;
+  --bg-card: #2e333d;
+  --bg-hover: #353b45;
+
+  --fg-primary: #abb2bf;
+  --fg-secondary: #636d83;
+  --fg-muted: #5c6370;
+  --fg-bright: #d7dae0;
+  --fg-white: #ffffff;
+
+  --accent-red: #e06c75;
+  --accent-green: #98c379;
+  --accent-yellow: #e5c07b;
+  --accent-blue: #61afef;
+  --accent-magenta: #c678dd;
+  --accent-cyan: #56b6c2;
+  --accent-orange: #d19a66;
+
+  /* Semantic Colors */
+  --color-heading: var(--fg-bright);
+  --color-subheading: var(--accent-blue);
+  --color-body: var(--fg-primary);
+  --color-muted: var(--fg-muted);
+  --color-link: var(--accent-cyan);
+  --color-link-hover: var(--accent-blue);
+  --color-accent: var(--accent-magenta);
+  --color-highlight: var(--accent-green);
+  --color-border: #3e4451;
+  --color-separator: #3e4451;
+
+  /* Typography */
+  --font-family:
+    "Fira Code", "Fira Code Nerd Font", "Cascadia Code", "JetBrains Mono",
+    monospace;
+  --font-size-xs: 0.7rem;
+  --font-size-sm: 0.8rem;
+  --font-size-base: 0.9rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.15rem;
+  --font-size-xl: 1.4rem;
+  --font-size-2xl: 1.8rem;
+  --font-size-3xl: 2.2rem;
+  --line-height-tight: 1.3;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.8;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+  --transition-slow: 500ms ease;
+  --transition-smooth: 600ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Layout */
+  --max-width: 960px;
+  --sidebar-width: 280px;
+}
+
+/* ============================================
+   Base Reset
+   ============================================ */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-body);
+  background-color: var(--bg-secondary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--color-link-hover);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-heading);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+::selection {
+  background-color: var(--accent-blue);
+  color: var(--bg-primary);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-muted);
+}

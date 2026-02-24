@@ -1,0 +1,348 @@
+/* ============================================
+   Animations & Scroll Reveal
+   ============================================ */
+
+/* Keyframes */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes expandWidth {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* ============================================
+   Scroll Reveal Base States
+   ============================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity var(--transition-smooth),
+    transform var(--transition-smooth);
+  will-change: opacity, transform;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition:
+    opacity var(--transition-smooth),
+    transform var(--transition-smooth);
+  will-change: opacity, transform;
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(24px);
+  transition:
+    opacity var(--transition-smooth),
+    transform var(--transition-smooth);
+  will-change: opacity, transform;
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity var(--transition-smooth),
+    transform var(--transition-smooth);
+  will-change: opacity, transform;
+}
+
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ============================================
+   Staggered Children Delays
+   ============================================ */
+
+.stagger > .reveal:nth-child(1),
+.stagger > .reveal-left:nth-child(1),
+.stagger > .reveal-right:nth-child(1) {
+  transition-delay: 0ms;
+}
+
+.stagger > .reveal:nth-child(2),
+.stagger > .reveal-left:nth-child(2),
+.stagger > .reveal-right:nth-child(2) {
+  transition-delay: 80ms;
+}
+
+.stagger > .reveal:nth-child(3),
+.stagger > .reveal-left:nth-child(3),
+.stagger > .reveal-right:nth-child(3) {
+  transition-delay: 160ms;
+}
+
+.stagger > .reveal:nth-child(4),
+.stagger > .reveal-left:nth-child(4),
+.stagger > .reveal-right:nth-child(4) {
+  transition-delay: 240ms;
+}
+
+.stagger > .reveal:nth-child(5),
+.stagger > .reveal-left:nth-child(5),
+.stagger > .reveal-right:nth-child(5) {
+  transition-delay: 320ms;
+}
+
+.stagger > .reveal:nth-child(6),
+.stagger > .reveal-left:nth-child(6),
+.stagger > .reveal-right:nth-child(6) {
+  transition-delay: 400ms;
+}
+
+.stagger > .reveal:nth-child(n+7),
+.stagger > .reveal-left:nth-child(n+7),
+.stagger > .reveal-right:nth-child(n+7) {
+  transition-delay: 480ms;
+}
+
+/* ============================================
+   Separator Line Animation
+   ============================================ */
+
+.separator {
+  position: relative;
+  height: 1px;
+  background: transparent;
+  margin: var(--space-xl) 0;
+  overflow: hidden;
+}
+
+.separator::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-separator) 15%,
+    var(--accent-blue) 50%,
+    var(--color-separator) 85%,
+    transparent
+  );
+  transition: width 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.separator.visible::after {
+  width: 100%;
+}
+
+/* ============================================
+   Initial Page Load Animation
+   ============================================ */
+
+.page-wrapper {
+  animation: fadeIn 600ms ease forwards;
+}
+
+.hero-section {
+  animation: fadeInUp 700ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both;
+}
+
+.hero-section .profile-photo {
+  animation: scaleIn 600ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both;
+}
+
+.hero-section .hero-info {
+  animation: slideInRight 600ms cubic-bezier(0.22, 1, 0.36, 1) 400ms both;
+}
+
+.hero-section .hero-contact {
+  animation: fadeInUp 500ms cubic-bezier(0.22, 1, 0.36, 1) 550ms both;
+}
+
+/* ============================================
+   Interactive Hover Effects
+   ============================================ */
+
+.skill-tag {
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.skill-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.job-card {
+  transition:
+    background-color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.job-card:hover {
+  background-color: var(--bg-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.link-item {
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.link-item:hover {
+  transform: translateX(3px);
+}
+
+/* ============================================
+   Download Button Animation
+   ============================================ */
+
+.btn-download {
+  position: relative;
+  overflow: hidden;
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.btn-download::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 500ms ease;
+}
+
+.btn-download:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-download:hover::after {
+  transform: translateX(100%);
+}
+
+.btn-download:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    opacity: 1;
+    transform: none;
+  }
+
+  .separator::after {
+    width: 100%;
+  }
+}

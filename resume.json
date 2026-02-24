@@ -1,0 +1,338 @@
+{
+  "personal": {
+    "name": "Vrezh Babakekhian",
+    "title": "Senior Full-Stack Developer (React, Next.js, Node.js, NestJS)",
+    "location": "Barcelona, Spain",
+    "dob": "12.07.2001",
+    "nationality": "Half Armenian and Russian",
+    "drivingLicense": "B"
+  },
+
+  "contact": {
+    "email": "workraiden@gmail.com",
+    "phone": "+34 687 644 904",
+    "whatsapp": {
+      "display": "+7 914 706 06 06 (WA)",
+      "href": "https://wa.me/79147060606"
+    }
+  },
+
+  "links": {
+    "website": "https://raiden0456.dev/",
+    "github": "https://github.com/Raiden0456",
+    "linkedin": "https://www.linkedin.com/in/raiden-babakekhian",
+    "telegram": "https://t.me/Raiden0456"
+  },
+
+  "pdf": "Resume_V9.pdf",
+
+  "profile": "Results-driven Full-Stack Developer with 3+ years of experience building scalable, high-load web platforms using React, Next.js, Node.js, and NestJS. Proven track record delivering performant UIs, robust APIs, and scalable backend systems. Skilled in system design, database optimization, and integration of complex external services. Passionate about performance, maintainability, and developer experience.",
+
+  "highlights": [
+    "Delivered high-load Telegram MiniApps serving 300k+ concurrent users using NestJS + gRPC",
+    "Built CMS for AURUS auto brand, saving 80+ dev hours/month via admin tools",
+    "Created REST API processing 1M+ req/day with sub-200ms latency",
+    "Integrated 10+ ad systems across multiple high-load frontend/backend stacks",
+    "Led frontend team for \"DONOT\" project, built modern UI with Vite + React"
+  ],
+
+  "techStack": {
+    "Frontend": ["React", "Next.js", "Vite", "Webpack", "SCSS", "TypeScript"],
+    "Backend": ["Node.js", "NestJS", "Express", "C#/.NET", "gRPC", "TypeORM"],
+    "Databases": [
+      "PostgreSQL",
+      "MySQL",
+      "ClickHouse",
+      "Redis",
+      "MongoDB",
+      "ElasticSearch"
+    ],
+    "DevOps": ["Docker", "CI/CD", "Git", "Linux"],
+    "Other": ["Swagger", "REST API", "JSON API", "Web3", "AI Algorithms"]
+  },
+
+  "skills": [
+    "NestJS",
+    "Next.js",
+    "React",
+    "TypeScript",
+    "Git",
+    "Docker",
+    "Relational DBs",
+    "ElasticSearch",
+    "Redis",
+    "C#",
+    "PHP",
+    "Python",
+    "C++",
+    "MongoDB",
+    "Linux",
+    "Unix OS"
+  ],
+
+  "languages": [
+    { "name": "Russian", "level": "Native" },
+    { "name": "English", "level": "C1 Proficient" }
+  ],
+
+  "experience": [
+    {
+      "role": "Senior Full-Stack Developer",
+      "company": "Interexy",
+      "companyUrl": "https://interexy.com/",
+      "location": "Barcelona (remote)",
+      "type": "full-time",
+      "period": "Feb 2025 — Present",
+      "project": {
+        "name": "Next Street",
+        "description": "A platform that helps small businesses connect with capital, services, and support.",
+        "url": "https://nextstreet.com/"
+      },
+      "stack": [
+        "React",
+        "Redux",
+        "TypeScript",
+        "NestJS",
+        "PostgreSQL",
+        "Docker",
+        "REST APIs"
+      ],
+      "subsections": [
+        {
+          "title": "Actions",
+          "style": "default",
+          "items": [
+            "Rebuilt internal admin panel from scratch using React and Redux, streamlining workflows and improving data visibility",
+            "Integrated CRFUSA platform, enabling seamless data exchange with external partner services",
+            "Refactored and optimized PostgreSQL database structure, redesigning schemas for better performance",
+            "Implemented multiple UI/UX enhancements collaborating with designers",
+            "Refactored 15+ legacy React components, enforcing modern TypeScript patterns"
+          ]
+        },
+        {
+          "title": "Results",
+          "style": "results",
+          "items": [
+            "Admin panel load time cut by 40%",
+            "75% reduction in manual data entry — onboarding cut from days to under 6 hours",
+            "Query response times improved by 60% on core reports",
+            "Application submissions increased by 25% following UX updates",
+            "Frontend bundle size reduced by 15%",
+            "15+ major feature releases with three cross-functional teams"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "Senior Full-Stack Developer",
+      "company": "OkVPN",
+      "companyUrl": null,
+      "location": "Barcelona (remote)",
+      "type": "part-time / contract",
+      "period": "Mar 2024 — Feb 2025",
+      "project": {
+        "name": "OkVPN",
+        "description": "Scalable VPN subscription platform offering secure access and automated user management.",
+        "url": null
+      },
+      "stack": [
+        "React",
+        "Redux",
+        "TypeScript",
+        "NestJS",
+        "PostgreSQL",
+        "gRPC",
+        "RabbitMQ",
+        "Redis",
+        "Sentry",
+        "Docker"
+      ],
+      "subsections": [
+        {
+          "title": "Actions",
+          "style": "default",
+          "items": [
+            "Led migration from monorepo to gRPC + RabbitMQ-based microservice architecture",
+            "Designed scalable microservices architecture",
+            "Developed full referral payout system",
+            "Built user-facing dashboard for VPN subscription management",
+            "Integrated Redis for session caching and async job handling",
+            "Implemented Sentry across services with structured logging and alerting"
+          ]
+        },
+        {
+          "title": "Results",
+          "style": "results",
+          "items": [
+            "Downtime reduced by 70%",
+            "Response times improved by 50%",
+            "Referral system increased subscriptions by 12% in first 3 months",
+            "40% drop in support requests related to subscription/billing",
+            "Time-to-detect critical issues reduced by ~60%",
+            "Core features delivered ahead of roadmap with a team of 5"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "Middle+ Full-Stack Developer",
+      "company": "RedNeck Studio",
+      "companyUrl": null,
+      "location": "Remote",
+      "type": "full-time",
+      "period": "Aug 2024 — Jan 2025",
+      "project": null,
+      "stack": ["NestJS", "gRPC", "Refine", "Vite", "React"],
+      "subsections": [
+        {
+          "title": null,
+          "style": "default",
+          "items": [
+            "Supported 10+ high-load Telegram MiniApps (300k+ concurrent users)",
+            "Developed admin panels using Refine + gRPC + NestJS",
+            "Integrated 10+ ad platforms",
+            "Built gRPC file upload streaming for multi-GB transfers",
+            "Led frontend for \"DONT\" project using Vite + React"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "Backend Architect & Developer",
+      "company": "Kodix Agency",
+      "companyUrl": null,
+      "location": "Remote",
+      "type": "full-time",
+      "period": "May 2024 — Aug 2024",
+      "project": {
+        "name": "AURUS",
+        "description": "Customizable CMS for the AURUS auto brand.",
+        "url": null
+      },
+      "stack": ["NestJS", "TypeScript", "TypeORM", "PostgreSQL"],
+      "subsections": [
+        {
+          "title": null,
+          "style": "default",
+          "items": [
+            "Created customizable CMS saving 80+ dev hours/month",
+            "Designed backend architecture (NestJS, TypeScript, TypeORM)",
+            "Optimized PostgreSQL database performance",
+            "Implemented third-party integrations",
+            "Automated parsing of large JSON configs"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "Full-Stack Developer",
+      "company": "CROSSNETICS",
+      "companyUrl": null,
+      "location": "Remote",
+      "type": "full-time",
+      "period": "Dec 2022 — May 2024",
+      "project": null,
+      "stack": [
+        "NestJS",
+        "Next.js",
+        "TypeScript",
+        "MySQL",
+        "Redis",
+        "ElasticSearch"
+      ],
+      "subsections": [
+        {
+          "title": null,
+          "style": "default",
+          "items": [
+            "Built marketing web platform with AI algorithms and Web3",
+            "Implemented automated documentation via Swagger",
+            "Built REST API handling 1M+ requests/day (<200ms)",
+            "Implemented microservices architecture",
+            "Optimized DB queries by 10–25%"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "CRM Full-Stack Developer",
+      "company": "FaceStellar",
+      "companyUrl": "https://facestellar.com/",
+      "location": "Remote",
+      "type": "contract",
+      "period": "Sep 2022 — Dec 2022",
+      "project": null,
+      "stack": ["Node.js", "Express", "React"],
+      "subsections": [
+        {
+          "title": null,
+          "style": "default",
+          "items": [
+            "Built CRM system with Node.js + Express and React",
+            "Improved customer service efficiency by 30%",
+            "Created CI/CD pipeline"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "PHP Backend Developer",
+      "company": "Highway Logistic Group",
+      "companyUrl": "https://hl-group.ru/",
+      "location": "Moscow",
+      "type": "full-time",
+      "period": "Feb 2022 — Sep 2022",
+      "project": null,
+      "stack": ["PHP", "MySQL"],
+      "subsections": [
+        {
+          "title": null,
+          "style": "default",
+          "items": [
+            "Maintained and optimized MySQL databases",
+            "Expanded CRM system",
+            "Debugged critical components (reliability +15%)",
+            "Migrated PHP 5 → 7.4 (performance +40%)",
+            "Delivered urgent features improving satisfaction by 50%"
+          ]
+        }
+      ]
+    }
+  ],
+
+  "education": [
+    {
+      "degree": "Bachelor — Double Degree Data Science",
+      "institution": "London School of Economics & Higher School of Economics",
+      "period": "Sep 2019 — Jul 2023",
+      "description": "Double degree Data Scientist Bachelor program."
+    },
+    {
+      "degree": "Secondary Education",
+      "institution": "School 13 with Deep Learning English Course — Vladivostok",
+      "period": "Sep 2008 — Jun 2019",
+      "description": null
+    }
+  ],
+
+  "courses": [
+    {
+      "name": "Game Programming & Algorithms with C++",
+      "institution": "ID Coding & Engineering Academy (Imperial College London)",
+      "period": "Jul 2018 — Aug 2018",
+      "items": [
+        "Animating sprites & creating console-based games",
+        "OOP patterns and adaptable game objects",
+        "Implementing simple AI and program architecture",
+        "Re-creating classic games with custom art assets"
+      ]
+    },
+    {
+      "name": "Oxford Summer English (13–15 years)",
+      "institution": "Oxford Royale Academy",
+      "period": "Aug 2016",
+      "description": "CEF Level: B2 · EF EPI score: 84% (≈ C1 CEFR)",
+      "items": null
+    }
+  ]
+}

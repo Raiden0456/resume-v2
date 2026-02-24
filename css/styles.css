@@ -1,0 +1,784 @@
+/* ============================================
+   Main Layout & Component Styles
+   ============================================ */
+
+/* ============================================
+   Page Layout
+   ============================================ */
+
+.page-wrapper {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+  min-height: 100vh;
+}
+
+.resume-container {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* ============================================
+   Hero Section
+   ============================================ */
+
+.hero-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+  padding: var(--space-2xl) var(--space-2xl) var(--space-xl);
+}
+
+.profile-photo {
+  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--bg-tertiary);
+  border: 2px solid var(--color-border);
+}
+
+.profile-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-muted);
+}
+
+.hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-name {
+  font-size: var(--font-size-3xl);
+  color: var(--fg-white);
+  margin-bottom: var(--space-xs);
+  letter-spacing: -0.5px;
+}
+
+.hero-title {
+  font-size: var(--font-size-md);
+  color: var(--accent-magenta);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-md);
+}
+
+.hero-location {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--fg-muted);
+  font-size: var(--font-size-sm);
+}
+
+.hero-location i {
+  color: var(--accent-cyan);
+}
+
+.hero-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: 0 var(--space-2xl) var(--space-lg);
+}
+
+.contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  color: var(--fg-primary);
+  transition: color var(--transition-fast);
+}
+
+.contact-item i {
+  color: var(--accent-blue);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.contact-item:hover {
+  color: var(--accent-cyan);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: 0 var(--space-2xl) var(--space-xl);
+}
+
+/* ============================================
+   Download Button
+   ============================================ */
+
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background-color: var(--accent-blue);
+  color: var(--bg-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+
+.btn-download:hover,
+.btn-download:focus-visible {
+  background-color: var(--accent-cyan);
+  color: var(--bg-primary);
+}
+
+.btn-download i {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================
+   Social Links Row
+   ============================================ */
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-tertiary);
+  color: var(--fg-muted);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.social-link:hover {
+  background-color: var(--accent-blue);
+  color: var(--bg-primary);
+  transform: translateY(-2px);
+}
+
+.social-link i {
+  width: 18px;
+  height: 18px;
+}
+
+/* ============================================
+   Content Area
+   ============================================ */
+
+.content-area {
+  padding: 0 var(--space-2xl) var(--space-2xl);
+}
+
+/* ============================================
+   Section Styles
+   ============================================ */
+
+.section {
+  margin-bottom: var(--space-lg);
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.section-header i {
+  color: var(--accent-blue);
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.section-title {
+  font-size: var(--font-size-xl);
+  color: var(--fg-white);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ============================================
+   Profile Section
+   ============================================ */
+
+.profile-text {
+  font-size: var(--font-size-base);
+  color: var(--fg-primary);
+  line-height: var(--line-height-relaxed);
+  max-width: 72ch;
+}
+
+/* ============================================
+   Tech Highlights
+   ============================================ */
+
+.highlights-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.highlight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.highlight-item::before {
+  content: '▸';
+  color: var(--accent-green);
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ============================================
+   Tech Stack Grid
+   ============================================ */
+
+.tech-stack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+
+.tech-category {
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+}
+
+.tech-category-label {
+  font-size: var(--font-size-xs);
+  color: var(--accent-magenta);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-sm);
+}
+
+.tech-category-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+/* ============================================
+   Skill Tags
+   ============================================ */
+
+.skill-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background-color: var(--bg-hover);
+  color: var(--fg-primary);
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.skill-tag:hover {
+  background-color: var(--accent-blue);
+  color: var(--bg-primary);
+  border-color: var(--accent-blue);
+}
+
+/* ============================================
+   Skills Section (Sidebar-style)
+   ============================================ */
+
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+/* ============================================
+   Job Cards (Employment)
+   ============================================ */
+
+.jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.job-card {
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+}
+
+.job-header {
+  margin-bottom: var(--space-md);
+}
+
+.job-role {
+  font-size: var(--font-size-lg);
+  color: var(--fg-white);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-xs);
+}
+
+.job-company {
+  font-size: var(--font-size-base);
+  color: var(--accent-cyan);
+}
+
+.job-company a {
+  color: var(--accent-cyan);
+}
+
+.job-company a:hover {
+  color: var(--accent-blue);
+}
+
+.job-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  font-size: var(--font-size-xs);
+  color: var(--fg-muted);
+}
+
+.job-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.job-meta-item i {
+  width: 14px;
+  height: 14px;
+  color: var(--fg-secondary);
+}
+
+.job-project {
+  font-size: var(--font-size-sm);
+  color: var(--fg-primary);
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-magenta);
+}
+
+.job-project strong {
+  color: var(--accent-yellow);
+}
+
+.job-tech-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.job-subsection {
+  margin-bottom: var(--space-md);
+}
+
+.job-subsection:last-child {
+  margin-bottom: 0;
+}
+
+.job-subsection-title {
+  font-size: var(--font-size-sm);
+  color: var(--accent-yellow);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.job-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.job-detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--fg-primary);
+}
+
+.job-detail-item::before {
+  content: '▸';
+  color: var(--accent-green);
+  flex-shrink: 0;
+  font-weight: var(--font-weight-bold);
+  margin-top: 1px;
+}
+
+.result-item::before {
+  color: var(--accent-cyan);
+  content: '✓';
+}
+
+/* ============================================
+   Education & Courses
+   ============================================ */
+
+.education-list,
+.courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.education-card,
+.course-card {
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+}
+
+.education-degree,
+.course-name {
+  font-size: var(--font-size-md);
+  color: var(--fg-white);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 4px;
+}
+
+.education-school,
+.course-institution {
+  font-size: var(--font-size-sm);
+  color: var(--accent-cyan);
+  margin-bottom: var(--space-sm);
+}
+
+.education-dates,
+.course-dates {
+  font-size: var(--font-size-xs);
+  color: var(--fg-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: var(--space-sm);
+}
+
+.education-dates i,
+.course-dates i {
+  width: 14px;
+  height: 14px;
+}
+
+.education-description,
+.course-description {
+  font-size: var(--font-size-sm);
+  color: var(--fg-primary);
+  line-height: var(--line-height-normal);
+}
+
+.course-details {
+  margin-top: var(--space-sm);
+}
+
+/* ============================================
+   Languages Section
+   ============================================ */
+
+.languages-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.language-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.language-name {
+  color: var(--fg-white);
+  font-weight: var(--font-weight-bold);
+}
+
+.language-level {
+  color: var(--fg-muted);
+  font-size: var(--font-size-xs);
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+
+.resume-footer {
+  padding: var(--space-lg) var(--space-2xl);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--fg-muted);
+}
+
+/* ============================================
+   Two-Column Layout for Compact Sections
+   ============================================ */
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+/* ============================================
+   Responsive — Tablet
+   ============================================ */
+
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .hero-section {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--space-xl) var(--space-lg) var(--space-md);
+    gap: var(--space-md);
+  }
+
+  .profile-photo {
+    width: 110px;
+    height: 110px;
+  }
+
+  .hero-name {
+    font-size: var(--font-size-2xl);
+  }
+
+  .hero-title {
+    font-size: var(--font-size-base);
+  }
+
+  .hero-contact {
+    padding: 0 var(--space-lg) var(--space-md);
+    gap: var(--space-sm);
+  }
+
+  .hero-actions {
+    padding: 0 var(--space-lg) var(--space-lg);
+  }
+
+  .content-area {
+    padding: 0 var(--space-lg) var(--space-xl);
+  }
+
+  .tech-stack-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .job-card {
+    padding: var(--space-md);
+  }
+
+  .resume-footer {
+    padding: var(--space-md) var(--space-lg);
+  }
+}
+
+/* ============================================
+   Responsive — Mobile
+   ============================================ */
+
+@media (max-width: 480px) {
+  html {
+    font-size: 15px;
+  }
+
+  .page-wrapper {
+    padding: var(--space-sm);
+  }
+
+  .resume-container {
+    border-radius: var(--radius-md);
+  }
+
+  .hero-section {
+    padding: var(--space-lg) var(--space-md) var(--space-sm);
+  }
+
+  .profile-photo {
+    width: 90px;
+    height: 90px;
+  }
+
+  .hero-name {
+    font-size: var(--font-size-xl);
+  }
+
+  .hero-contact {
+    padding: 0 var(--space-md) var(--space-sm);
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .hero-actions {
+    padding: 0 var(--space-md) var(--space-md);
+  }
+
+  .content-area {
+    padding: 0 var(--space-md) var(--space-lg);
+  }
+
+  .tech-stack-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .job-role {
+    font-size: var(--font-size-md);
+  }
+
+  .job-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .languages-list {
+    flex-direction: column;
+  }
+
+  .resume-footer {
+    padding: var(--space-md);
+  }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+  body {
+    background: white;
+    color: #1a1a1a;
+    font-size: 11pt;
+  }
+
+  .page-wrapper {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .resume-container {
+    box-shadow: none;
+    border-radius: 0;
+    background: white;
+  }
+
+  .hero-section,
+  .hero-contact,
+  .hero-actions,
+  .content-area,
+  .resume-footer {
+    padding-left: 1cm;
+    padding-right: 1cm;
+  }
+
+  .hero-name {
+    color: #1a1a1a;
+  }
+
+  .hero-title,
+  .section-title {
+    color: #333;
+  }
+
+  .job-card,
+  .education-card,
+  .course-card,
+  .tech-category,
+  .language-item {
+    background: #f5f5f5;
+    border-color: #ddd;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .skill-tag {
+    background: #eee;
+    border-color: #ccc;
+    color: #333;
+  }
+
+  a {
+    color: #1a1a1a;
+    text-decoration: underline;
+  }
+
+  .btn-download,
+  .social-links {
+    display: none !important;
+  }
+
+  .separator {
+    margin: 0.5cm 0;
+  }
+
+  .separator::after {
+    width: 100%;
+    background: #ccc;
+  }
+
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
