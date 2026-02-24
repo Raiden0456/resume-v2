@@ -85,7 +85,7 @@
       "project": {
         "name": "Next Street",
         "description": "A platform that helps small businesses connect with capital, services, and support.",
-        "url": "https://nextstreet.com/"
+        "url": "https://nextstreet.com"
       },
       "stack": [
         "React",
