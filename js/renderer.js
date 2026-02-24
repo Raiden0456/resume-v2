@@ -281,59 +281,112 @@
       );
       article.appendChild(meta);
 
-      // Project
-      if (job.project) {
+      // Projects (multi-project) or legacy single project
+      var projects = job.projects
+        ? job.projects
+        : job.project
+          ? [job.project]
+          : [];
+
+      projects.forEach(function (proj, idx) {
+        var isMulti = projects.length > 1;
+
+        // Project header
         var projContent = document.createElement("div");
-        projContent.className = "job-project";
+        projContent.className =
+          "job-project" + (isMulti ? " job-project--multi" : "");
         var projHTML =
           "<strong>" +
-          escapeHTML(job.project.name) +
+          escapeHTML(proj.name) +
           "</strong> — " +
-          escapeHTML(job.project.description);
-        if (job.project.url) {
+          escapeHTML(proj.description);
+        if (proj.url) {
           projHTML +=
             '<br><a href="' +
-            escapeHTML(job.project.url) +
+            escapeHTML(proj.url) +
             '" target="_blank" rel="noopener noreferrer">' +
-            escapeHTML(job.project.url.replace(/^https?:\/\//, "")) +
+            escapeHTML(proj.url.replace(/^https?:\/\//, "")) +
             "</a>";
         }
         projContent.innerHTML = projHTML;
         article.appendChild(projContent);
-      }
 
-      // Stack
-      if (job.stack && job.stack.length) {
-        var stackWrap = el("div", { className: "job-tech-stack" });
-        job.stack.forEach(function (tech) {
-          stackWrap.appendChild(skillTag(tech));
-        });
-        article.appendChild(stackWrap);
-      }
-
-      // Subsections
-      if (job.subsections && job.subsections.length) {
-        job.subsections.forEach(function (sub) {
-          var detailsWrap = el("div", { className: "job-details" });
-          sub.items.forEach(function (text) {
-            var cls =
-              "job-detail-item" +
-              (sub.style === "results" ? " result-item" : "");
-            detailsWrap.appendChild(el("div", { className: cls }, text));
+        // Per-project stack
+        var stack = proj.stack || (idx === 0 ? job.stack : null);
+        if (stack && stack.length) {
+          var stackWrap = el("div", { className: "job-tech-stack" });
+          stack.forEach(function (tech) {
+            stackWrap.appendChild(skillTag(tech));
           });
+          article.appendChild(stackWrap);
+        }
 
-          if (sub.title) {
-            var subsection = el(
-              "div",
-              { className: "job-subsection" },
-              el("div", { className: "job-subsection-title" }, sub.title),
-              detailsWrap,
-            );
-            article.appendChild(subsection);
-          } else {
-            article.appendChild(detailsWrap);
-          }
-        });
+        // Per-project subsections
+        var subsections =
+          proj.subsections || (idx === 0 ? job.subsections : null);
+        if (subsections && subsections.length) {
+          subsections.forEach(function (sub) {
+            var detailsWrap = el("div", { className: "job-details" });
+            sub.items.forEach(function (text) {
+              var cls =
+                "job-detail-item" +
+                (sub.style === "results" ? " result-item" : "");
+              detailsWrap.appendChild(el("div", { className: cls }, text));
+            });
+
+            if (sub.title) {
+              var subsection = el(
+                "div",
+                { className: "job-subsection" },
+                el("div", { className: "job-subsection-title" }, sub.title),
+                detailsWrap,
+              );
+              article.appendChild(subsection);
+            } else {
+              article.appendChild(detailsWrap);
+            }
+          });
+        }
+
+        // Divider between projects
+        if (isMulti && idx < projects.length - 1) {
+          article.appendChild(el("hr", { className: "job-project-divider" }));
+        }
+      });
+
+      // Top-level stack fallback (jobs with no projects at all)
+      if (!projects.length) {
+        if (job.stack && job.stack.length) {
+          var stackWrap = el("div", { className: "job-tech-stack" });
+          job.stack.forEach(function (tech) {
+            stackWrap.appendChild(skillTag(tech));
+          });
+          article.appendChild(stackWrap);
+        }
+
+        if (job.subsections && job.subsections.length) {
+          job.subsections.forEach(function (sub) {
+            var detailsWrap = el("div", { className: "job-details" });
+            sub.items.forEach(function (text) {
+              var cls =
+                "job-detail-item" +
+                (sub.style === "results" ? " result-item" : "");
+              detailsWrap.appendChild(el("div", { className: cls }, text));
+            });
+
+            if (sub.title) {
+              var subsection = el(
+                "div",
+                { className: "job-subsection" },
+                el("div", { className: "job-subsection-title" }, sub.title),
+                detailsWrap,
+              );
+              article.appendChild(subsection);
+            } else {
+              article.appendChild(detailsWrap);
+            }
+          });
+        }
       }
 
       list.appendChild(article);

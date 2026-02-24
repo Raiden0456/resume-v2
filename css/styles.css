@@ -438,6 +438,15 @@
 [data-tech="ai algorithms"] {
   --tag-accent: var(--accent-cyan);
 }
+[data-tech="better auth"] {
+  --tag-accent: var(--accent-green);
+}
+[data-tech="rabbitmq"] {
+  --tag-accent: var(--accent-orange);
+}
+[data-tech="turborepo"] {
+  --tag-accent: var(--accent-magenta);
+}
 
 /* ============================================
    Skills Section (Sidebar-style)
@@ -527,8 +536,18 @@
   border-left: 3px solid var(--accent-magenta);
 }
 
+.job-project--multi {
+  margin-bottom: var(--space-sm);
+}
+
 .job-project strong {
   color: var(--accent-yellow);
+}
+
+.job-project-divider {
+  border: none;
+  border-top: 1px solid var(--bg-tertiary);
+  margin: var(--space-md) 0;
 }
 
 .job-tech-stack {

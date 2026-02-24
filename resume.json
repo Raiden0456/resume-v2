@@ -28,6 +28,7 @@
   "profile": "Results-driven Full-Stack Developer with 4+ years of experience building scalable, high-load web platforms using React, Next.js, Node.js, and NestJS. Proven track record delivering performant UIs, robust APIs, and scalable backend systems. Skilled in system design, database optimization, and integration of complex external services. Passionate about performance, maintainability, and developer experience.",
 
   "highlights": [
+    "Lead Developer on Rowte.io — built B2B fintech platform for global education payments from 0 to production MVP in under 3 months",
     "Delivered high-load Telegram MiniApps serving 300k+ concurrent users using NestJS + gRPC",
     "Built CMS for AURUS auto brand, saving 80+ dev hours/month via admin tools",
     "Created REST API processing 1M+ req/day with sub-200ms latency",
@@ -82,42 +83,90 @@
       "location": "Barcelona (remote)",
       "type": "full-time",
       "period": "Feb 2025 — Present",
-      "project": {
-        "name": "Next Street",
-        "description": "A platform that helps small businesses connect with capital, services, and support.",
-        "url": "https://nextstreet.com"
-      },
-      "stack": [
-        "React",
-        "Redux",
-        "TypeScript",
-        "NestJS",
-        "PostgreSQL",
-        "Docker",
-        "REST APIs"
-      ],
-      "subsections": [
+      "projects": [
         {
-          "title": "Actions",
-          "style": "default",
-          "items": [
-            "Rebuilt internal admin panel from scratch using React and Redux, streamlining workflows and improving data visibility",
-            "Integrated CRFUSA platform, enabling seamless data exchange with external partner services",
-            "Refactored and optimized PostgreSQL database structure, redesigning schemas for better performance",
-            "Implemented multiple UI/UX enhancements collaborating with designers",
-            "Refactored 15+ legacy React components, enforcing modern TypeScript patterns"
+          "name": "Rowte.io",
+          "description": "B2B fintech platform for global education commission payments — multi-currency payouts, per-enrollment reconciliation, automated document verification, and tiered partner management across agencies, sub-agents, and institutions.",
+          "url": "https://rowte.io",
+          "stack": [
+            "NestJS",
+            "Next.js",
+            "TurboRepo",
+            "PostgreSQL",
+            "RabbitMQ",
+            "Redis",
+            "TypeScript",
+            "Docker",
+            "REST API",
+            "Better Auth",
+            "Refine"
+          ],
+          "subsections": [
+            {
+              "title": "Actions",
+              "style": "default",
+              "items": [
+                "Led development as Lead Developer in a 3-person team (junior frontend dev + PM) — took the product from zero to a fully working production MVP in under 3 months",
+                "Built complex B2B financial system with idempotency guarantees, transaction integrity, and real-time monitoring",
+                "Designed and implemented event-driven architecture using RabbitMQ for async commission processing, payouts, and notifications",
+                "Integrated Redis for caching and built a transactional email notification system",
+                "Architected the entire backend infrastructure: database schemas, service boundaries, and CI/CD pipelines",
+                "Deployed production environment to Render — Dockerized frontend, backend, and admin panel as separate services",
+                "Built full-featured internal admin panel using Refine framework for operations and partner management",
+                "Managed junior frontend developer — mentored, assigned tasks, and conducted PR reviews",
+                "Integrated Better Auth with role-based access control (RBAC) and multi-factor authentication (MFA)"
+              ]
+            },
+            {
+              "title": "Results",
+              "style": "results",
+              "items": [
+                "Delivered fully functional production MVP in under 3 months as lead of a 3-person team",
+                "Zero critical financial discrepancies reported post-launch",
+                "Commission reconciliation time reduced from days to under minutes via automation",
+                "MFA + RBAC integration reduced unauthorized access risk to near zero",
+                "Event-driven architecture handled concurrent payout flows without data loss"
+              ]
+            }
           ]
         },
         {
-          "title": "Results",
-          "style": "results",
-          "items": [
-            "Admin panel load time cut by 40%",
-            "75% reduction in manual data entry — onboarding cut from days to under 6 hours",
-            "Query response times improved by 60% on core reports",
-            "Application submissions increased by 25% following UX updates",
-            "Frontend bundle size reduced by 15%",
-            "15+ major feature releases with three cross-functional teams"
+          "name": "Next Street",
+          "description": "A platform that helps small businesses connect with capital, services, and support.",
+          "url": "https://nextstreet.com",
+          "stack": [
+            "React",
+            "Redux",
+            "TypeScript",
+            "NestJS",
+            "PostgreSQL",
+            "Docker",
+            "REST APIs"
+          ],
+          "subsections": [
+            {
+              "title": "Actions",
+              "style": "default",
+              "items": [
+                "Rebuilt internal admin panel from scratch using React and Redux, streamlining workflows and improving data visibility",
+                "Integrated CRFUSA platform, enabling seamless data exchange with external partner services",
+                "Refactored and optimized PostgreSQL database structure, redesigning schemas for better performance",
+                "Implemented multiple UI/UX enhancements collaborating with designers",
+                "Refactored 15+ legacy React components, enforcing modern TypeScript patterns"
+              ]
+            },
+            {
+              "title": "Results",
+              "style": "results",
+              "items": [
+                "Admin panel load time cut by 40%",
+                "75% reduction in manual data entry — onboarding cut from days to under 6 hours",
+                "Query response times improved by 60% on core reports",
+                "Application submissions increased by 25% following UX updates",
+                "Frontend bundle size reduced by 15%",
+                "15+ major feature releases with three cross-functional teams"
+              ]
+            }
           ]
         }
       ]
