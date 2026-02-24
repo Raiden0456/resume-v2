@@ -486,6 +486,11 @@
   color: var(--accent-cyan);
 }
 
+.company-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .job-company a:hover {
   color: var(--accent-blue);
 }

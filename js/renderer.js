@@ -234,6 +234,7 @@
             "a",
             {
               href: job.companyUrl,
+              className: "company-link",
               target: "_blank",
               rel: "noopener noreferrer",
             },
