@@ -226,6 +226,8 @@
 
       // Header
       var companyNode;
+      var companySuffix =
+        job.type && job.type !== "full-time" ? " · " + job.type : "";
       if (job.companyUrl) {
         companyNode = el(
           "p",
@@ -240,14 +242,14 @@
             },
             job.company,
           ),
-          " — " + job.location,
+          companySuffix,
         );
       } else {
-        var companyText = job.company + " — " + job.location;
-        if (job.type && job.type !== "full-time") {
-          companyText += " · " + job.type;
-        }
-        companyNode = el("p", { className: "job-company" }, companyText);
+        companyNode = el(
+          "p",
+          { className: "job-company" },
+          job.company + companySuffix,
+        );
       }
 
       article.appendChild(
