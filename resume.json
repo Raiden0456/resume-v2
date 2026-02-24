@@ -199,14 +199,14 @@
     {
       "role": "Backend Architect & Developer",
       "company": "Kodix Agency",
-      "companyUrl": null,
+      "companyUrl": "https://kodix.agency",
       "location": "Remote",
       "type": "full-time",
       "period": "May 2024 — Aug 2024",
       "project": {
         "name": "AURUS",
         "description": "Customizable CMS for the AURUS auto brand.",
-        "url": null
+        "url": "https://aurusmotors.com"
       },
       "stack": ["NestJS", "TypeScript", "TypeORM", "PostgreSQL"],
       "subsections": [
