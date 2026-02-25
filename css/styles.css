@@ -444,6 +444,12 @@
 [data-tech="rabbitmq"] {
   --tag-accent: var(--accent-orange);
 }
+[data-tech="amazon sqs"] {
+  --tag-accent: var(--accent-yellow);
+}
+[data-tech="kafka"] {
+  --tag-accent: var(--accent-cyan);
+}
 [data-tech="turborepo"] {
   --tag-accent: var(--accent-magenta);
 }
@@ -546,7 +552,7 @@
 
 .job-project-divider {
   border: none;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-separator);
   margin: var(--space-md) 0;
 }
 

@@ -48,6 +48,7 @@
       "ElasticSearch"
     ],
     "DevOps": ["Docker", "CI/CD", "Git", "Linux"],
+    "Messaging / Queues": ["RabbitMQ", "Amazon SQS", "Kafka"],
     "Other": ["Swagger", "REST API", "JSON API", "Web3", "AI Algorithms"]
   },
 
