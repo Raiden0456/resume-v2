@@ -111,6 +111,18 @@ body {
   line-height: var(--line-height-normal);
   color: var(--color-body);
   background-color: var(--bg-secondary);
+  background-image:
+    radial-gradient(
+      ellipse 80% 90% at 50% 0%,
+      transparent 40%,
+      var(--bg-secondary) 100%
+    ),
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    18px 18px,
+    18px 18px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
