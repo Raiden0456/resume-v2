@@ -123,6 +123,7 @@ body {
     100% 100%,
     18px 18px,
     18px 18px;
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
