@@ -546,7 +546,7 @@
 
 .job-project-divider {
   border: none;
-  border-top: 1px solid var(--bg-tertiary);
+  border-top: 1px solid var(--color-border);
   margin: var(--space-md) 0;
 }
 
