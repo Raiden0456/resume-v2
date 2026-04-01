@@ -524,9 +524,17 @@
     buildCourses(data.courses);
 
     // Re-initialize Lucide icons after DOM injection
-    if (window.lucide) {
-      window.lucide.createIcons();
+    // Lucide script is deferred, so it may not be ready yet
+    function initLucide() {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      } else {
+        document.addEventListener("DOMContentLoaded", function () {
+          if (window.lucide) window.lucide.createIcons();
+        });
+      }
     }
+    initLucide();
 
     // Kick off scroll reveal after render
     if (window.__initScrollReveal) {
