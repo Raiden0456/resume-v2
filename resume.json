@@ -1,7 +1,7 @@
 {
   "personal": {
     "name": "Vrezh Babakekhian",
-    "title": "Senior Full-Stack Developer (React, Next.js, Node.js, NestJS)",
+    "title": "Senior Full-Stack Developer (React, Next.js, Node.js, AWS)",
     "location": "Barcelona, Spain",
     "dob": "12.07.2001",
     "nationality": "Half Armenian and Russian",
@@ -45,7 +45,7 @@
       "SCSS",
       "TypeScript",
       "Tailwind CSS",
-      "shadcn UI",
+      "Shadcn UI",
       "TanStack Query"
     ],
     "Backend": [
@@ -73,33 +73,35 @@
   },
 
   "skills": [
-    "NestJS",
-    "Next.js",
-    "React",
     "TypeScript",
-    "Prisma",
-    "Hono",
-    "oRPC",
-    "TanStack Query",
+    "Node.js",
+    "NestJS",
+    "React",
+    "Next.js",
     "Git",
     "Docker",
+    "Event-driven Architecture",
     "Relational DBs",
-    "ElasticSearch",
     "Redis",
-    "Tailwind CSS",
-    "shadcn UI",
+    "oRPC",
+    "Hono",
+    "ElasticSearch",
+    "AWS",
     "C#",
     "PHP",
     "Python",
     "C++",
     "MongoDB",
+    "REST APIs",
     "Linux",
     "Unix OS"
   ],
 
   "languages": [
     { "name": "Russian", "level": "Native" },
-    { "name": "English", "level": "C1 Proficient" }
+    { "name": "English", "level": "C1 Proficient" },
+    { "name": "Armenian", "level": "Intermediate" },
+    { "name": "Spanish", "level": "B1 Proficient" }
   ],
 
   "experience": [
@@ -133,15 +135,12 @@
               "title": "Actions",
               "style": "default",
               "items": [
-                "Led development as Lead Developer in a 3-person team (junior frontend dev + PM) — took the product from zero to a fully working production MVP in under 3 months",
-                "Built complex B2B financial system with idempotency guarantees, transaction integrity, and real-time monitoring",
-                "Designed and implemented event-driven architecture using RabbitMQ for async commission processing, payouts, and notifications",
-                "Integrated Redis for caching and built a transactional email notification system",
-                "Architected the entire backend infrastructure: database schemas, service boundaries, and CI/CD pipelines",
-                "Deployed production environment to Render — Dockerized frontend, backend, and admin panel as separate services",
-                "Built full-featured internal admin panel using Refine framework for operations and partner management",
-                "Managed junior frontend developer — mentored, assigned tasks, and conducted PR reviews",
-                "Integrated Better Auth with role-based access control (RBAC) and multi-factor authentication (MFA)"
+                "Led development of a production MVP from scratch in under 3 months with a 3-person team, owning backend architecture, delivery planning, and code quality",
+                "Designed and implemented a transaction-safe commission and payout system with idempotency guarantees, reducing reconciliation from days to minutes",
+                "Built event-driven workflows with RabbitMQ for async commission processing, payouts, notifications, and background financial operations",
+                "Architected PostgreSQL schemas, service boundaries, and CI/CD pipelines for a multi-service production deployment",
+                "Integrated RBAC, MFA, and Better Auth to support secure access across agencies, sub-agents, institutions, and internal operations",
+                "Built an internal admin platform with Refine for partner management, reconciliation, document review, and operational monitoring"
               ]
             },
             {
@@ -158,8 +157,8 @@
           ]
         },
         {
-          "name": "Next Street",
-          "description": "A platform that helps small businesses connect with capital, services, and support.",
+          "name": "NextStreet",
+          "description": "Platform helping small businesses access capital, services, and business support through internal tools and partner integrations.",
           "url": "https://nextstreet.com",
           "stack": [
             "React",
@@ -168,18 +167,19 @@
             "NestJS",
             "PostgreSQL",
             "Docker",
-            "REST APIs"
+            "REST API"
           ],
           "subsections": [
             {
               "title": "Actions",
               "style": "default",
               "items": [
-                "Rebuilt internal admin panel from scratch using React and Redux, streamlining workflows and improving data visibility",
-                "Integrated CRFUSA platform, enabling seamless data exchange with external partner services",
-                "Refactored and optimized PostgreSQL database structure, redesigning schemas for better performance",
-                "Implemented multiple UI/UX enhancements collaborating with designers",
-                "Refactored 15+ legacy React components, enforcing modern TypeScript patterns"
+                "Rebuilt the internal admin panel from scratch using React, Redux, and TypeScript, improving workflow speed and data visibility for operations teams",
+                "Integrated CRFUSA partner platform to automate data exchange and reduce manual onboarding work",
+                "Refactored PostgreSQL schemas and optimized core reporting queries, improving query response times by 60%",
+                "Modernized 15+ legacy React components with stronger TypeScript patterns and improved maintainability",
+                "Delivered UI/UX improvements in collaboration with designers, contributing to a 25% increase in application submissions",
+                "Shipped 15+ major features across three cross-functional teams while reducing admin load time by 40% and bundle size by 15%"
               ]
             },
             {
@@ -197,15 +197,13 @@
           ]
         },
         {
-          "name": "Supplier Success Accelerator (SSA)",
-          "description": "B2B SaaS platform helping government agencies, CDFIs, and economic development organizations guide supplier organizations through structured capability assessments, personalized goal-setting, and coach-led development programs.",
+          "name": "Supplier Success Accelerator",
+          "description": "B2B SaaS platform helping government agencies, CDFIs, and economic development organizations guide suppliers through assessments, goal-setting, coaching, and progress tracking.",
           "stack": [
             "Next.js",
-            "React",
             "TypeScript",
             "Hono",
             "oRPC",
-            "TurboRepo",
             "Prisma",
             "PostgreSQL",
             "AWS RDS Aurora Serverless v2",
@@ -215,31 +213,31 @@
             "AdminJS",
             "TanStack Query",
             "Tailwind CSS",
-            "shadcn UI"
+            "Shadcn UI"
           ],
           "subsections": [
             {
               "title": "Actions",
               "style": "default",
               "items": [
-                "Served as Full-Stack Developer in a 7-person team (4 engineers, 1 PM, 2 product managers) — owned end-to-end integration architecture and delivery",
-                "Architected and implemented 5+ third-party integrations as complete full-stack solutions: Zendesk (widget with real-time chat), Calendly (appointment scheduling with webhooks), Mailchimp (audience sync and campaigns), and Amplitude (analytics tracking)",
-                "Designed and deployed event-driven architecture for real-time platform notifications and third-party data synchronization using webhooks and polling strategies",
-                "Built robust integration monitoring and error recovery — ensured data consistency across external systems with retry logic and transaction integrity",
-                "Implemented role-based access control (RBAC) with multi-organization scoping across all platform layers",
-                "Mentored junior engineers on full-stack integration patterns and API design best practices"
+                "Owned end-to-end integration architecture for a 7-person product team, delivering third-party integrations across support, scheduling, marketing, analytics, and learning workflows",
+                "Built Zendesk integration with embedded support chat, authentication bridging, event logging, and workflow automation, reducing support response time by 70%",
+                "Integrated Calendly with webhook handling, sync polling, and event reconciliation to automate scheduling workflows",
+                "Connected Mailchimp audience sync, segmentation, and lifecycle-based campaign automation, increasing campaign engagement to 45%",
+                "Implemented Amplitude analytics tracking across user journeys, conversion funnels, and feature adoption, helping identify bottlenecks that led to a 25% adoption lift",
+                "Designed integration monitoring, retries, and recovery flows to maintain data consistency across external services with zero integration-related production incidents"
               ]
             },
             {
               "title": "Results",
               "style": "results",
               "items": [
-                "Delivered 5+ critical third-party integrations on schedule — zero integration-related production incidents post-launch",
-                "Eliminated manual support workflows through Zendesk integration — support response time reduced by 70%",
-                "Automated supplier email engagement via Mailchimp — increased campaign engagement rate to 45% through behavioral segmentation",
-                "Real-time analytics via Amplitude revealed product bottlenecks — insights led to 3 major UX improvements with 25% increase in feature adoption",
-                "Event-driven architecture scaled to handle 10,000+ daily supplier actions without data loss or duplicate processing",
-                "Maintained 99.5% uptime across all integrated services through proactive monitoring and graceful error handling"
+                "Delivered 5+ critical third-party integrations on schedule with zero production incidents",
+                "Support response time reduced by 70% through Zendesk integration",
+                "Campaign engagement rate increased to 45% via Mailchimp lifecycle automation",
+                "Feature adoption increased by 25% following Amplitude insights and UX improvements",
+                "Event-driven architecture scaled to handle 10,000+ daily supplier actions without data loss",
+                "Maintained 99.5% uptime across all integrated services through proactive monitoring"
               ]
             }
           ]

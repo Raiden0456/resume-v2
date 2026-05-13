@@ -458,7 +458,7 @@
 [data-tech="tailwind css"] {
   --tag-accent: var(--accent-cyan);
 }
-[data-tech="shadcn ui"] {
+[data-tech="Shadcn UI"] {
   --tag-accent: var(--accent-cyan);
 }
 [data-tech="tanstack query"] {
@@ -474,6 +474,17 @@
 }
 [data-tech="prisma"] {
   --tag-accent: var(--accent-blue);
+}
+
+/* Additional skills */
+[data-tech="event-driven architecture"] {
+  --tag-accent: var(--accent-magenta);
+}
+[data-tech="aws"] {
+  --tag-accent: var(--accent-orange);
+}
+[data-tech="rest apis"] {
+  --tag-accent: var(--accent-cyan);
 }
 
 /* ============================================
