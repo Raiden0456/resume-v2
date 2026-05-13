@@ -23,7 +23,7 @@
     "telegram": "https://t.me/Raiden0456"
   },
 
-  "pdf": "Resume_V9.pdf",
+  "pdf": "Resume_V10.pdf",
 
   "profile": "Results-driven Full-Stack Developer with 5+ years of experience building scalable, high-load web platforms using React, Next.js, Node.js, and NestJS. Proven track record delivering performant UIs, robust APIs, and scalable backend systems. Skilled in system design, database optimization, and integration of complex external services. Passionate about performance, maintainability, and developer experience.",
 
@@ -37,8 +37,28 @@
   ],
 
   "techStack": {
-    "Frontend": ["React", "Next.js", "Vite", "Webpack", "SCSS", "TypeScript", "Tailwind CSS", "shadcn UI", "TanStack Query"],
-    "Backend": ["Node.js", "NestJS", "Express", "C#/.NET", "gRPC", "TypeORM", "Hono", "oRPC", "Prisma"],
+    "Frontend": [
+      "React",
+      "Next.js",
+      "Vite",
+      "Webpack",
+      "SCSS",
+      "TypeScript",
+      "Tailwind CSS",
+      "shadcn UI",
+      "TanStack Query"
+    ],
+    "Backend": [
+      "Node.js",
+      "NestJS",
+      "Express",
+      "C#/.NET",
+      "gRPC",
+      "TypeORM",
+      "Hono",
+      "oRPC",
+      "Prisma"
+    ],
     "Databases": [
       "PostgreSQL",
       "MySQL",
