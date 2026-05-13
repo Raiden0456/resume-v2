@@ -37,8 +37,8 @@
   ],
 
   "techStack": {
-    "Frontend": ["React", "Next.js", "Vite", "Webpack", "SCSS", "TypeScript"],
-    "Backend": ["Node.js", "NestJS", "Express", "C#/.NET", "gRPC", "TypeORM"],
+    "Frontend": ["React", "Next.js", "Vite", "Webpack", "SCSS", "TypeScript", "Tailwind CSS", "shadcn UI", "TanStack Query"],
+    "Backend": ["Node.js", "NestJS", "Express", "C#/.NET", "gRPC", "TypeORM", "Hono", "oRPC", "Prisma"],
     "Databases": [
       "PostgreSQL",
       "MySQL",
@@ -57,11 +57,17 @@
     "Next.js",
     "React",
     "TypeScript",
+    "Prisma",
+    "Hono",
+    "oRPC",
+    "TanStack Query",
     "Git",
     "Docker",
     "Relational DBs",
     "ElasticSearch",
     "Redis",
+    "Tailwind CSS",
+    "shadcn UI",
     "C#",
     "PHP",
     "Python",
@@ -166,6 +172,54 @@
                 "Application submissions increased by 25% following UX updates",
                 "Frontend bundle size reduced by 15%",
                 "15+ major feature releases with three cross-functional teams"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Supplier Success Accelerator (SSA)",
+          "description": "B2B SaaS platform helping government agencies, CDFIs, and economic development organizations guide supplier organizations through structured capability assessments, personalized goal-setting, and coach-led development programs.",
+          "stack": [
+            "Next.js",
+            "React",
+            "TypeScript",
+            "Hono",
+            "oRPC",
+            "TurboRepo",
+            "Prisma",
+            "PostgreSQL",
+            "AWS RDS Aurora Serverless v2",
+            "SST v3",
+            "Redis",
+            "Better Auth",
+            "AdminJS",
+            "TanStack Query",
+            "Tailwind CSS",
+            "shadcn UI"
+          ],
+          "subsections": [
+            {
+              "title": "Actions",
+              "style": "default",
+              "items": [
+                "Served as Full-Stack Developer in a 7-person team (4 engineers, 1 PM, 2 product managers) — owned end-to-end integration architecture and delivery",
+                "Architected and implemented 5+ third-party integrations as complete full-stack solutions: Zendesk (widget with real-time chat), Calendly (appointment scheduling with webhooks), Mailchimp (audience sync and campaigns), and Amplitude (analytics tracking)",
+                "Designed and deployed event-driven architecture for real-time platform notifications and third-party data synchronization using webhooks and polling strategies",
+                "Built robust integration monitoring and error recovery — ensured data consistency across external systems with retry logic and transaction integrity",
+                "Implemented role-based access control (RBAC) with multi-organization scoping across all platform layers",
+                "Mentored junior engineers on full-stack integration patterns and API design best practices"
+              ]
+            },
+            {
+              "title": "Results",
+              "style": "results",
+              "items": [
+                "Delivered 5+ critical third-party integrations on schedule — zero integration-related production incidents post-launch",
+                "Eliminated manual support workflows through Zendesk integration — support response time reduced by 70%",
+                "Automated supplier email engagement via Mailchimp — increased campaign engagement rate to 45% through behavioral segmentation",
+                "Real-time analytics via Amplitude revealed product bottlenecks — insights led to 3 major UX improvements with 25% increase in feature adoption",
+                "Event-driven architecture scaled to handle 10,000+ daily supplier actions without data loss or duplicate processing",
+                "Maintained 99.5% uptime across all integrated services through proactive monitoring and graceful error handling"
               ]
             }
           ]

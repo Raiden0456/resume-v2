@@ -454,6 +454,28 @@
   --tag-accent: var(--accent-magenta);
 }
 
+/* Frontend frameworks & libraries */
+[data-tech="tailwind css"] {
+  --tag-accent: var(--accent-cyan);
+}
+[data-tech="shadcn ui"] {
+  --tag-accent: var(--accent-cyan);
+}
+[data-tech="tanstack query"] {
+  --tag-accent: var(--accent-orange);
+}
+
+/* Backend frameworks & ORMs */
+[data-tech="hono"] {
+  --tag-accent: var(--accent-magenta);
+}
+[data-tech="orpc"] {
+  --tag-accent: var(--accent-blue);
+}
+[data-tech="prisma"] {
+  --tag-accent: var(--accent-blue);
+}
+
 /* ============================================
    Skills Section (Sidebar-style)
    ============================================ */
