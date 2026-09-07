@@ -1,13 +1,12 @@
 {
   "personal": {
     "name": "Vrezh Babakekhian",
-    "title": "Senior Full-Stack Developer (React, Next.js, Node.js, AWS)",
+    "title": "Senior Full-Stack Developer (React, Next.js, Go, Node.js, AWS)",
     "location": "Barcelona, Spain",
     "dob": "12.07.2001",
     "nationality": "Half Armenian and Russian",
     "drivingLicense": "B"
   },
-
   "contact": {
     "email": "workraiden@gmail.com",
     "phone": "+34 687 644 904",
@@ -16,26 +15,21 @@
       "href": "https://wa.me/79147060606"
     }
   },
-
   "links": {
     "github": "https://github.com/Raiden0456",
     "linkedin": "https://www.linkedin.com/in/raiden-babakekhian",
     "telegram": "https://t.me/Raiden0456"
   },
-
   "pdf": "Resume_V10.pdf",
-
-  "profile": "Results-driven Full-Stack Developer with 5+ years of experience building scalable, high-load web platforms using React, Next.js, Node.js, and NestJS. Proven track record delivering performant UIs, robust APIs, and scalable backend systems. Skilled in system design, database optimization, and integration of complex external services. Passionate about performance, maintainability, and developer experience.",
-
+  "profile": "Results-driven Full-Stack Developer with 6+ years of experience building scalable, high-load web platforms using React, Next.js, Go, Node.js, and AWS. Proven track record delivering performant UIs, robust APIs, and fault-tolerant backend systems. Skilled in system design, database optimization, high-throughput data processing, and integration of complex external services. Passionate about performance, maintainability, and developer experience.",
   "highlights": [
-    "Lead Developer on Rowte.io — built B2B fintech platform for global education payments from 0 to production MVP in under 3 months",
-    "Delivered high-load Telegram MiniApps serving 300k+ concurrent users using NestJS + gRPC",
+    "Lead Developer on Rowte.io — built B2B fintech platform with a Go backend from 0 to production MVP in under 3 months",
+    "Designed fault-tolerant backend systems for high-load Telegram MiniApps handling 20K+ RPS using NestJS + gRPC",
     "Built CMS for AURUS auto brand, saving 80+ dev hours/month via admin tools",
-    "Created REST API processing 1M+ req/day with sub-200ms latency",
+    "Built hybrid NestJS + Go backend architecture for I/O-heavy services and CPU-intensive, high-throughput analytics",
     "Integrated 10+ ad systems across multiple high-load frontend/backend stacks",
     "Led frontend team for \"DONOT\" project, built modern UI with Vite + React"
   ],
-
   "techStack": {
     "Frontend": [
       "React",
@@ -50,6 +44,7 @@
     ],
     "Backend": [
       "Node.js",
+      "Go",
       "NestJS",
       "Express",
       "C#/.NET",
@@ -71,9 +66,9 @@
     "Messaging / Queues": ["RabbitMQ", "Amazon SQS", "Kafka"],
     "Other": ["Swagger", "REST API", "JSON API", "Web3", "AI Algorithms"]
   },
-
   "skills": [
     "TypeScript",
+    "Go",
     "Node.js",
     "NestJS",
     "React",
@@ -96,14 +91,24 @@
     "Linux",
     "Unix OS"
   ],
-
   "languages": [
-    { "name": "Russian", "level": "Native" },
-    { "name": "English", "level": "C1 Proficient" },
-    { "name": "Armenian", "level": "Intermediate" },
-    { "name": "Spanish", "level": "B1 Proficient" }
+    {
+      "name": "Russian",
+      "level": "Native"
+    },
+    {
+      "name": "English",
+      "level": "C1 Proficient"
+    },
+    {
+      "name": "Armenian",
+      "level": "Intermediate"
+    },
+    {
+      "name": "Spanish",
+      "level": "B1 Proficient"
+    }
   ],
-
   "experience": [
     {
       "role": "Senior Full-Stack Developer",
@@ -118,13 +123,13 @@
           "description": "B2B fintech platform for global education commission payments — multi-currency payouts, per-enrollment reconciliation, automated document verification, and tiered partner management across agencies, sub-agents, and institutions.",
           "url": "https://rowte.io",
           "stack": [
-            "NestJS",
+            "Go",
             "Next.js",
+            "TypeScript",
             "TurboRepo",
             "PostgreSQL",
             "RabbitMQ",
             "Redis",
-            "TypeScript",
             "Docker",
             "REST API",
             "Better Auth",
@@ -135,11 +140,11 @@
               "title": "Actions",
               "style": "default",
               "items": [
-                "Led development of a production MVP from scratch in under 3 months with a 3-person team, owning backend architecture, delivery planning, and code quality",
-                "Designed and implemented a transaction-safe commission and payout system with idempotency guarantees, reducing reconciliation from days to minutes",
-                "Built event-driven workflows with RabbitMQ for async commission processing, payouts, notifications, and background financial operations",
-                "Architected PostgreSQL schemas, service boundaries, and CI/CD pipelines for a multi-service production deployment",
-                "Integrated RBAC, MFA, and Better Auth to support secure access across agencies, sub-agents, institutions, and internal operations",
+                "Led development of a production MVP from scratch in under 3 months with a 3-person team, owning Go backend architecture, delivery planning, and code quality",
+                "Designed and implemented a transaction-safe commission and payout system in Go with idempotency guarantees, reducing reconciliation from days to minutes",
+                "Built event-driven workflows with Go and RabbitMQ for asynchronous commission processing, payouts, notifications, and background financial operations",
+                "Architected PostgreSQL schemas, service boundaries, and CI/CD pipelines for a fault-tolerant, multi-service production deployment",
+                "Implemented RBAC, MFA, and Better Auth to support secure access across agencies, sub-agents, institutions, and internal operations",
                 "Built an internal admin platform with Refine for partner management, reconciliation, document review, and operational monitoring"
               ]
             },
@@ -151,20 +156,21 @@
                 "Zero critical financial discrepancies reported post-launch",
                 "Commission reconciliation time reduced from days to under minutes via automation",
                 "MFA + RBAC integration reduced unauthorized access risk to near zero",
-                "Event-driven architecture handled concurrent payout flows without data loss"
+                "Event-driven Go services handled concurrent payout flows without data loss"
               ]
             }
           ]
         },
         {
           "name": "NextStreet",
-          "description": "Platform helping small businesses access capital, services, and business support through internal tools and partner integrations.",
+          "description": "Platform helping small businesses access capital, services, and business support through internal tools, partner integrations, and high-volume data processing workflows.",
           "url": "https://nextstreet.com",
           "stack": [
             "React",
             "Redux",
             "TypeScript",
             "NestJS",
+            "Go",
             "PostgreSQL",
             "Docker",
             "REST API"
@@ -175,6 +181,8 @@
               "style": "default",
               "items": [
                 "Rebuilt the internal admin panel from scratch using React, Redux, and TypeScript, improving workflow speed and data visibility for operations teams",
+                "Developed a hybrid NestJS + Go backend architecture, using NestJS for I/O-heavy APIs, integrations, and orchestration, and Go for compute-intensive and high-throughput workloads",
+                "Built Go services for concurrent data processing, complex calculations, and high-load analytics pipelines, isolating CPU-intensive workloads from core API services",
                 "Integrated CRFUSA partner platform to automate data exchange and reduce manual onboarding work",
                 "Refactored PostgreSQL schemas and optimized core reporting queries, improving query response times by 60%",
                 "Modernized 15+ legacy React components with stronger TypeScript patterns and improved maintainability",
@@ -189,6 +197,7 @@
                 "Admin panel load time cut by 40%",
                 "75% reduction in manual data entry — onboarding cut from days to under 6 hours",
                 "Query response times improved by 60% on core reports",
+                "CPU-intensive analytics workloads isolated into Go services for more predictable API performance under load",
                 "Application submissions increased by 25% following UX updates",
                 "Frontend bundle size reduced by 15%",
                 "15+ major feature releases with three cross-functional teams"
@@ -309,7 +318,7 @@
           "title": null,
           "style": "default",
           "items": [
-            "Supported 10+ high-load Telegram MiniApps (300k+ concurrent users)",
+            "Supported 10+ fault-tolerant, high-load Telegram MiniApps handling 20K+ RPS using NestJS + gRPC",
             "Developed admin panels using Refine + gRPC + NestJS",
             "Integrated 10+ ad platforms",
             "Built gRPC file upload streaming for multi-GB transfers",
@@ -368,7 +377,7 @@
           "items": [
             "Built marketing web platform with AI algorithms and Web3",
             "Implemented automated documentation via Swagger",
-            "Built REST API handling 1M+ requests/day (<200ms)",
+            "Built and optimized fault-tolerant REST APIs for high-throughput workloads with sub-200ms response times",
             "Implemented microservices architecture",
             "Optimized DB queries by 10–25%"
           ]
@@ -420,7 +429,6 @@
       ]
     }
   ],
-
   "education": [
     {
       "degree": "Bachelor — Double Degree Data Science",
@@ -435,7 +443,6 @@
       "description": null
     }
   ],
-
   "courses": [
     {
       "name": "Game Programming & Algorithms with C++",
