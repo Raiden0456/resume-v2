@@ -14,7 +14,7 @@ export function createCarState(pose = SPAWN, heightAt = driveHeightAt) {
     suspension: 0, suspensionVelocity: 0,
     pitch: Math.atan(slope.x * Math.sin(pose.heading) - slope.z * Math.cos(pose.heading)),
     roll: Math.atan(slope.x * Math.cos(pose.heading) + slope.z * Math.sin(pose.heading)),
-    vx: 0, vz: 0, yaw: 0, steer: 0, speed: 0, slip: 0, drift: false, surface: "gravel" };
+    vx: 0, vz: 0, yaw: 0, steer: 0, grip: 5.8, speed: 0, slip: 0, drift: false, surface: "gravel" };
 }
 
 export function resetCar(state, pose = SPAWN, heightAt = driveHeightAt) {
@@ -40,7 +40,7 @@ export function stepCar(state, input, dt, environment = {}) {
   let rightX = Math.cos(state.heading), rightZ = Math.sin(state.heading);
   let forward = state.vx * forwardX + state.vz * forwardZ;
   let sideways = state.vx * rightX + state.vz * rightZ;
-  state.steer += (steering - state.steer) * (1 - Math.exp(-9 * dt));
+  state.steer += (steering - state.steer) * (1 - Math.exp(-18 * dt));
 
   if (state.grounded) {
     const slope = terrainGradient(state.x, state.z, (x, z) => supportAt(x, z, state.y + 1.1));
@@ -61,14 +61,30 @@ export function stepCar(state, input, dt, environment = {}) {
     forward -= Math.sign(forward) * Math.min(Math.abs(forward), resistance * dt);
     // Grass retains almost all of the pace; crossing a verge never clamps speed.
     forward *= Math.exp(-(onRoad ? 0.38 : 0.46) * dt);
-    forward *= Math.exp(-(handbrake ? 0.95 : 0) * dt);
+    const slidingBrake = throttle || Math.abs(state.steer) > 0.1 || Math.abs(sideways) > 2;
+    forward *= Math.exp(-(handbrake ? (slidingBrake ? 0.16 : 0.95) : 0) * dt);
     forward = clamp(forward, -11, 33);
-    const turnSpeed = Math.min(Math.abs(forward) / 8, 1);
-    const targetYaw = state.steer * Math.sign(forward) * turnSpeed * (handbrake ? 2.45 : 1.45);
-    state.yaw += (targetYaw - state.yaw) * (1 - Math.exp(-(handbrake ? 5 : 7) * dt));
-    const grip = handbrake && (throttle || Math.abs(forward) > 2) ? 0.85 : onRoad ? 5.8 : 5;
-    sideways *= Math.exp(-grip * dt);
-    if (!throttle) sideways -= Math.sign(sideways) * Math.min(Math.abs(sideways), (handbrake && Math.abs(forward) > 2 ? 0.25 : 2.5) * dt);
+    const speed = Math.hypot(forward, sideways);
+    // A sliding car still has steering authority even when most of its
+    // momentum is sideways. A quick turn naturally loosens the rear tyres.
+    const turnSpeed = Math.min(speed / 7, 1);
+    const targetYaw = state.steer * Math.sign(forward) * turnSpeed * (handbrake ? 2.45 : 1.85);
+    state.yaw += (targetYaw - state.yaw) * (1 - Math.exp(-12 * dt));
+    const corner = clamp((speed - 5) / 12, 0, 1) * clamp((Math.abs(state.steer) - 0.08) / 0.72, 0, 1);
+    const slide = handbrake ? clamp((speed - 3) / 5, 0, 1) : corner;
+    const baseGrip = onRoad ? 5.8 : 5;
+    const targetGrip = baseGrip + ((handbrake ? 0.9 : 2.2) - baseGrip) * slide;
+    // Grip breaks quickly but returns progressively, including on cambered
+    // turns and after releasing the handbrake.
+    state.grip += (targetGrip - state.grip) * (1 - Math.exp(-(targetGrip < state.grip ? 12 : 2.6) * dt));
+    const lateralBeforeGrip = sideways;
+    sideways *= Math.exp(-state.grip * dt);
+    if (!throttle) sideways -= Math.sign(sideways) * Math.min(Math.abs(sideways), (speed > 4 ? 0.3 : 2.5) * dt);
+    // Tyres primarily redirect momentum toward the nose. Scrub dissipates a
+    // small part of it instead of deleting all sideways energy in a drift.
+    forward = (Math.sign(forward) || Math.sign(throttle) || 1) * Math.sqrt(forward * forward + (lateralBeforeGrip * lateralBeforeGrip - sideways * sideways) * 0.97);
+    const speedLimit = Math.min(1, 33 / (Math.hypot(forward, sideways) || 1));
+    forward *= speedLimit; sideways *= speedLimit;
     state.vx = forwardX * forward + rightX * sideways;
     state.vz = forwardZ * forward + rightZ * sideways;
     if (!throttle && Math.hypot(state.vx, state.vz) < 0.65) { state.vx = 0; state.vz = 0; state.yaw = 0; }

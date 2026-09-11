@@ -9,6 +9,7 @@ const run = (state, input, seconds, environment) => {
   for (let i = 0; i < Math.round(seconds / FIXED_STEP); i++) stepCar(state, input, FIXED_STEP, environment);
   return state;
 };
+const driftAngle = car => Math.atan2(car.slip, Math.abs(car.vx * Math.sin(car.heading) - car.vz * Math.cos(car.heading)));
 
 test("all projects and all jobs have unique, reachable sightseeing stops", () => {
   const sights = createLandmarks(resume);
@@ -32,14 +33,76 @@ test("throttle accelerates forward and braking transitions into reverse", () => 
   assert.ok(car.vx * Math.sin(car.heading) - car.vz * Math.cos(car.heading) < -2);
 });
 
-test("the handbrake increases lateral slip while reducing speed", () => {
+test("the handbrake widens a drift while retaining most of the cornering pace", () => {
   const normal = run(createCarState(), { throttle: 1 }, 1.5);
   const sliding = { ...normal };
   run(normal, { throttle: 1, steer: 1 }, 0.8);
   run(sliding, { throttle: 1, steer: 1, handbrake: true }, 0.8);
   assert.ok(sliding.slip > normal.slip * 1.3);
   assert.ok(sliding.speed < normal.speed);
+  assert.ok(sliding.speed > normal.speed * 0.85);
   assert.ok(sliding.drift);
+});
+
+test("turn-in promptly starts a natural drift on flat and cambered roads", () => {
+  for (const heightAt of [() => 0, (x, z) => x * 0.3 + z * 0.2]) for (const steer of [-1, 1]) {
+    const car = createCarState({ x: 0, z: 0, heading: 0 }, heightAt);
+    car.vz = -25; car.speed = 25;
+    car.vy = -25 * terrainGradient(0, 0, heightAt).z; car.launchVy = car.vy;
+    run(car, { throttle: 1, steer }, 0.2, { heightAt });
+    assert.ok(car.heading * steer > 0.13 && car.yaw * steer > 1, "steering must respond during a short key press");
+    run(car, { throttle: 1, steer }, 0.6, { heightAt });
+    assert.ok(car.grounded && car.drift && driftAngle(car) > 0.45, "turning alone must bring the rear out");
+    assert.ok(car.speed > 22, "entering a slide must preserve the run-up");
+  }
+});
+
+test("releasing the handbrake recovers grip progressively without killing the drift's pace", () => {
+  for (const heightAt of [() => 0, (x, z) => x * 0.3 + z * 0.2]) {
+    const car = createCarState({ x: 0, z: 0, heading: 0 }, heightAt);
+    car.vz = -25; car.speed = 25;
+    car.vy = -25 * terrainGradient(0, 0, heightAt).z; car.launchVy = car.vy;
+    run(car, { throttle: 1, steer: 1, handbrake: true }, 1.4, { heightAt });
+    assert.ok(car.speed > 20 && driftAngle(car) > 0.9);
+    const speed = car.speed, angle = driftAngle(car);
+    run(car, { throttle: 1 }, 0.25, { heightAt });
+    assert.ok(driftAngle(car) > angle * 0.3 && driftAngle(car) < angle * 0.8, "the rear must settle progressively");
+    assert.ok(car.speed > speed * 0.9, "recovering grip must redirect sideways momentum, not erase it");
+    run(car, { throttle: 1 }, 0.85, { heightAt });
+    assert.ok(driftAngle(car) < 0.08 && car.grounded, "the slide must still be easy to catch");
+  }
+});
+
+test("countersteering changes the rotation promptly while the car keeps moving", () => {
+  const heightAt = () => 0;
+  for (const steer of [-1, 1]) {
+    const car = createCarState({ x: 0, z: 0, heading: 0 }, heightAt);
+    car.vz = -25; car.speed = 25;
+    run(car, { throttle: 1, steer }, 0.8, { heightAt });
+    const speed = car.speed;
+    run(car, { throttle: 1, steer: -steer }, 0.2, { heightAt });
+    assert.ok(car.yaw * steer < -0.7, "countersteering must not wait for forward traction to return");
+    assert.ok(car.speed > speed * 0.9);
+  }
+});
+
+test("sustained arcade slides respect top speed and do not create momentum after lift-off", () => {
+  const heightAt = () => 0;
+  for (const handbrake of [false, true]) {
+    const car = createCarState({ x: 0, z: 0, heading: 0 }, heightAt);
+    car.vz = -25; car.speed = 25;
+    for (let i = 0; i < 480; i++) {
+      stepCar(car, { throttle: 1, steer: 1, handbrake }, FIXED_STEP, { heightAt });
+      assert.ok(car.speed <= 33.000001 && Number.isFinite(car.heading));
+    }
+    assert.ok(car.drift && car.speed > 25);
+    let previousSpeed = car.speed;
+    for (let i = 0; i < 120; i++) {
+      stepCar(car, {}, FIXED_STEP, { heightAt });
+      assert.ok(car.speed <= previousSpeed + 1e-8);
+      previousSpeed = car.speed;
+    }
+  }
 });
 
 test("leaving gravel retains pace instead of imposing an off-road speed limit", () => {

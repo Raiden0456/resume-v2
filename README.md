@@ -9,7 +9,9 @@ Serve over HTTP rather than opening the HTML as a local file so the modules and 
 Arrow keys or WASD drive, Space pulls the handbrake, E opens the nearby project,
 M opens instant travel to any project, R returns to the summit start, and Escape pauses. On touch devices, turn to landscape:
 drag on the left half to steer; hold the right half to accelerate, slide up to
-drift, or slide down to brake and reverse. Sound is optional. Discovered places
+drift, or slide down to brake and reverse. Turning at speed starts a slide naturally;
+the handbrake widens it. Quick countersteering catches the rear, with grip returning
+progressively and most of the cornering momentum retained. Sound is optional. Discovered places
 are saved in local storage. The game needs WebGL 2.
 
 The 840 × 980 map contains a roughly 2.5 km downhill course with a 300 metre descent.
