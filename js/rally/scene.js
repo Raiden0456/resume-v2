@@ -1,7 +1,10 @@
 import * as THREE from "../vendor/three/three.module.min.js";
-import { ROUTES, WORLD, SPAWN, terrainHeight, terrainGradient, driveHeightAt, riverAt, roadAt, CROSSINGS } from "./world.js";
+import { createCameraRig } from "./camera.js";
+import { ROUTES, WORLD, SPAWN, FINISH_LINE, CAMPS, terrainHeight, terrainGradient, driveHeightAt, riverAt, roadAt, CROSSINGS } from "./world.js";
 import { makeGround } from "./terrain.js";
 import { makeWater, buildCrossings } from "./water.js";
+import { createCrashEffect, createSplashEffect, createFireworks } from "./effects.js";
+import { createAtmosphere } from "./atmosphere.js";
 
 const PALETTE = { ground: "#22272e", road: "#554c42", cream: "#e2dfcd", red: "#dd735f", dark: "#282e36", glass: "#526f7b" };
 const clamp = THREE.MathUtils.clamp;
@@ -212,7 +215,7 @@ function buildScenery(batch, landmarks, isRoad, routes) {
   for (let i = 0; i < 3400; i++) {
     const x = random() * 740 - 370, z = random() * 890 - 445;
     const water = riverAt(x, z);
-    if ((water && water.distance < water.width + 4) || isRoad(x, z, 5) || !farFromSights(x, z) || Math.hypot(x - SPAWN.x, z - SPAWN.z) < 22) continue;
+    if ((water && water.distance < water.width + 4) || isRoad(x, z, 5) || !farFromSights(x, z)) continue;
     const elevation = terrainHeight(x, z);
     const slope = terrainGradient(x, z);
     const rocky = elevation > 175 || Math.hypot(slope.x, slope.z) > 0.9;
@@ -236,6 +239,7 @@ function buildScenery(batch, landmarks, isRoad, routes) {
       const shoulder = main.width / 2 + 1.6;
       const px = x - Math.sin(angle) * side * shoulder, pz = z + Math.cos(angle) * side * shoulder;
       if (!farFromSights(px, pz)) continue;
+      if (CAMPS.some(camp => Math.hypot(px - camp.x, pz - camp.z) < camp.radius + 3)) continue;
       if (CROSSINGS.some(crossing => Math.hypot(x - crossing.x, z - crossing.z) < crossing.gap + 22)) continue;
       batch.add("box", "#a7ae99", px, 0.7, pz, 0.2, 1.4, 0.2);
       batch.add("box", i % 2 ? "#d49a79" : "#cdd0b4", px, 1.3, pz, 0.26, 0.22, 0.26, 0, 0, 0, "light");
@@ -265,10 +269,20 @@ function buildScenery(batch, landmarks, isRoad, routes) {
   summit("box", "#98c379", 1.6, 8, 0, 3.1, 1.6, 0.12);
   for (let i = 0; i < 4; i++) summit("rock", "#a5aa9d", -2, 0.5 + i * 0.65, 1, 1.3 - i * 0.22, 0.5, 1.1 - i * 0.19);
   // Finish gantry in the valley, after the oldest chapter.
-  const finish = batch.building(230, 390);
+  const finish = (shape, color, x, y, z, sx, sy, sz, kind = "solid") => {
+    const sin = Math.sin(FINISH_LINE.heading), cos = Math.cos(FINISH_LINE.heading);
+    batch.absolute(shape, color, FINISH_LINE.x + x * cos - z * sin, FINISH_LINE.elevation + y, FINISH_LINE.z + x * sin + z * cos, sx, sy, sz, 0, -FINISH_LINE.heading, 0, kind);
+  };
   for (const x of [-9, 9]) finish("box", "#8c9991", x, 4, 0, 0.35, 8, 0.35);
   finish("box", "#a5ad99", 0, 7.5, 0, 18, 1.3, 0.3);
   for (let i = 0; i < 18; i++) finish("box", i % 2 ? "#303a3c" : "#e2dcc7", i - 8.5, 7.5, 0.17, 0.9, 1.1, 0.06);
+  for (const side of [-1, 1]) {
+    finish("box", "#e5c07b", side * 9, 7.5, 0, 0.55, 1.5, 0.6, "light");
+    finish("cylinder", "#9eaa9f", side * 12, 3, -4, 0.12, 6, 0.12);
+    finish("box", side < 0 ? "#98c379" : "#dd735f", side * 12 + 1, 5.4, -4, 2, 1.3, 0.1);
+    finish("box", "#303d42", side * 13, 0.5, 2, 1.8, 1, 1.8);
+    for (let i = 0; i < 4; i++) finish("cylinder", "#b2c2a6", side * 13 + (i % 2 - 0.5) * 0.6, 1.1, 2 + (Math.floor(i / 2) - 0.5) * 0.6, 0.16, 0.65, 0.16);
+  }
 }
 
 function makeCar(scene) {
@@ -463,7 +477,7 @@ export function createScene(canvas, landmarks) {
     }
   }
   function isRoad(x, z, padding = 0) {
-    if (Math.hypot(x - SPAWN.x, z - SPAWN.z) < 13 + padding) return true;
+    if (CAMPS.some(camp => Math.hypot(x - camp.x, z - camp.z) < camp.radius + padding)) return true;
     if (landmarks.some(sight => Math.hypot(x - sight.marker[0], z - sight.marker[1]) < 8.5 + padding)) return true;
     return (roadGrid.get(`${Math.floor(x / 20)},${Math.floor(z / 20)}`) || []).some(([px, pz, radius]) => (x - px) ** 2 + (z - pz) ** 2 < (radius + padding) ** 2);
   }
@@ -473,8 +487,12 @@ export function createScene(canvas, landmarks) {
   buildCrossings(scene, batch);
   landmarks.forEach(sight => buildLandmark(batch, sight));
   buildScenery(batch, landmarks, isRoad, routes);
+  const atmosphere = createAtmosphere(scene, batch, landmarks);
+  const obstacles = [...landmarks, ...atmosphere.obstacles];
   batch.finish();
   const car = makeCar(scene);
+  const crashEffect = createCrashEffect(scene);
+  const splashEffect = createSplashEffect(scene), fireworks = createFireworks(scene);
   const updateTrails = makeTrails(scene);
   const rings = landmarks.map(sight => {
     const material = new THREE.MeshBasicMaterial({ color: sight.color, transparent: true, opacity: 0.65, depthWrite: false });
@@ -485,10 +503,7 @@ export function createScene(canvas, landmarks) {
     return ring;
   });
   const camera = new THREE.OrthographicCamera(-84, 84, 58, -58, 0.1, 1000);
-  const focus = new THREE.Vector3(SPAWN.x, driveHeightAt(SPAWN.x, SPAWN.z) + 2, SPAWN.z + 10);
-  // A steeper fixed view clears the foreground ridges while keeping their
-  // faces visible. The camera never spins with the car during a drift.
-  const offset = new THREE.Vector3(50, 170, 85);
+  const cameraRig = createCameraRig(camera);
   const target = new THREE.Vector3();
   const lookAhead = new THREE.Vector3(0, 0, 10);
   const projection = new THREE.Vector3();
@@ -496,17 +511,16 @@ export function createScene(canvas, landmarks) {
   const resize = () => {
     width = window.innerWidth; height = window.innerHeight;
     renderer.setSize(width, height, false);
-    const aspect = width / height;
-    const halfHeight = height < 550 ? 34 : 51;
-    camera.left = -halfHeight * aspect; camera.right = halfHeight * aspect;
-    camera.top = halfHeight; camera.bottom = -halfHeight;
-    camera.updateProjectionMatrix();
+    cameraRig.resize(width, height);
   };
   resize();
+  cameraRig.snap(new THREE.Vector3(SPAWN.x, driveHeightAt(SPAWN.x, SPAWN.z) + 2, SPAWN.z + 10));
   return {
-    renderer, routes, isRoad, resize,
-    render(state, dt, active, reducedMotion) {
+    renderer, routes, isRoad, resize, cameraRig, crashEffect, splashEffect, fireworks, atmosphere, obstacles,
+    render(state, dt, active, reducedMotion, view = {}) {
       elapsed += dt;
+      car.group.visible = !view.crashed;
+      car.shadow.visible = !view.crashed;
       car.group.position.set(state.x, state.y, state.z);
       car.group.rotation.set(state.pitch, -state.heading, state.roll, "YXZ");
       car.body.rotation.z = reducedMotion ? 0 : clamp(state.yaw * state.speed * 0.002, -0.065, 0.065);
@@ -529,21 +543,28 @@ export function createScene(canvas, landmarks) {
       lookAhead.lerp(target, reducedMotion ? 1 : 1 - Math.exp(-2.8 * dt));
       const road = roadAt(state.x, state.z);
       const groundFocus = road && road.distance < 20 ? road.y : ground;
-      target.set(state.x + lookAhead.x, groundFocus + 2, state.z + lookAhead.z);
-      focus.lerp(target, reducedMotion ? 1 : 1 - Math.exp(-4 * dt));
-      camera.position.copy(focus).add(offset);
-      camera.lookAt(focus);
+      const cameraHeight = state.grounded ? groundFocus : Math.max(groundFocus, state.y - 6);
+      target.set(state.x + lookAhead.x, cameraHeight + 2, state.z + lookAhead.z);
+      cameraRig.update(target, dt, { ...view, car: state }, reducedMotion);
+      const focus = cameraRig.focus;
       moon.position.set(focus.x - 100, focus.y + 120, focus.z - 65);
       moon.target.position.copy(focus);
       updateTrails(state, reducedMotion ? 0 : dt, active && !reducedMotion);
+      crashEffect.update(dt);
+      splashEffect.update(dt); fireworks.update(dt);
+      atmosphere.update(dt, reducedMotion, state);
       if (!reducedMotion && dt) updateWater(dt);
-      rings.forEach((ring, index) => { ring.material.opacity = reducedMotion ? 0.6 : 0.45 + Math.sin(elapsed * 1.7 + index) * 0.12; });
+      rings.forEach((ring, index) => {
+        const checkpoint = landmarks[index] === view.checkpoint;
+        ring.material.opacity = checkpoint ? 0.9 : reducedMotion ? 0.6 : 0.45 + Math.sin(elapsed * 1.7 + index) * 0.12;
+        ring.scale.setScalar(checkpoint ? 1.1 : 1);
+      });
       renderer.render(scene, camera);
     },
     project(x, y, z, absolute = false) {
       projection.set(x, absolute ? y : terrainHeight(x, z) + y, z).project(camera);
       return { x: (projection.x + 1) * width / 2, y: (1 - projection.y) * height / 2, visible: projection.z > -1 && projection.z < 1 && Math.abs(projection.x) < 1.1 && Math.abs(projection.y) < 1.1 };
     },
-    snapCamera(state) { lookAhead.set(Math.sin(state.heading) * 10, 0, -Math.cos(state.heading) * 10); focus.set(state.x + lookAhead.x, state.y + 2, state.z + lookAhead.z); },
+    snapCamera(state) { lookAhead.set(Math.sin(state.heading) * 10, 0, -Math.cos(state.heading) * 10); target.set(state.x + lookAhead.x, state.y + 2, state.z + lookAhead.z); cameraRig.snap(target); },
   };
 }

@@ -11,11 +11,31 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css" />
-    <link rel="stylesheet" href="css/rally.css" />
+    <link rel="stylesheet" href="css/rally.css?v=20260912-camp" />
+    <script type="importmap">
+      {
+        "imports": {
+          "./js/rally/main.js": "./js/rally/main.js?v=20260912-camp",
+          "./js/rally/world.js": "./js/rally/world.js?v=20260912-camp",
+          "./js/rally/scene.js": "./js/rally/scene.js?v=20260912-camp",
+          "./js/rally/terrain.js": "./js/rally/terrain.js?v=20260912-camp",
+          "./js/rally/water.js": "./js/rally/water.js?v=20260912-camp",
+          "./js/rally/physics.js": "./js/rally/physics.js?v=20260912-camp",
+          "./js/rally/camera.js": "./js/rally/camera.js?v=20260912-camp",
+          "./js/rally/input.js": "./js/rally/input.js?v=20260912-camp",
+          "./js/rally/audio.js": "./js/rally/audio.js?v=20260912-camp",
+          "./js/rally/stops.js": "./js/rally/stops.js?v=20260912-camp",
+          "./js/rally/timing.js": "./js/rally/timing.js?v=20260912-camp",
+          "./js/rally/recovery.js": "./js/rally/recovery.js?v=20260912-camp",
+          "./js/rally/effects.js": "./js/rally/effects.js?v=20260912-camp",
+          "./js/rally/atmosphere.js": "./js/rally/atmosphere.js?v=20260912-camp"
+        }
+      }
+    </script>
   </head>
   <body class="rally-page is-loading">
     <main id="rally" aria-label="Résumé Rally driving game">
-      <canvas id="rally-scene" tabindex="0" aria-label="Drive with arrow keys or WASD. Space to drift, E to read a nearby project, M to choose any project, R to reset, Escape to pause."></canvas>
+      <canvas id="rally-scene" tabindex="0" aria-label="Drive with arrow keys or WASD. Space to drift, E to read a nearby project, M to choose any project, R to restart at your checkpoint, Escape to pause."></canvas>
       <div class="vignette" aria-hidden="true"></div>
       <div id="world-labels" aria-hidden="true"></div>
       <div id="touch-surface" aria-hidden="true"></div>
@@ -30,16 +50,23 @@
         <div class="stage-tag"><span class="status-dot"></span> <span id="stage-name">SUMMIT LEDGE</span> <span class="stage-divider">/</span> NOW → 2022</div>
         <nav class="rally-actions" aria-label="Game controls">
           <button id="travel-button" class="hud-button travel-button" aria-haspopup="dialog" aria-controls="travel-dialog" title="Jump to any project (M)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 3 6-2v15l-6 2-6-3-6 2V5Zm6-2v15m6-12v15"/></svg><span>Projects</span><kbd>M</kbd></button>
-          <button id="sound-button" class="hud-button" aria-pressed="false" title="Toggle engine and gravel sounds"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4V4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-slash" d="m16 9 5 6m0-6-5 6"/></svg><span>Sound off</span></button>
+          <button id="sound-button" class="hud-button" aria-pressed="false" title="Toggle engine, gravel and impact sounds"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4V4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-slash" d="m16 9 5 6m0-6-5 6"/></svg><span>Sound off</span></button>
           <button id="help-button" class="hud-button" aria-label="Pause and view driving controls"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4m0 3v.1"/></svg></button>
           <a class="back-link" href="index.html"><span aria-hidden="true">↗</span> Résumé</a>
         </nav>
       </header>
 
+      <section id="race-panel" class="race-panel" aria-label="Timed descent">
+        <div class="race-heading"><span id="race-status">READY / CROSS THE START LINE</span><button id="summit-button" title="Return to the start circle before Rowte.io">New run ↥</button></div>
+        <div id="race-time" class="race-time" role="timer" aria-label="Descent time" aria-live="off">0:00.00</div>
+        <div class="race-split"><span id="race-split-label">PREVIOUS DESCENT</span><strong id="race-delta">—</strong></div>
+        <p id="race-next">Start in the circle before Rowte.io.</p>
+      </section>
+
       <section class="intro-panel" id="intro" aria-labelledby="intro-title" hidden>
         <div class="eyebrow"><span></span> A SMALL SIDE QUEST</div>
         <h1 id="intro-title">A few years.<br /><em>Quite a ride.</em></h1>
-        <p>Start with my latest work at the summit.<br />Take the long way down to where it began.</p>
+        <p id="intro-description">Start with my latest work at the summit.<br />Take the long way down to where it began.</p>
         <div class="intro-route"><span id="intro-count">09</span> lookouts <i>·</i> one mountain descent</div>
         <button class="primary-button" id="start-button">Let’s drive <span aria-hidden="true">↘</span></button>
         <button id="intro-travel-button" class="text-button intro-travel" aria-haspopup="dialog" aria-controls="travel-dialog">Or jump to a project ↗</button>
@@ -47,11 +74,12 @@
       </section>
 
       <section class="nearby-card" id="nearby-card" aria-labelledby="nearby-name" hidden>
-        <div class="nearby-top"><span class="eyebrow" id="nearby-label"></span><span class="visited-badge">VISITED ✓</span></div>
+        <div class="nearby-top"><span class="eyebrow" id="nearby-label"></span><span class="visited-badge">CHECKPOINT ✓</span></div>
         <h2 id="nearby-name"></h2>
         <p id="nearby-description"></p>
         <div id="nearby-stack" class="project-stack"></div>
-        <button id="details-button" class="text-button">Explore this project <span><kbd>E</kbd> ↗</span></button>
+        <p id="stop-hint" class="stop-hint">Brake to a stop to explore.</p>
+        <button id="details-button" class="text-button" aria-controls="project-panel" aria-expanded="false" hidden disabled>Explore this project <span><kbd>E</kbd> ↗</span></button>
       </section>
 
       <footer class="rally-footer">
@@ -60,9 +88,10 @@
           <div class="discovery-count"><strong id="visit-count">00 <span>/ 09</span></strong><span id="visit-caption">places discovered</span></div>
           <div class="discovery-slots" id="discovery-slots" aria-hidden="true"></div>
           <p id="next-stop">Start at the summit. Follow the descent.</p>
+          <button id="checkpoint-button" class="checkpoint-button" title="Restart from your checkpoint"><span aria-hidden="true">↺</span><span id="checkpoint-name">Summit start</span><kbd>R</kbd></button>
         </section>
         <div class="driving-hints" aria-label="Driving controls">
-          <div class="desktop-hints"><span><kbd>↑</kbd><kbd>↓</kbd> accelerate / brake</span><span><kbd>←</kbd><kbd>→</kbd> steer</span><span><kbd>space</kbd> let it slide</span><span><kbd>R</kbd> reset</span></div>
+          <div class="desktop-hints"><span><kbd>↑</kbd><kbd>↓</kbd> accelerate / brake</span><span><kbd>←</kbd><kbd>→</kbd> steer</span><span><kbd>space</kbd> let it slide</span><span><kbd>R</kbd> checkpoint</span></div>
           <div class="mobile-hints"><span>LEFT THUMB <b>drag to steer</b></span><span>RIGHT THUMB <b>hold to drive · slide up to drift · down to reverse</b></span></div>
           <div class="speed-line"><span id="speed">0</span><small>KM/H</small><i></i><span id="surface">GRAVEL</span><span class="drift-status" id="drift-status">SLIDING</span></div>
         </div>
@@ -90,15 +119,33 @@
       <noscript><div class="no-script"><p>Résumé Rally needs JavaScript to start the engine.</p><a href="index.html">Read the résumé instead ↗</a></div></noscript>
     </main>
 
-    <dialog id="project-dialog" class="rally-dialog" aria-labelledby="project-title">
-      <div class="dialog-inner"><button class="dialog-close" aria-label="Close project and return to driving" data-close="project-dialog">×</button><div class="eyebrow" id="project-eyebrow"></div><h2 id="project-title"></h2><p class="project-meta" id="project-meta"></p><p class="project-description" id="project-description"></p><div id="project-stack" class="project-stack"></div><div id="project-sections"></div><div class="dialog-bottom"><button class="primary-button" data-close="project-dialog">Back to the road <span>↗</span></button><a id="project-link" target="_blank" rel="noopener noreferrer">Visit website ↗</a></div></div>
-    </dialog>
+    <aside id="project-panel" class="project-panel" aria-labelledby="project-title" hidden>
+      <div class="project-toolbar">
+        <span class="eyebrow">AT THE LOOKOUT</span>
+        <button id="expand-project" class="text-button" aria-expanded="false" aria-controls="project-scroll">Wider view ↔</button>
+        <button id="close-project" class="panel-close" aria-label="Close project and return to driving">×</button>
+      </div>
+      <div id="project-scroll" class="project-scroll" tabindex="0" aria-label="Project details">
+        <div class="eyebrow" id="project-eyebrow"></div>
+        <h2 id="project-title" tabindex="-1"></h2>
+        <p class="project-meta" id="project-meta"></p>
+        <p id="project-description"></p>
+        <div id="project-stack" class="project-stack"></div>
+        <div id="project-sections"></div>
+        <a id="project-link" class="project-website" target="_blank" rel="noopener noreferrer">Visit website ↗</a>
+      </div>
+      <div class="project-panel-footer">
+        <div class="project-view-controls"><span>CHECKPOINT SAVED ✓</span><button id="orbit-button" class="text-button" aria-pressed="false">Pause camera Ⅱ</button></div>
+        <button id="resume-driving" class="primary-button">Back to the road <span>↗</span></button>
+        <small>E / ESC TO CLOSE · R TO RESTART HERE</small>
+      </div>
+    </aside>
     <dialog id="travel-dialog" class="rally-dialog travel-dialog" aria-labelledby="travel-title">
-      <div class="dialog-inner"><button class="dialog-close" aria-label="Close project destinations" data-close="travel-dialog">×</button><div class="eyebrow">TAKE YOUR OWN ROUTE / NOW → 2022</div><h2 id="travel-title">Pick a place.</h2><p>Jump straight to any project, then keep driving downhill.<br />Your discoveries stay with you.</p><ol id="travel-list" class="travel-list" aria-label="Project destinations, newest first"></ol></div>
+      <div class="dialog-inner"><button class="dialog-close" aria-label="Close project destinations" data-close="travel-dialog">×</button><div class="eyebrow">TAKE YOUR OWN ROUTE / NOW → 2022</div><h2 id="travel-title">Pick a place.</h2><p>Jump straight to any project, then keep driving downhill.<br />Jumping ends the timed run. Use New run to return to the start circle.</p><ol id="travel-list" class="travel-list" aria-label="Project destinations, newest first"></ol></div>
     </dialog>
     <dialog id="help-dialog" class="rally-dialog help-dialog" aria-labelledby="help-title">
-      <div class="dialog-inner"><button class="dialog-close" aria-label="Close driving guide" data-close="help-dialog">×</button><div class="eyebrow">THE DRIVER’S NOTES</div><h2 id="help-title">A little less grip.<br />A long way down.</h2><p>Start with my latest project at the summit and drive down through the years. Each leg has its own bends, ledges and scenery. Use Projects or M to jump straight to any stop. Pull into a coloured lookout to discover its story. Your field notes are saved on this device.</p><dl class="keyboard-guide"><div><dt><kbd>↑</kbd> / <kbd>W</kbd></dt><dd>Accelerate</dd></div><div><dt><kbd>↓</kbd> / <kbd>S</kbd></dt><dd>Brake, then reverse</dd></div><div><dt><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd></dt><dd>Steer</dd></div><div><dt><kbd>space</kbd></dt><dd>Handbrake / drift</dd></div><div><dt><kbd>E</kbd></dt><dd>Read a nearby project</dd></div><div><dt><kbd>M</kbd></dt><dd>Jump to any project</dd></div><div><dt><kbd>R</kbd></dt><dd>Return to the summit start</dd></div><div><dt><kbd>esc</kbd></dt><dd>Pause / resume</dd></div></dl><div class="touch-guide"><p><strong>Left half of the screen</strong><br />Touch anywhere and slide left or right to steer.</p><p><strong>Right half of the screen</strong><br />Hold to accelerate. Slide up for the handbrake; slide down to brake and reverse.</p></div><p class="help-tip">Build some speed and turn in: the rear slides naturally. Give the handbrake a quick squeeze for a wider drift; countersteer to catch it. Keep your speed over the yellow ramps to jump the stream. If you land in the water, you return to the bank. Numbered map markers jump straight to projects.</p><div class="dialog-bottom"><button class="primary-button" data-close="help-dialog">Back to it <span>↗</span></button><button class="text-button" id="reset-button">Reset car ↻</button></div></div>
+      <div class="dialog-inner"><button class="dialog-close" aria-label="Close driving guide" data-close="help-dialog">×</button><div class="eyebrow">THE DRIVER’S NOTES</div><h2 id="help-title">A little less grip.<br />A long way down.</h2><p>Start with my latest project at the summit and drive down through the years. Each leg has its own bends, ledges and scenery. Use Projects or M to jump straight to any stop. Every coloured lookout saves a checkpoint. Stop there for a closer view, then press E to explore its story while the camera gently sways left and right. Cross the chequered line in the circle before Rowte to start the timer. Pass all nine checkpoints, then cross the finish arch after Highway for fireworks; splits compare against your previous completed descent. Reading pauses the clock. R returns to your checkpoint without resetting the time. New run returns to the start circle for a fresh attempt. Your field notes, checkpoint and last completed run are saved on this device.</p><dl class="keyboard-guide"><div><dt><kbd>↑</kbd> / <kbd>W</kbd></dt><dd>Accelerate</dd></div><div><dt><kbd>↓</kbd> / <kbd>S</kbd></dt><dd>Brake, then reverse</dd></div><div><dt><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd></dt><dd>Steer</dd></div><div><dt><kbd>space</kbd></dt><dd>Handbrake / drift</dd></div><div><dt><kbd>E</kbd></dt><dd>Stop, then explore the project</dd></div><div><dt><kbd>M</kbd></dt><dd>Jump to any project</dd></div><div><dt><kbd>R</kbd></dt><dd>Restart at the last checkpoint</dd></div><div><dt><kbd>esc</kbd></dt><dd>Pause / resume</dd></div></dl><div class="touch-guide"><p><strong>Left half of the screen</strong><br />Touch anywhere and slide left or right to steer.</p><p><strong>Right half of the screen</strong><br />Hold to accelerate. Slide up for the handbrake; slide down to brake and reverse.</p></div><p class="help-tip">Build some speed and turn in: the rear slides naturally. Tap the handbrake to help it break loose, then release it and use the throttle to carry the slide. Countersteer to catch it. Keep your speed over the yellow ramps to jump the stream. Landing in the water makes a splash, then returns you to the bank. Enable Sound for splash and explosion effects. A long fall off the mountain ends with a little boom and a return to your checkpoint; normal ramp jumps are safe. Numbered map markers jump straight to projects.</p><div class="dialog-bottom"><button class="primary-button" data-close="help-dialog">Back to it <span>↗</span></button><button class="text-button" id="reset-button">Restart checkpoint ↻</button></div></div>
     </dialog>
-    <script type="module" src="js/rally/boot.js"></script>
+    <script type="module" src="js/rally/boot.js?v=20260912-camp"></script>
   </body>
 </html>

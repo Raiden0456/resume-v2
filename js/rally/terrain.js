@@ -1,5 +1,5 @@
 import * as THREE from "../vendor/three/three.module.min.js";
-import { WORLD, SPAWN, terrainHeight, terrainGradient } from "./world.js";
+import { WORLD, SPAWN, FINISH_LINE, CAMPS, terrainHeight, terrainGradient } from "./world.js";
 
 function drawContours(context) {
   const step = 6, columns = Math.ceil(WORLD.width / step), rows = Math.ceil(WORLD.depth / step);
@@ -66,6 +66,13 @@ export function makeGround(scene, routes, landmarks) {
   }
   context.stroke();
   context.lineCap = "round"; context.lineJoin = "round";
+  for (const camp of CAMPS) {
+    context.save(); context.translate(camp.x, camp.z); context.rotate(camp.heading);
+    context.fillStyle = "#454b42";
+    context.beginPath(); context.ellipse(0, camp.id === "start" ? 9 : -3, camp.id === "start" ? 31 : 38, camp.id === "start" ? 23 : 33, 0, 0, Math.PI * 2); context.fill();
+    context.strokeStyle = "#a4a38a65"; context.lineWidth = 0.18; context.stroke();
+    context.restore();
+  }
   for (const route of routes) {
     context.beginPath();
     route.samples.forEach(([x, z], index) => index ? context.lineTo(x, z) : context.moveTo(x, z));
@@ -116,6 +123,17 @@ export function makeGround(scene, routes, landmarks) {
   context.fillText("NOW → 2022 / TAKE YOUR TIME", 0, 20);
   context.strokeStyle = "#20262660"; context.lineWidth = 0.25;
   for (const radius of [4.1, 5.3]) { context.beginPath(); context.ellipse(0, 0, radius, radius * 0.8, -0.4, 0, 5.4); context.stroke(); }
+  context.restore();
+
+  context.save();
+  context.translate(FINISH_LINE.x, FINISH_LINE.z); context.rotate(FINISH_LINE.heading);
+  context.fillStyle = "#615a4c"; context.beginPath(); context.arc(0, 0, 15, 0, Math.PI * 2); context.fill();
+  for (let row = 0; row < 2; row++) for (let col = 0; col < 20; col++) {
+    context.fillStyle = (row + col) % 2 ? "#e7e2d0" : "#293338";
+    context.fillRect(-9 + col * 0.9, -0.9 + row * 0.9, 0.9, 0.9);
+  }
+  context.font = "600 2.2px monospace"; context.textAlign = "center"; context.fillStyle = "#e7e2d0";
+  context.fillText("FINISH", 0, 5);
   context.restore();
 
   const texture = new THREE.CanvasTexture(canvas);

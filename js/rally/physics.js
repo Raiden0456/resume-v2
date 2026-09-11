@@ -2,6 +2,7 @@ import { SPAWN, WORLD, driveHeightAt, terrainGradient } from "./world.js";
 
 export const FIXED_STEP = 1 / 120;
 export const GRAVITY = 40;
+export const TOP_SPEED = 29;
 // Compress the mountain's exaggerated grades a little for driveability;
 // free flight still uses the full gravity above.
 const HILL_GRAVITY = 26;
@@ -14,7 +15,7 @@ export function createCarState(pose = SPAWN, heightAt = driveHeightAt) {
     suspension: 0, suspensionVelocity: 0,
     pitch: Math.atan(slope.x * Math.sin(pose.heading) - slope.z * Math.cos(pose.heading)),
     roll: Math.atan(slope.x * Math.cos(pose.heading) + slope.z * Math.sin(pose.heading)),
-    vx: 0, vz: 0, yaw: 0, steer: 0, grip: 5.8, speed: 0, slip: 0, drift: false, surface: "gravel" };
+    vx: 0, vz: 0, yaw: 0, steer: 0, grip: 5.1, speed: 0, slip: 0, drift: false, surface: "gravel" };
 }
 
 export function resetCar(state, pose = SPAWN, heightAt = driveHeightAt) {
@@ -45,7 +46,7 @@ export function stepCar(state, input, dt, environment = {}) {
   if (state.grounded) {
     const slope = terrainGradient(state.x, state.z, (x, z) => supportAt(x, z, state.y + 1.1));
     const forwardGrade = slope.x * forwardX + slope.z * forwardZ;
-    const acceleration = throttle < 0 && forward > 0.6 ? 29 : throttle > 0 && forward < -0.6 ? 24 : 15;
+    const acceleration = throttle < 0 && forward > 0.6 ? 29 : throttle > 0 && forward < -0.6 ? 24 : 14;
     forward += throttle * acceleration / Math.hypot(1, forwardGrade) * dt;
     if (Math.abs(forward) > 0.8 || throttle) {
       // Gravity acts along the incline, and engine thrust is spent climbing.
@@ -63,17 +64,21 @@ export function stepCar(state, input, dt, environment = {}) {
     forward *= Math.exp(-(onRoad ? 0.38 : 0.46) * dt);
     const slidingBrake = throttle || Math.abs(state.steer) > 0.1 || Math.abs(sideways) > 2;
     forward *= Math.exp(-(handbrake ? (slidingBrake ? 0.16 : 0.95) : 0) * dt);
-    forward = clamp(forward, -11, 33);
+    forward = clamp(forward, -11, TOP_SPEED);
     const speed = Math.hypot(forward, sideways);
     // A sliding car still has steering authority even when most of its
     // momentum is sideways. A quick turn naturally loosens the rear tyres.
     const turnSpeed = Math.min(speed / 7, 1);
     const targetYaw = state.steer * Math.sign(forward) * turnSpeed * (handbrake ? 2.45 : 1.85);
     state.yaw += (targetYaw - state.yaw) * (1 - Math.exp(-12 * dt));
-    const corner = clamp((speed - 5) / 12, 0, 1) * clamp((Math.abs(state.steer) - 0.08) / 0.72, 0, 1);
-    const slide = handbrake ? clamp((speed - 3) / 5, 0, 1) : corner;
-    const baseGrip = onRoad ? 5.8 : 5;
-    const targetGrip = baseGrip + ((handbrake ? 0.9 : 2.2) - baseGrip) * slide;
+    const corner = clamp((speed - 4) / 9, 0, 1) * clamp((Math.abs(state.steer) - 0.04) / 0.5, 0, 1);
+    // Once the rear steps out, throttle keeps the tyres loose even through
+    // small steering corrections. A handbrake tap initiates this same slide.
+    const powerSlide = throttle > 0 && forward > 0
+      ? clamp((Math.abs(sideways) / Math.max(speed, 1) - 0.1) / 0.45, 0, 1) * clamp((speed - 5) / 7, 0, 1) : 0;
+    const slide = handbrake ? clamp((speed - 3) / 5, 0, 1) : Math.max(corner, powerSlide);
+    const baseGrip = onRoad ? 5.1 : 4.5;
+    const targetGrip = baseGrip + ((handbrake ? 1.05 : 2.05) - baseGrip) * slide;
     // Grip breaks quickly but returns progressively, including on cambered
     // turns and after releasing the handbrake.
     state.grip += (targetGrip - state.grip) * (1 - Math.exp(-(targetGrip < state.grip ? 12 : 2.6) * dt));
@@ -83,7 +88,7 @@ export function stepCar(state, input, dt, environment = {}) {
     // Tyres primarily redirect momentum toward the nose. Scrub dissipates a
     // small part of it instead of deleting all sideways energy in a drift.
     forward = (Math.sign(forward) || Math.sign(throttle) || 1) * Math.sqrt(forward * forward + (lateralBeforeGrip * lateralBeforeGrip - sideways * sideways) * 0.97);
-    const speedLimit = Math.min(1, 33 / (Math.hypot(forward, sideways) || 1));
+    const speedLimit = Math.min(1, TOP_SPEED / (Math.hypot(forward, sideways) || 1));
     forward *= speedLimit; sideways *= speedLimit;
     state.vx = forwardX * forward + rightX * sideways;
     state.vz = forwardZ * forward + rightZ * sideways;
@@ -99,7 +104,7 @@ export function stepCar(state, input, dt, environment = {}) {
   state.x += state.vx * dt; state.z += state.vz * dt;
 
   for (const obstacle of environment.obstacles || []) {
-    if (state.y > (obstacle.elevation ?? heightAt(obstacle.x, obstacle.z)) + (obstacle.type === "tower" ? 17 : 10)) continue;
+    if (state.y > (obstacle.elevation ?? heightAt(obstacle.x, obstacle.z)) + (obstacle.height ?? (obstacle.type === "tower" ? 17 : 10))) continue;
     let dx = state.x - obstacle.x, dz = state.z - obstacle.z;
     const radius = obstacle.radius + 1.15, distance = Math.hypot(dx, dz);
     if (distance >= radius) continue;

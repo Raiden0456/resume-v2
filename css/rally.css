@@ -23,6 +23,21 @@ button:focus-visible { outline: 2px solid var(--rally-red); outline-offset: 5px;
 .stage-divider { color: #657077; margin: 0 5px; }
 .status-dot { width: 5px; height: 5px; border-radius: 50%; background: #98c379; box-shadow: 0 0 10px #98c37950; }
 .rally-actions { display: flex; align-items: center; gap: 12px; }
+.race-panel { position: fixed; top: 94px; right: 34px; z-index: 4; width: 260px; padding: 10px 14px; border: 1px solid #92a09a35; border-radius: 4px; background: #1d252ce8; backdrop-filter: blur(8px); pointer-events: none; font-variant-numeric: tabular-nums; }
+.race-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #a3b5ac; font-size: 7px; letter-spacing: 0.4px; }
+.race-heading button { color: var(--rally-paper); white-space: nowrap; min-height: 32px; font-size: 9px; pointer-events: auto; }
+.race-heading button:hover { color: var(--rally-red); }
+.race-time { color: var(--rally-paper); font-size: 29px; line-height: 1.2; letter-spacing: -1px; }
+.race-split { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #92a09a29; font-size: 8px; color: #a3b5ac; }
+.race-split strong { font-weight: 500; color: var(--rally-paper); }
+.race-split [data-pace="ahead"] { color: #98c379; }
+.race-split [data-pace="behind"] { color: #e5a07b; }
+#race-next { margin-top: 8px; color: #a3b5ac; font-size: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.race-panel[data-status="finished"] { border-color: #98c37980; }
+.race-panel[data-status="finished"] .race-time { color: #b8d697; }
+.travel-info .travel-split { color: #b8d697; font-variant-numeric: tabular-nums; }
+.travel-split:empty { display: none; }
+.is-loading .race-panel, .has-error .race-panel { visibility: hidden; }
 .hud-button { display: inline-flex; gap: 7px; align-items: center; justify-content: center; min-height: 38px; min-width: 38px; padding: 7px; color: #b4bebf; font-size: 10px; border-radius: 4px; }
 .hud-button:hover { background: #e7e2d00a; color: var(--rally-paper); }
 .travel-button { border: 1px solid #98c37942; color: #d4ddc7; padding: 7px 10px; }
@@ -111,6 +126,39 @@ kbd { display: inline-flex; justify-content: center; align-items: center; min-wi
 .nearby-card .text-button { display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid #a5b6ab20; padding-top: 12px; margin-top: 4px; }
 .nearby-card .text-button > span { display: flex; gap: 9px; align-items: center; }
 .nearby-card kbd { min-width: 19px; height: 19px; font-size: 8px; }
+.nearby-card:not(.ready) > #nearby-description, .nearby-card:not(.ready) > .project-stack { display: none; }
+.nearby-card > .stop-hint { display: block; color: var(--sight-color); font-size: 9px; margin-top: 12px; }
+.nearby-card.ready { box-shadow: 0 12px 40px #101c253f, 0 0 22px color-mix(in srgb, var(--sight-color) 8%, transparent); }
+.checkpoint-button { display: flex; align-items: center; gap: 7px; margin-top: 10px; padding: 5px 7px; max-width: 100%; color: #b4cba2; border: 1px solid #98c37938; border-radius: 3px; font-size: 8px; text-align: left; }
+.checkpoint-button:hover { background: #98c37912; }
+.checkpoint-button > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.checkpoint-button kbd { min-width: 17px; height: 17px; font-size: 8px; margin-left: auto; }
+.map-dot.checkpoint circle { stroke: #f2edcf; stroke-width: 2.5px; }
+.travel-destination.checkpoint { border-color: var(--sight-color); }
+.project-panel { position: fixed; z-index: 6; top: 106px; bottom: max(26px, env(safe-area-inset-bottom)); left: max(34px, env(safe-area-inset-left)); width: min(420px, 39vw); display: flex; flex-direction: column; overflow: hidden; color: #bec9c0; background: #222b32f5; border: 1px solid #a4b5a547; border-top: 2px solid var(--rally-red); border-radius: 5px; box-shadow: 0 18px 60px #080f1733; backdrop-filter: blur(14px); animation: card-in 220ms ease-out; transition: width 260ms ease; }
+.project-panel.expanded { width: min(620px, 55vw); }
+.project-toolbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px 10px 24px; flex-shrink: 0; border-bottom: 1px solid #a3b5a522; }
+.project-toolbar > .eyebrow { flex: 1; font-size: 8px; color: var(--rally-red); letter-spacing: 1px; }
+.project-toolbar .text-button { font-size: 8px; white-space: nowrap; }
+.panel-close { flex-shrink: 0; width: 34px; height: 34px; color: #c2ccc4; font-size: 27px; }
+.panel-close:hover { color: var(--rally-red); }
+.project-scroll { padding: 25px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #72867a #222b32; touch-action: pan-y; }
+.project-scroll > .eyebrow { font-size: 8px; letter-spacing: 1px; line-height: 1.7; color: var(--rally-red); }
+.project-panel h2 { color: var(--rally-paper); font-size: 28px; line-height: 1.2; font-weight: 500; letter-spacing: -1px; margin: 14px 0; overflow-wrap: anywhere; outline: none; }
+.project-panel p { font-size: 11px; line-height: 1.9; }
+.project-panel .project-meta { color: #9caea6; font-size: 9px; margin-bottom: 18px; }
+.project-panel .project-stack { margin: 18px 0; }
+.project-panel .project-section h3 { color: var(--rally-red); }
+.project-website { display: inline-block; margin-top: 24px; font-size: 10px; color: var(--rally-paper); }
+.project-panel-footer { padding: 12px 24px 18px; border-top: 1px solid #a3b5a522; flex-shrink: 0; margin-top: auto; }
+.project-view-controls { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.project-view-controls > span { color: #a4c18e; font-size: 7px; letter-spacing: 0.5px; }
+.project-view-controls .text-button { min-height: 32px; font-size: 9px; }
+.project-view-controls button:disabled { color: #8a9c93; cursor: default; }
+.project-panel-footer > .primary-button { width: 100%; }
+.project-panel-footer > small { display: block; margin-top: 12px; font-size: 7px; color: #91a49a; text-align: center; }
+.is-viewing-project .rally-footer, .is-viewing-project .stage-tag, .is-viewing-project #toast { visibility: hidden; }
+.is-viewing-project #touch-surface { pointer-events: none; }
 .rally-dialog { position: fixed; margin: auto; width: min(620px, calc(100% - 32px)); max-height: calc(100dvh - 44px); border: 1px solid #8c9c904a; border-top: 2px solid var(--rally-red); border-radius: 6px; background: #242c33; color: #b8c2bc; padding: 0; box-shadow: 0 30px 120px #070c1270; }
 .rally-dialog::backdrop { background: #101820a6; backdrop-filter: blur(5px); }
 .dialog-inner { position: relative; padding: 34px; }
@@ -172,6 +220,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; min-wi
   .intro-panel { left: 5vw; }
 }
 @media (pointer: coarse) {
+  .checkpoint-button kbd, .project-panel-footer > small { display: none; }
   .travel-button kbd { display: none; }
   .nearby-card { pointer-events: none; }
   .nearby-card button { pointer-events: auto; }
@@ -191,6 +240,26 @@ kbd { display: inline-flex; justify-content: center; align-items: center; min-wi
   .nearby-card kbd { display: none; }
 }
 @media (max-height: 550px) and (orientation: landscape) {
+  .race-panel { top: 65px; right: max(20px, env(safe-area-inset-right)); width: 220px; padding: 5px 10px 8px; display: grid; grid-template-columns: 1fr auto; column-gap: 8px; }
+  .race-heading { grid-column: 1 / -1; font-size: 6px; letter-spacing: 0; }
+  .race-heading button { font-size: 8px; min-height: 24px; }
+  .race-time { font-size: 23px; }
+  .race-split { flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px; font-size: 7px; margin: 0; padding: 0; border: 0; }
+  #race-next { display: none; }
+  .project-panel { top: 64px; bottom: max(13px, env(safe-area-inset-bottom)); left: max(20px, env(safe-area-inset-left)); width: min(360px, 43vw); }
+  .project-panel.expanded { width: min(480px, 58vw); }
+  .project-toolbar { padding: 4px 9px 4px 16px; gap: 6px; }
+  .project-toolbar > .eyebrow { font-size: 6px; }
+  .project-toolbar .text-button { font-size: 7px; }
+  .project-scroll { padding: 16px; }
+  .project-panel h2 { font-size: 23px; margin: 8px 0; }
+  .project-panel p, .project-panel .project-section li { font-size: 10px; }
+  .project-panel .project-meta { font-size: 8px; margin-bottom: 12px; }
+  .project-panel-footer { padding: 5px 16px 10px; }
+  .project-view-controls { margin-bottom: 2px; }
+  .project-view-controls > span { font-size: 6px; }
+  .project-panel-footer .primary-button { min-height: 36px; padding: 7px 12px; font-size: 10px; }
+  .checkpoint-button { margin-top: 6px; font-size: 7px; min-height: 28px; }
   .rally-header { top: max(12px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); right: max(20px, env(safe-area-inset-right)); }
   .rally-brand strong { font-size: 13px; }
   .rally-brand small { font-size: 7px; }

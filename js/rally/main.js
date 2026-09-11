@@ -1,8 +1,11 @@
-import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, driveHeightAt, roadAt, RIVER, CROSSINGS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
+import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, driveHeightAt, roadAt, RIVER, CROSSINGS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
 import { createCarState, resetCar, stepCar, FIXED_STEP } from "./physics.js";
 import { createScene } from "./scene.js";
 import { RallyInput } from "./input.js";
 import { RallyAudio } from "./audio.js";
+import { RallyStops } from "./stops.js";
+import { RallyTiming, formatTime, formatDelta } from "./timing.js";
+import { RallyRecovery } from "./recovery.js";
 
 const $ = id => document.getElementById(id);
 const pad = value => String(value).padStart(2, "0");
@@ -43,13 +46,24 @@ export async function start() {
   let storage;
   try { storage = window.localStorage; } catch { /* Progress remains available for this session. */ }
   const visits = loadVisits(storage, landmarks);
+  const stops = new RallyStops(landmarks, storage);
+  const timing = new RallyTiming(landmarks, storage);
+  const recovery = new RallyRecovery();
+  if (stops.checkpoint) {
+    resetCar(car, stops.restartPose); graphics.snapCamera(car);
+    $("intro-description").textContent = `Continue from ${stops.checkpoint.name}. Your checkpoint and field notes are saved.`;
+    $("start-button").firstChild.textContent = "Continue driving ";
+  }
   let started = false, blurred = false, stopped = false;
   let currentSight = null, toastTimer = 0;
   let previousTime = 0, accumulator = 0, uiElapsed = 0;
   let lastSpeed = -1;
-  let waterTime = 0, lastSafePose = { ...SPAWN };
+  let lastSafePose = stops.restartPose;
+  let shownCheckpoint = stops.checkpoint, orbitPaused = reducedMotion.matches;
   const labels = [], mapDots = [], slots = [], destinations = [];
-  const dialogs = [$("project-dialog"), $("help-dialog"), $("travel-dialog")];
+  const dialogs = [$("help-dialog"), $("travel-dialog")];
+  const panel = $("project-panel");
+  timing.travel(car); recovery.reset(car);
 
   $("intro-count").textContent = pad(landmarks.length);
   for (const sight of landmarks) {
@@ -86,7 +100,8 @@ export async function start() {
     const text = document.createElement("span"); text.className = "travel-info";
     const destinationName = document.createElement("strong"); destinationName.textContent = sight.name;
     const caption = document.createElement("small"); caption.textContent = `${sight.label} · ${Math.round(sight.elevation)} M`;
-    text.append(destinationName, caption);
+    const split = document.createElement("small"); split.className = "travel-split";
+    text.append(destinationName, caption, split);
     const status = document.createElement("span"); status.className = "travel-status"; status.textContent = "↗"; status.setAttribute("aria-hidden", "true");
     destination.append(order, text, status);
     destination.addEventListener("click", () => travelTo(sight));
@@ -102,6 +117,14 @@ export async function start() {
     const along = crossing.type === "jump" ? -crossing.gap - 8 : 0;
     return { element, ...crossingPoint(crossing, along), y: crossingDeckHeight(crossing, along) + 7 };
   });
+  for (const [line, title, caption] of [[START_LINE, "START / THE DESCENT", "CROSS THE LINE TO START THE CLOCK"], [FINISH_LINE, "FINISH", "ALL NINE CHECKPOINTS / ONE DESCENT"]]) {
+    const element = document.createElement("div"); element.className = "world-label crossing-label";
+    element.style.setProperty("--sight-color", "#e5c07b");
+    const name = document.createElement("span"); name.className = "world-label-name"; name.textContent = title;
+    const hint = document.createElement("small"); hint.textContent = caption;
+    element.append(name, hint); $("world-labels").append(element);
+    crossingLabels.push({ element, x: line.x, z: line.z, y: line.elevation + 10 });
+  }
   for (const route of graphics.routes) {
     const points = route.samples.map(([x, z]) => `${x.toFixed(1)},${z.toFixed(1)}`).join(" ");
     $("map-routes").append(svgElement("polyline", { points, class: "map-road", "stroke-width": route.width * 0.42 }));
@@ -123,6 +146,38 @@ export async function start() {
     if (visits.size === landmarks.length) $("next-stop").textContent = "Every chapter. A whole mountain of work.";
   }
   updateProgress();
+  updateCheckpoint();
+  updateTiming();
+
+  function updateTiming() {
+    const running = timing.status === "running", finished = timing.status === "finished";
+    $("race-panel").dataset.status = timing.status;
+    $("race-status").textContent = finished ? "FINISH / ALL CHECKPOINTS" : running ? (isPaused() ? "DESCENT / PAUSED" : "DESCENT / ON THE CLOCK") : timing.status === "ready" ? "READY / CROSS THE START LINE" : "FREE ROAM / START AT SUMMIT";
+    $("race-time").textContent = formatTime(timing.status === "idle" ? null : timing.elapsed);
+    const index = timing.times.length - 1;
+    $("race-split-label").textContent = index >= 0 ? `${finished ? "FINISH" : `CP ${pad(index + 1)}`} · ${formatTime(timing.times[index])}` : "PREVIOUS DESCENT";
+    const delta = index >= 0 ? timing.delta(index) : null;
+    $("race-delta").textContent = index >= 0 ? formatDelta(delta) : timing.previous ? formatTime(timing.previous.at(-1)) : "—";
+    $("race-delta").dataset.pace = delta === null ? "" : delta < 0 ? "ahead" : "behind";
+    $("race-next").textContent = timing.next ? (timing.next.id === "finish" ? "Next: the finish arch ↓" : `Next: ${pad(timing.next.index + 1)} / ${timing.next.name}`) : finished ? "Descent complete. Another run?" : "Start in the circle before Rowte.io.";
+    landmarks.forEach((sight, i) => {
+      const current = timing.times[i], previous = timing.reference?.[i];
+      destinations[i].querySelector(".travel-split").textContent = Number.isFinite(current)
+        ? `SPLIT ${formatTime(current)} · ${formatDelta(timing.delta(i))}`
+        : Number.isFinite(previous) ? `PREVIOUS ${formatTime(previous)}` : "";
+    });
+  }
+
+  function updateCheckpoint() {
+    const name = stops.checkpoint?.name || "Summit start";
+    $("checkpoint-name").textContent = name;
+    $("checkpoint-button").setAttribute("aria-label", `Restart from ${name} (R)`);
+    $("checkpoint-button").title = `Restart from ${name} (R)`;
+    landmarks.forEach((sight, index) => {
+      mapDots[index].classList.toggle("checkpoint", stops.checkpoint === sight);
+      destinations[index].classList.toggle("checkpoint", stops.checkpoint === sight);
+    });
+  }
 
   function announce(message) {
     $("announcement").textContent = message;
@@ -132,12 +187,14 @@ export async function start() {
     toastTimer = setTimeout(() => { $("toast").hidden = true; }, 4300);
   }
 
-  function isPaused() {
+  function isSuspended() {
     return !started || blurred || document.hidden || portrait.matches || dialogs.some(dialog => dialog.open) || stopped;
   }
 
+  function isPaused() { return isSuspended() || Boolean(stops.viewing); }
+
   function syncInput() {
-    input.enabled = !isPaused();
+    input.enabled = !isPaused() && !recovery.crashed;
     if (!input.enabled) {
       input.clear();
       accumulator = 0;
@@ -145,11 +202,13 @@ export async function start() {
     }
     $("rally-scene").inert = portrait.matches;
     $("intro").inert = portrait.matches;
+    panel.inert = portrait.matches;
+    $("race-panel").inert = portrait.matches;
     document.querySelector(".rally-header").inert = portrait.matches;
   }
 
-  function focusRoad() {
-    if (started && !isPaused()) $("rally-scene").focus({ preventScroll: true });
+  function focusGame() {
+    if (started && !isSuspended()) $(stops.viewing ? "project-title" : "rally-scene").focus({ preventScroll: true });
   }
 
   function openHelp() {
@@ -173,23 +232,31 @@ export async function start() {
 
   function travelTo(sight) {
     if (stopped || portrait.matches) return;
+    closeProject(false);
     input.clear(); accumulator = 0;
-    resetCar(car, sight.arrival);
-    lastSafePose = { ...sight.arrival }; waterTime = 0;
+    const pose = sight?.arrival || SPAWN;
+    resetCar(car, pose);
+    if (sight) stops.activate(sight); else stops.resetToSummit();
+    stops.clearApproach(); stops.update(car, 0);
+    shownCheckpoint = stops.checkpoint; updateCheckpoint();
+    lastSafePose = { ...pose };
+    timing.travel(car); recovery.reset(car); graphics.crashEffect.clear(); updateTiming();
+    graphics.splashEffect.clear(); graphics.fireworks.clear();
     graphics.snapCamera(car);
     beginDriving();
     dialogs.forEach(dialog => { if (dialog.open) dialog.close(); });
     setNearby(null);
     discover();
-    syncInput(); focusRoad();
-    announce(`${sight.name} · ${Math.round(sight.elevation)} m. Ready for the next stretch.`);
+    syncInput(); focusGame();
+    announce(!sight ? "Summit start. Cross the chequered line to start the clock." : `${sight.name} · Free roam. New run returns to the start circle.`);
   }
 
   function showProject() {
-    if (!currentSight || isPaused()) return;
-    const sight = currentSight;
-    const dialog = $("project-dialog");
-    dialog.style.setProperty("--rally-red", sight.color);
+    if (isPaused() || recovery.crashed || !stops.ready) return;
+    const sight = stops.open();
+    if (!sight) return;
+    resetCar(car, { x: car.x, z: car.z, heading: car.heading });
+    panel.style.setProperty("--rally-red", sight.color);
     $("project-eyebrow").textContent = `${pad(sight.index + 1)} / ${sight.label} / ${Math.round(sight.elevation)} M`;
     $("project-title").textContent = sight.name;
     $("project-meta").textContent = `${sight.company} · ${sight.role} · ${sight.period}`;
@@ -209,15 +276,45 @@ export async function start() {
     $("project-link").hidden = !safeUrl;
     if (safeUrl) $("project-link").href = url.href;
     else $("project-link").removeAttribute("href");
-    dialog.showModal(); dialog.scrollTop = 0;
+    panel.hidden = false;
+    panel.classList.remove("expanded");
+    $("expand-project").setAttribute("aria-expanded", "false");
+    $("expand-project").textContent = "Wider view ↔";
+    $("project-scroll").scrollTop = 0;
+    $("details-button").setAttribute("aria-expanded", "true");
+    $("nearby-card").hidden = true;
+    orbitPaused = reducedMotion.matches; updateOrbitButton();
+    document.body.classList.add("is-viewing-project");
     syncInput();
+    $("project-title").focus({ preventScroll: true });
+  }
+
+  function updateOrbitButton() {
+    $("orbit-button").setAttribute("aria-pressed", String(orbitPaused));
+    $("orbit-button").textContent = orbitPaused ? "Resume camera ▶" : "Pause camera Ⅱ";
+    $("orbit-button").disabled = reducedMotion.matches;
+    if (reducedMotion.matches) $("orbit-button").textContent = "Still view";
+  }
+
+  function closeProject(focus = true) {
+    stops.close(); panel.hidden = true;
+    document.body.classList.remove("is-viewing-project");
+    $("details-button").setAttribute("aria-expanded", "false");
+    setNearby(stops.nearby);
+    syncInput();
+    if (focus) focusGame();
   }
 
   function setNearby(sight) {
-    if (currentSight === sight) return;
+    const changed = currentSight !== sight;
     currentSight = sight;
-    $("nearby-card").hidden = !sight;
+    $("nearby-card").hidden = !sight || Boolean(stops.viewing);
     if (!sight) return;
+    $("nearby-card").classList.toggle("ready", stops.ready);
+    $("stop-hint").textContent = stops.ready ? "Parked. Take a closer look." : "Brake to a stop to explore.";
+    $("details-button").hidden = !stops.ready;
+    $("details-button").disabled = !stops.ready;
+    if (!changed) return;
     $("nearby-card").style.setProperty("--sight-color", sight.color);
     $("nearby-label").textContent = `${pad(sight.index + 1)} / ${sight.label}`;
     $("nearby-name").textContent = sight.name;
@@ -226,64 +323,78 @@ export async function start() {
   }
 
   function discover() {
-    let nearest = null, distance = Infinity;
-    for (const sight of landmarks) {
-      const d = Math.hypot(car.x - sight.marker[0], car.z - sight.marker[1]);
-      if (d < distance) { nearest = sight; distance = d; }
-    }
-    const canStop = car.grounded && !car.inWater && Math.abs(car.y - nearest.elevation) < 3;
-    if (canStop && distance < 9 && !visits.has(nearest.id)) {
-      visits.add(nearest.id);
+    if (stops.reached && !visits.has(stops.reached.id)) {
+      visits.add(stops.reached.id);
       saveVisits(storage, visits);
       updateProgress();
-      announce(visits.size === landmarks.length ? "Every story found. What a ride. Thanks for coming along!" : `${pad(visits.size)} / ${pad(landmarks.length)} — ${nearest.name} discovered`);
+      if (visits.size === landmarks.length) announce("Every story found. What a ride. Thanks for coming along!");
     }
-    if (canStop && (distance < 9 || (nearest === currentSight && distance < 15))) setNearby(nearest);
-    else setNearby(null);
+    setNearby(stops.nearby);
     const progress = roadAt(car.x, car.z)?.progress ?? 0;
     const next = landmarks.find(sight => !visits.has(sight.id) && sight.courseDistance >= progress - 1);
     if (next && visits.size < landmarks.length) $("next-stop").textContent = `Next lookout: ${next.name === "Supplier Success Accelerator" ? "Supplier Success" : next.name}`;
     else if (visits.size < landmarks.length) $("next-stop").textContent = `${landmarks.length - visits.size} stories left — choose one in Projects ↗`;
+    if (timing.status === "finished") $("next-stop").textContent = "Descent complete. Every checkpoint cleared.";
+    else if (timing.next) $("next-stop").textContent = timing.next.id === "finish" ? "All checkpoints cleared. Finish under the arch ↓" : `Next checkpoint: ${pad(timing.next.index + 1)} / ${timing.next.name}`;
+    else if (visits.size === landmarks.length) $("next-stop").textContent = "Every chapter. A whole mountain of work.";
   }
 
-  function returnToStart() {
+  function restartCheckpoint() {
+    closeProject(false);
     input.clear();
     accumulator = 0;
-    resetCar(car);
-    lastSafePose = { ...SPAWN }; waterTime = 0;
+    resetCar(car, stops.restartPose);
+    stops.clearApproach(); stops.update(car, 0);
+    lastSafePose = stops.restartPose; recovery.reset(car); graphics.crashEffect.clear();
+    graphics.splashEffect.clear(); graphics.fireworks.clear();
     graphics.snapCamera(car);
     setNearby(null);
-    announce("Back at the summit start. Your discoveries are saved.");
+    discover(); syncInput(); focusGame();
+    announce(`Restarted at ${stops.checkpoint?.name || "the summit start"}.`);
   }
 
   input.onAction = code => {
-    if (code === "Escape") openHelp();
-    if (code === "KeyR" && !isPaused()) returnToStart();
-    if (code === "KeyE") showProject();
+    if (code === "Escape") { if (stops.viewing) closeProject(); else openHelp(); }
+    if (code === "KeyR" && !isSuspended()) restartCheckpoint();
+    if (code === "KeyE") { if (stops.viewing) closeProject(); else showProject(); }
     if (code === "KeyM") openTravel();
   };
   $("start-button").addEventListener("click", () => {
     if (portrait.matches || stopped) return;
     beginDriving();
-    syncInput(); focusRoad();
+    syncInput(); focusGame();
     if (window.matchMedia("(pointer: coarse)").matches) announce("Left: drag to steer. Right: hold to drive, slide up to drift, down to reverse.");
   });
   $("help-button").addEventListener("click", openHelp);
   for (const id of ["travel-button", "map-button", "intro-travel-button"]) $(id).addEventListener("click", openTravel);
   $("details-button").addEventListener("click", showProject);
-  $("reset-button").addEventListener("click", () => { returnToStart(); $("help-dialog").close(); });
+  $("reset-button").addEventListener("click", () => { restartCheckpoint(); $("help-dialog").close(); });
+  $("checkpoint-button").addEventListener("click", restartCheckpoint);
+  $("summit-button").addEventListener("click", () => travelTo(null));
+  for (const id of ["close-project", "resume-driving"]) $(id).addEventListener("click", () => closeProject());
+  $("orbit-button").addEventListener("click", () => { orbitPaused = !orbitPaused; updateOrbitButton(); });
+  $("expand-project").addEventListener("click", () => {
+    const expanded = panel.classList.toggle("expanded");
+    $("expand-project").setAttribute("aria-expanded", String(expanded));
+    $("expand-project").textContent = expanded ? "Compact view ↔" : "Wider view ↔";
+  });
+  panel.addEventListener("keydown", event => {
+    if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || !["Escape", "KeyE", "KeyR", "KeyM"].includes(event.code)) return;
+    event.preventDefault(); event.stopPropagation(); input.onAction(event.code);
+  });
+  reducedMotion.addEventListener("change", () => { if (reducedMotion.matches) orbitPaused = true; updateOrbitButton(); });
   $("sound-button").addEventListener("click", async () => {
     try {
       const enabled = await audio.toggle();
       $("sound-button").setAttribute("aria-pressed", String(enabled));
-      $("sound-button span").textContent = enabled ? "Sound on" : "Sound off";
+      $("sound-button").querySelector("span").textContent = enabled ? "Sound on" : "Sound off";
       audio.update(car, 0, isPaused());
     } catch { announce("Sound is unavailable in this browser. The road is still yours."); }
-    focusRoad();
+    focusGame();
   });
   document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => $(button.dataset.close).close()));
   for (const dialog of dialogs) {
-    dialog.addEventListener("close", () => { syncInput(); focusRoad(); });
+    dialog.addEventListener("close", () => { syncInput(); focusGame(); });
     dialog.addEventListener("click", event => {
       const rect = dialog.getBoundingClientRect();
       if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
@@ -300,6 +411,7 @@ export async function start() {
   $("rally-scene").addEventListener("webglcontextlost", event => {
     event.preventDefault(); stopped = true; syncInput();
     document.body.classList.add("has-error");
+    closeProject(false);
     $("intro").hidden = true; $("nearby-card").hidden = true;
     dialogs.forEach(dialog => { if (dialog.open) dialog.close(); });
     $("error-message").textContent = "The graphics connection was interrupted. Reload to get back on the road; your discoveries are saved.";
@@ -316,27 +428,58 @@ export async function start() {
     const control = input.sample();
     if (!paused) {
       accumulator += dt;
-      const environment = { obstacles: landmarks, heightAt: driveHeightAt, supportAt: driveHeightAt, waterAt: riverAt };
+      const environment = { obstacles: graphics.obstacles, heightAt: driveHeightAt, supportAt: driveHeightAt, waterAt: riverAt };
       while (accumulator >= FIXED_STEP) {
         environment.onRoad = graphics.isRoad(car.x, car.z);
-        stepCar(car, control, FIXED_STEP, environment);
+        if (!recovery.crashed) stepCar(car, control, FIXED_STEP, environment);
+        const event = recovery.update(car, FIXED_STEP);
         accumulator -= FIXED_STEP;
-      }
-      waterTime = car.inWater ? waterTime + dt : 0;
-      if (waterTime > 0.75) {
-        resetCar(car, lastSafePose); input.clear(); accumulator = 0; waterTime = 0;
-        graphics.snapCamera(car); setNearby(null);
-        announce("Splashed down. Back on the bank — keep some speed for the jump!");
+        if (event === "water-entry") {
+          graphics.splashEffect.splash(car, riverAt(car.x, car.z)?.y ?? car.y, reducedMotion.matches);
+          audio.impact("splash");
+        } else if (event === "explode") {
+          graphics.crashEffect.explode(car, reducedMotion.matches);
+          audio.impact("boom");
+          stops.clearApproach(); setNearby(null); syncInput();
+          announce("BOOM! Back to your checkpoint…");
+        } else if (event === "splash" || event === "respawn") {
+          const pose = event === "splash" ? lastSafePose : stops.restartPose;
+          resetCar(car, pose); recovery.reset(car); graphics.crashEffect.clear();
+          graphics.splashEffect.clear();
+          input.clear(); accumulator = 0; stops.clearApproach();
+          graphics.snapCamera(car); setNearby(null); syncInput();
+          announce(event === "splash" ? "Splashed down. Back on the bank — keep some speed for the jump!" : `Back at ${stops.checkpoint?.name || "the summit"}.${timing.status === "running" ? " The clock keeps running." : " Ready to drive."}`);
+        }
       }
     } else accumulator = 0;
-    graphics.render(car, paused && started ? 0 : dt, !paused, reducedMotion.matches);
+    if (!paused) {
+      stops.update(car, dt);
+      if (shownCheckpoint !== stops.checkpoint) {
+        shownCheckpoint = stops.checkpoint; updateCheckpoint();
+        announce(`${stops.checkpoint.name} · Checkpoint saved. R restarts here.`);
+      }
+      const split = timing.update(car, dt, stops.reached);
+      if (split) {
+        discover();
+        if (split.finished) graphics.fireworks.launch(FINISH_LINE, reducedMotion.matches);
+        announce(`${split.finished ? "FINISH" : `CP ${pad(split.index + 1)}`} · ${formatTime(split.time)} · ${formatDelta(split.delta)}${split.delta === null ? "" : " vs previous descent"}`);
+      }
+    }
+    const cameraSight = stops.viewing || (stops.ready ? stops.nearby : null);
+    const cameraPanel = stops.viewing ? panel : $("nearby-card");
+    const cameraInset = cameraSight ? cameraPanel.getBoundingClientRect().right + 24 : 0;
+    graphics.render(car, isSuspended() && started ? 0 : dt, !paused && !recovery.crashed, reducedMotion.matches, {
+      sight: cameraSight, orbit: Boolean(stops.viewing), paused: orbitPaused,
+      panelWidth: cameraInset, checkpoint: stops.checkpoint, crashed: recovery.crashed,
+    });
     audio.update(car, control.throttle, paused);
     uiElapsed += dt;
     if (uiElapsed >= 0.075) {
       uiElapsed = 0;
+      updateTiming();
       const speed = Math.round(car.speed * 3.6);
       if (lastSpeed !== speed) { $("speed").textContent = speed; lastSpeed = speed; }
-      $("surface").textContent = car.inWater ? "SPLASH" : !car.grounded && car.airtime > 0.12 ? "AIRBORNE" : car.surface === "gravel" ? "GRAVEL" : "OFF ROAD";
+      $("surface").textContent = recovery.crashed ? "BOOM!" : car.inWater ? "SPLASH" : !car.grounded && car.airtime > 0.12 ? "AIRBORNE" : car.surface === "gravel" ? "GRAVEL" : "OFF ROAD";
       $("stage-name").textContent = roadAt(car.x, car.z)?.name || "THE SCENIC ROUTE";
       $("drift-status").classList.toggle("visible", car.drift && !paused);
       $("map-car").setAttribute("transform", `translate(${car.x.toFixed(2)} ${car.z.toFixed(2)}) rotate(${(car.heading * 180 / Math.PI).toFixed(1)}) scale(2.8)`);
@@ -349,18 +492,18 @@ export async function start() {
       }
     }
     const smallScreen = window.innerHeight < 550;
-    const cardBounds = $("nearby-card").hidden ? null : $("nearby-card").getBoundingClientRect();
+    const cardBounds = stops.viewing ? panel.getBoundingClientRect() : $("nearby-card").hidden ? null : $("nearby-card").getBoundingClientRect();
     const labelVisible = projected => projected.visible && projected.x > 90 && projected.x < window.innerWidth - 90
       && projected.y > (smallScreen ? 96 : 112) && projected.y < window.innerHeight - (smallScreen ? 88 : 132)
       && !(cardBounds && projected.x < cardBounds.right + 100 && projected.y > cardBounds.top - 10 && projected.y < cardBounds.bottom + 40);
     landmarks.forEach((sight, index) => {
       const projected = graphics.project(sight.x, sight.type === "tower" ? 19 : sight.type === "arcade" ? 13 : 11, sight.z);
-      labels[index].hidden = !labelVisible(projected);
+      labels[index].hidden = Boolean(stops.viewing) || !labelVisible(projected);
       if (!labels[index].hidden) labels[index].style.transform = `translate(${Math.round(projected.x)}px, ${Math.round(projected.y)}px) translate(-50%, -100%)`;
     });
     crossingLabels.forEach(label => {
       const projected = graphics.project(label.x, label.y, label.z, true);
-      label.element.hidden = !labelVisible(projected) || Math.hypot(car.x - label.x, car.z - label.z) > 95;
+      label.element.hidden = Boolean(stops.viewing) || !labelVisible(projected) || Math.hypot(car.x - label.x, car.z - label.z) > 95;
       if (!label.element.hidden) label.element.style.transform = `translate(${Math.round(projected.x)}px, ${Math.round(projected.y)}px) translate(-50%, -100%)`;
     });
   }

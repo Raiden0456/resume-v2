@@ -2,6 +2,7 @@ import { CatmullRomCurve3, Vector3 } from "../vendor/three/three.module.min.js";
 
 export const WORLD = { width: 840, depth: 980, limitX: 400, limitZ: 465, summit: 300 };
 export const SPAWN = { x: -110, z: -351, heading: Math.PI };
+export const START_LINE = { x: SPAWN.x, z: SPAWN.z + 6.6, heading: SPAWN.heading, elevation: 300, halfWidth: 7 };
 
 // Authored stages, newest to oldest. The route doubles back around separate
 // ridges, opens into a quarry, then trades exposed ledges for forest and valley.
@@ -106,8 +107,13 @@ export function roadAt(x, z) {
   }
   return nearest;
 }
+export const FINISH_LINE = { id: "finish", name: "Finish line", x: 230, z: 390, elevation: 0, heading: roadAt(230, 390).heading, halfWidth: 9 };
+export const CAMPS = [
+  { id: "start", ...SPAWN, elevation: WORLD.summit, radius: 34, outer: 46 },
+  { id: "finish", ...FINISH_LINE, radius: 42, outer: 54 },
+];
 const PADS = Object.values(SIGHTS).map(sight => ({ x: (sight.x + sight.marker[0]) / 2, z: (sight.z + sight.marker[1]) / 2, y: sight.altitude }));
-PADS.push({ x: SPAWN.x, z: SPAWN.z, y: WORLD.summit });
+PADS.push(...CAMPS.map(camp => ({ x: camp.x, z: camp.z, y: camp.elevation, radius: camp.radius, outer: camp.outer })));
 
 export function landHeight(x, z) {
   let height = baseHeight(x, z);
@@ -115,7 +121,7 @@ export function landHeight(x, z) {
   if (road) height += (road.y - height) * (1 - smoothstep(road.width / 2 + 3, road.width / 2 + 27, road.distance));
   for (const pad of PADS) {
     const distance = Math.hypot(x - pad.x, z - pad.z);
-    if (distance < 34) height += (pad.y - height) * (1 - smoothstep(22, 34, distance));
+    if (distance < (pad.outer || 34)) height += (pad.y - height) * (1 - smoothstep(pad.radius || 22, pad.outer || 34, distance));
   }
   return height;
 }
@@ -205,7 +211,7 @@ export function crossingDeckHeight(crossing, along, across = 0) {
   const { x, z } = crossingPoint(crossing, along);
   const original = landHeight(x, z);
   if (crossing.type === "bridge") {
-    return original + 0.14 * smoothstep(0, 4, crossing.gap + 7 - Math.abs(along));
+    return original + 0.14 * smoothstep(0, 4, Math.min(along - crossing.deckStart, crossing.deckEnd - along));
   }
   if (along <= -crossing.gap) {
     const t = Math.max(0, Math.min(1, (along + crossing.gap + crossing.rampLength) / crossing.rampLength));
@@ -230,12 +236,33 @@ export function terrainHeight(x, z) {
   }
   return height;
 }
+// Curved crossings can run almost parallel to the river at one bank. Extend
+// each end until the entire deck width meets dry, level road, then overlap it.
+for (const crossing of CROSSINGS.filter(crossing => crossing.type === "bridge")) {
+  for (const side of [-1, 1]) {
+    let extent = crossing.gap + 7;
+    for (; extent < crossing.gap + 70; extent++) {
+      const centre = crossingPoint(crossing, side * extent), roadHeight = landHeight(centre.x, centre.z);
+      const joined = [-1, -0.5, 0, 0.5, 1].every(offset => {
+        const point = crossingPoint(crossing, side * extent, offset * crossing.halfWidth);
+        return Math.abs(terrainHeight(point.x, point.z) - roadHeight) < 0.08;
+      });
+      if (joined) break;
+    }
+    crossing[side < 0 ? "deckStart" : "deckEnd"] = side * (extent + 2);
+  }
+}
+
+export function crossingSections(crossing) {
+  return crossing.type === "bridge" ? [[crossing.deckStart, crossing.deckEnd]]
+    : [[-crossing.gap - crossing.rampLength, -crossing.gap], [crossing.gap, crossing.gap + crossing.rampLength]];
+}
+
 export function driveHeightAt(x, z, ceiling = Infinity) {
   const ground = terrainHeight(x, z);
   for (const crossing of CROSSINGS) {
     const { along, across } = crossingCoordinates(crossing, x, z);
-    const end = crossing.gap + (crossing.type === "jump" ? crossing.rampLength : 7);
-    if (Math.abs(across) > crossing.halfWidth || Math.abs(along) > end || (crossing.type === "jump" && Math.abs(along) < crossing.gap)) continue;
+    if (Math.abs(across) > crossing.halfWidth || !crossingSections(crossing).some(([from, to]) => along >= from && along <= to)) continue;
     const deck = crossingDeckHeight(crossing, along, across);
     if (deck <= ceiling && deck > ground) return deck;
   }

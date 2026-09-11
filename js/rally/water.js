@@ -1,5 +1,5 @@
 import * as THREE from "../vendor/three/three.module.min.js";
-import { RIVER, CROSSINGS, crossingPoint, crossingDeckHeight, terrainHeight } from "./world.js";
+import { RIVER, CROSSINGS, crossingPoint, crossingDeckHeight, crossingSections, terrainHeight } from "./world.js";
 
 function stripGeometry(rows) {
   const positions = [], indices = [];
@@ -57,7 +57,7 @@ export function buildCrossings(scene, batch) {
   const rampMaterial = new THREE.MeshStandardMaterial({ color: "#a79062", roughness: 0.88, side: THREE.DoubleSide });
   const add = batch.absolute;
   for (const crossing of CROSSINGS) {
-    const sections = crossing.type === "bridge" ? [[-crossing.gap - 7, crossing.gap + 7]] : [[-crossing.gap - crossing.rampLength, -crossing.gap], [crossing.gap, crossing.gap + crossing.rampLength]];
+    const sections = crossingSections(crossing);
     for (const [from, to] of sections) {
       const count = Math.ceil((to - from) / 0.8), rows = [];
       for (let i = 0; i <= count; i++) {

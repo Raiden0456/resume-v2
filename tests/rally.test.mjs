@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { createCarState, resetCar, stepCar, FIXED_STEP } from "../js/rally/physics.js";
-import { createLandmarks, loadVisits, saveVisits, SPAWN, WORLD, ROUTES, terrainHeight, terrainGradient, roadAt, driveHeightAt, riverAt, RIVER, CROSSINGS, crossingPoint, crossingCoordinates } from "../js/rally/world.js";
+import { createCarState, resetCar, stepCar, FIXED_STEP, TOP_SPEED } from "../js/rally/physics.js";
+import { RallyRecovery } from "../js/rally/recovery.js";
+import { createLandmarks, loadVisits, saveVisits, SPAWN, WORLD, ROUTES, terrainHeight, terrainGradient, roadAt, driveHeightAt, riverAt, RIVER, CROSSINGS, crossingPoint, crossingCoordinates, crossingSections, crossingDeckHeight } from "../js/rally/world.js";
 
 const resume = JSON.parse(await readFile(new URL("../resume.json", import.meta.url), "utf8"));
 const run = (state, input, seconds, environment) => {
@@ -68,8 +69,36 @@ test("releasing the handbrake recovers grip progressively without killing the dr
     run(car, { throttle: 1 }, 0.25, { heightAt });
     assert.ok(driftAngle(car) > angle * 0.3 && driftAngle(car) < angle * 0.8, "the rear must settle progressively");
     assert.ok(car.speed > speed * 0.9, "recovering grip must redirect sideways momentum, not erase it");
-    run(car, { throttle: 1 }, 0.85, { heightAt });
+    run(car, { throttle: 1 }, 1.15, { heightAt });
     assert.ok(driftAngle(car) < 0.08 && car.grounded, "the slide must still be easy to catch");
+  }
+});
+
+test("moderate steering starts a rally slide without the handbrake", () => {
+  for (const heightAt of [() => 0, (x, z) => x * 0.3 + z * 0.2]) for (const steer of [-0.5, -0.35, 0.35, 0.5]) {
+    const car = createCarState({ x: 0, z: 0, heading: 0 }, heightAt);
+    car.vz = -15; car.speed = 15;
+    car.vy = -15 * terrainGradient(0, 0, heightAt).z; car.launchVy = car.vy;
+    run(car, { throttle: 1, steer }, 1, { heightAt });
+    assert.ok(car.grounded && car.drift && driftAngle(car) > 0.17, "a gentle corner must also bring the rear out");
+    assert.ok(car.speed > 14);
+  }
+});
+
+test("a short handbrake tap helps initiate a slide that continues after release", () => {
+  for (const heightAt of [() => 0, (x, z) => x * 0.3 + z * 0.2]) {
+    const car = createCarState({ x: 0, z: 0, heading: 0 }, heightAt);
+    car.vz = -22; car.speed = 22;
+    car.vy = -22 * terrainGradient(0, 0, heightAt).z; car.launchVy = car.vy;
+    const unassisted = { ...car };
+    run(car, { throttle: 1, steer: 1, handbrake: true }, 0.18, { heightAt });
+    run(unassisted, { throttle: 1, steer: 1 }, 0.18, { heightAt });
+    assert.ok(driftAngle(car) > driftAngle(unassisted) * 1.2, "the tap must help the rear break away");
+    run(car, { throttle: 1, steer: 0.55 }, 0.6, { heightAt });
+    assert.ok(car.drift && driftAngle(car) > 0.3);
+    run(car, { throttle: 1, steer: 0.55 }, 0.6, { heightAt });
+    assert.ok(car.grounded && car.drift && driftAngle(car) > 0.35, "throttle and steering must sustain the slide with Space released");
+    assert.ok(car.speed > 20);
   }
 });
 
@@ -93,7 +122,7 @@ test("sustained arcade slides respect top speed and do not create momentum after
     car.vz = -25; car.speed = 25;
     for (let i = 0; i < 480; i++) {
       stepCar(car, { throttle: 1, steer: 1, handbrake }, FIXED_STEP, { heightAt });
-      assert.ok(car.speed <= 33.000001 && Number.isFinite(car.heading));
+      assert.ok(car.speed <= TOP_SPEED + 1e-6 && Number.isFinite(car.heading));
     }
     assert.ok(car.drift && car.speed > 25);
     let previousSpeed = car.speed;
@@ -110,9 +139,9 @@ test("leaving gravel retains pace instead of imposing an off-road speed limit", 
   const scrub = run(createCarState(), { throttle: 1 }, 2, { onRoad: false });
   assert.ok(scrub.speed < road.speed);
   assert.ok(scrub.speed > road.speed * 0.9);
-  const fast = createCarState(SPAWN, () => 0); fast.vz = 31; fast.speed = 31;
+  const fast = createCarState(SPAWN, () => 0); fast.vz = TOP_SPEED - 0.5; fast.speed = fast.vz;
   stepCar(fast, { throttle: 1 }, FIXED_STEP, { onRoad: false, heightAt: () => 0 });
-  assert.ok(fast.speed > 30.8, "crossing the verge must not abruptly clamp speed");
+  assert.ok(fast.speed > TOP_SPEED - 0.7, "crossing the verge must not abruptly clamp speed");
 });
 
 test("a handbrake turn still drifts when the driver lifts off the throttle", () => {
@@ -128,6 +157,19 @@ test("buildings resolve collisions without trapping the car at their centre", ()
   stepCar(car, {}, FIXED_STEP, { obstacles: [obstacle] });
   assert.ok(Math.hypot(car.x - obstacle.x, car.z - obstacle.z) >= 7.149);
   assert.ok(Object.values(car).every(value => typeof value !== "number" || Number.isFinite(value)));
+});
+
+test("parked cars block a ground collision but allow a jump above their roof", () => {
+  const obstacle = { x: SPAWN.x, z: SPAWN.z, elevation: 0, radius: 2.6, height: 2.7 };
+  const environment = { heightAt: () => 0, obstacles: [obstacle] };
+  const grounded = createCarState(SPAWN, environment.heightAt);
+  stepCar(grounded, {}, FIXED_STEP, environment);
+  assert.ok(Math.hypot(grounded.x - obstacle.x, grounded.z - obstacle.z) >= 3.749);
+  const jumping = { ...createCarState(SPAWN, environment.heightAt), y: 4, grounded: false, vy: -1 };
+  stepCar(jumping, {}, FIXED_STEP, environment);
+  assert.equal(jumping.x, SPAWN.x);
+  assert.equal(jumping.z, SPAWN.z);
+  assert.ok(jumping.y < 4 && jumping.y > obstacle.height);
 });
 
 test("world boundaries contain the car, including after a long frame", () => {
@@ -392,15 +434,43 @@ test("bridges support the car above the water and do not teleport cars from unde
   }
 });
 
+test("bridge approaches join the road across their full width without holes in either direction", () => {
+  for (const crossing of CROSSINGS.filter(c => c.type === "bridge")) {
+    const [[from, to]] = crossingSections(crossing);
+    for (const end of [from, to]) for (const side of [-0.95, 0, 0.95]) {
+      const p = crossingPoint(crossing, end, side * crossing.halfWidth);
+      assert.ok(Math.abs(crossingDeckHeight(crossing, end) - terrainHeight(p.x, p.z)) < 0.15, `${crossing.label} must overlap solid road across the whole approach`);
+    }
+    for (const direction of [-1, 1]) for (const side of [-0.7, 0, 0.7]) {
+      const beginning = direction > 0 ? from - 4 : to + 4;
+      const position = crossingPoint(crossing, beginning, side * crossing.halfWidth);
+      const car = createCarState({ ...position, heading: roadAt(position.x, position.z).heading + (direction < 0 ? Math.PI : 0) });
+      let arrived = false;
+      for (let i = 0; i < 2400; i++) {
+        const road = roadAt(car.x, car.z);
+        car.heading = road.heading + (direction < 0 ? Math.PI : 0); car.yaw = 0;
+        car.vx = Math.sin(car.heading) * 16; car.vz = -Math.cos(car.heading) * 16;
+        stepCar(car, { throttle: 1 }, FIXED_STEP, { heightAt: driveHeightAt, supportAt: driveHeightAt, waterAt: riverAt });
+        assert.ok(!car.inWater && car.airtime < 0.25, `${crossing.label} must be driveable through both deck joints`);
+        const { along } = crossingCoordinates(crossing, car.x, car.z);
+        if (direction > 0 ? along > to + 3 : along < from - 3) { arrived = true; break; }
+      }
+      assert.ok(arrived, `${crossing.label} must not block the car at a seam`);
+    }
+  }
+});
+
 test("both ramps launch, clear the open water and land on the far bank", () => {
-  for (const crossing of CROSSINGS.filter(crossing => crossing.type === "jump")) for (const speed of [0, 25, 33]) {
+  for (const crossing of CROSSINGS.filter(crossing => crossing.type === "jump")) for (const speed of [0, 25, TOP_SPEED]) {
     assert.ok(driveHeightAt(crossing.x, crossing.z) < riverAt(crossing.x, crossing.z).y, "the gap must be open air above water");
     const start = crossingPoint(crossing, -crossing.gap - (speed ? crossing.rampLength + 3 : 42));
     const car = createCarState({ ...start, heading: crossing.heading });
+    const recovery = new RallyRecovery(); recovery.reset(car);
     car.vx = Math.sin(car.heading) * speed; car.vz = -Math.cos(car.heading) * speed; car.speed = speed;
     let crossed = false, landed = false, maxClearance = 0, launchHeight = null, peak = 0, flightTime = 0;
     for (let i = 0; i < 720; i++) {
       stepCar(car, { throttle: 1 }, FIXED_STEP, { heightAt: driveHeightAt, supportAt: driveHeightAt, waterAt: riverAt });
+      assert.equal(recovery.update(car, FIXED_STEP), null, "a normal ramp jump must never trigger crash recovery");
       const { along } = crossingCoordinates(crossing, car.x, car.z);
       if (along > -crossing.gap - 1 && !car.grounded) {
         launchHeight ??= car.y;
