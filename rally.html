@@ -53,6 +53,12 @@
         </a>
         <div class="stage-tag"><span class="status-dot"></span> <span id="stage-name">SUMMIT LEDGE</span> <span class="stage-divider">/</span> NOW → 2022</div>
         <nav class="rally-actions" aria-label="Game controls">
+          <section id="race-panel" class="race-panel" aria-label="Timed descent">
+            <div class="race-heading"><span id="race-status">READY / CROSS THE START LINE</span><button id="summit-button" title="Return to the start circle before Rowte.io">New run ↥</button></div>
+            <div id="race-time" class="race-time" role="timer" aria-label="Descent time" aria-live="off">0:00.00</div>
+            <div class="race-split"><span id="race-split-label">PREVIOUS DESCENT</span><strong id="race-delta">—</strong></div>
+            <p id="race-next">Start in the circle before Rowte.io.</p>
+          </section>
           <button id="travel-button" class="hud-button travel-button" aria-haspopup="dialog" aria-controls="travel-dialog" title="Jump to any project (M)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 3 6-2v15l-6 2-6-3-6 2V5Zm6-2v15m6-12v15"/></svg><span>Projects</span><kbd>M</kbd></button>
           <button id="sound-button" class="hud-button" aria-pressed="false" title="Toggle engine, gravel and impact sounds"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4V4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-slash" d="m16 9 5 6m0-6-5 6"/></svg><span>Sound off</span></button>
           <button id="map-toggle" class="hud-button map-toggle" aria-pressed="false" aria-controls="minimap-panel" aria-label="Show or hide the map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 3 6-2v15l-6 2-6-3-6 2V5Zm6-2v15m6-12v15"/></svg></button>
@@ -60,13 +66,6 @@
           <a class="back-link" href="index.html"><span aria-hidden="true">↗</span> Résumé</a>
         </nav>
       </header>
-
-      <section id="race-panel" class="race-panel" aria-label="Timed descent">
-        <div class="race-heading"><span id="race-status">READY / CROSS THE START LINE</span><button id="summit-button" title="Return to the start circle before Rowte.io">New run ↥</button></div>
-        <div id="race-time" class="race-time" role="timer" aria-label="Descent time" aria-live="off">0:00.00</div>
-        <div class="race-split"><span id="race-split-label">PREVIOUS DESCENT</span><strong id="race-delta">—</strong></div>
-        <p id="race-next">Start in the circle before Rowte.io.</p>
-      </section>
 
       <section class="intro-panel" id="intro" aria-labelledby="intro-title" hidden>
         <div class="eyebrow"><span></span> A SMALL SIDE QUEST</div>
