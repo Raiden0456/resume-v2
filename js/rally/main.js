@@ -6,6 +6,7 @@ import { RallyAudio } from "./audio.js";
 import { RallyStops } from "./stops.js";
 import { RallyTiming, formatTime, formatDelta } from "./timing.js";
 import { RallyRecovery } from "./recovery.js";
+import { enterImmersive } from "./fullscreen.js";
 
 const $ = id => document.getElementById(id);
 const pad = value => String(value).padStart(2, "0");
@@ -232,7 +233,7 @@ export async function start() {
 
   function travelTo(sight) {
     if (stopped || portrait.matches) return;
-    closeProject(false);
+    enterImmersive(); closeProject(false);
     input.clear(); accumulator = 0;
     const pose = sight?.arrival || SPAWN;
     resetCar(car, pose);
@@ -361,7 +362,7 @@ export async function start() {
   };
   $("start-button").addEventListener("click", () => {
     if (portrait.matches || stopped) return;
-    beginDriving();
+    enterImmersive(); beginDriving();
     syncInput(); focusGame();
     if (window.matchMedia("(pointer: coarse)").matches) announce("Left: drag to steer. Right: hold to drive, slide up to drift, down to reverse.");
   });
@@ -408,6 +409,7 @@ export async function start() {
     graphics.resize(); syncInput();
   });
   window.addEventListener("resize", () => { graphics.resize(); syncInput(); });
+  $("touch-surface").addEventListener("pointerdown", enterImmersive);
   $("rally-scene").addEventListener("webglcontextlost", event => {
     event.preventDefault(); stopped = true; syncInput();
     document.body.classList.add("has-error");
