@@ -367,6 +367,10 @@ export async function start() {
     if (window.matchMedia("(pointer: coarse)").matches) announce("Left: drag to steer. Right: hold to drive, slide up to drift, down to reverse.");
   });
   $("help-button").addEventListener("click", openHelp);
+  $("map-toggle").addEventListener("click", () => {
+    const shown = document.body.classList.toggle("show-map");
+    $("map-toggle").setAttribute("aria-pressed", String(shown));
+  });
   for (const id of ["travel-button", "map-button", "intro-travel-button"]) $(id).addEventListener("click", openTravel);
   $("details-button").addEventListener("click", showProject);
   $("reset-button").addEventListener("click", () => { restartCheckpoint(); $("help-dialog").close(); });

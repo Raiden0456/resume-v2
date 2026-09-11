@@ -55,6 +55,7 @@
         <nav class="rally-actions" aria-label="Game controls">
           <button id="travel-button" class="hud-button travel-button" aria-haspopup="dialog" aria-controls="travel-dialog" title="Jump to any project (M)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 3 6-2v15l-6 2-6-3-6 2V5Zm6-2v15m6-12v15"/></svg><span>Projects</span><kbd>M</kbd></button>
           <button id="sound-button" class="hud-button" aria-pressed="false" title="Toggle engine, gravel and impact sounds"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4V4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-slash" d="m16 9 5 6m0-6-5 6"/></svg><span>Sound off</span></button>
+          <button id="map-toggle" class="hud-button map-toggle" aria-pressed="false" aria-controls="minimap-panel" aria-label="Show or hide the map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 3 6-2v15l-6 2-6-3-6 2V5Zm6-2v15m6-12v15"/></svg></button>
           <button id="help-button" class="hud-button" aria-label="Pause and view driving controls"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4m0 3v.1"/></svg></button>
           <a class="back-link" href="index.html"><span aria-hidden="true">↗</span> Résumé</a>
         </nav>
@@ -99,7 +100,7 @@
           <div class="mobile-hints"><span>LEFT THUMB <b>drag to steer</b></span><span>RIGHT THUMB <b>hold to drive · slide up to drift · down to reverse</b></span></div>
           <div class="speed-line"><span id="speed">0</span><small>KM/H</small><i></i><span id="surface">GRAVEL</span><span class="drift-status" id="drift-status">SLIDING</span></div>
         </div>
-        <section class="minimap-panel" aria-label="Map of projects and current car position">
+        <section id="minimap-panel" class="minimap-panel" aria-label="Map of projects and current car position">
           <button id="map-button" class="minimap-heading" aria-label="Choose any project on the mountain" aria-haspopup="dialog" aria-controls="travel-dialog"><span>THE DESCENT</span><span>JUMP TO ↗</span></button>
           <svg id="minimap" viewBox="-420 -490 840 980" role="group" aria-label="A varied downhill course from the latest work at the summit to the earliest work in the valley"><path class="map-mountain" d="M-115-440-264-359-321-240-226-145-311 121-327 272-200 375 239 437 314 303 242 136 359-89 326-252 184-340 23-294Z"/><g id="map-river"></g><g id="map-routes"></g><g id="map-sights"></g><g id="map-car"><circle r="6" fill="#dd735f" opacity=".16"/><path d="M0-3.5 2.5 3 0 1.6-2.5 3Z" fill="#f0e9ce"/></g></svg>
           <div class="altitude-line"><span>ALT <strong id="altitude">0 m</strong></span><span>300 m ↓ 0 m</span></div>
