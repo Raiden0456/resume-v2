@@ -1,0 +1,54 @@
+.rally-easter-egg {
+  position: fixed;
+  right: clamp(16px, calc((100vw - 1100px) / 4), 85px);
+  bottom: 26px;
+  width: 112px;
+  height: 112px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  isolation: isolate;
+  color: var(--fg-primary);
+}
+.rally-easter-egg::before, .rally-easter-egg::after {
+  content: "";
+  position: absolute;
+  border: 2px solid #12182070;
+  width: 57px;
+  height: 57px;
+  border-radius: 50%;
+  transform: rotate(-20deg) scaleY(.8);
+  pointer-events: none;
+}
+.rally-easter-egg::after { width: 72px; height: 72px; border-style: dashed; border-color: #131a2155; transform: rotate(32deg) scaleY(.8); }
+.easter-egg-orbit { position: absolute; inset: 19px; animation: rally-donuts 3.6s linear infinite; pointer-events: none; }
+/* At the top of the orbit the car travels right, but its nose points inward:
+   a sustained 55–65 degree slip angle, with small countersteer corrections. */
+.easter-egg-car { position: absolute; width: 23px; height: 40px; left: calc(50% - 11px); top: -15px; transform: rotate(150deg); animation: rally-countersteer 1.2s ease-in-out infinite; filter: drop-shadow(0 3px 3px #090e1744); }
+.easter-egg-car img { width: 100%; height: 100%; }
+.easter-egg-car::before { content: ""; position: absolute; bottom: calc(100% - 3px); left: -6px; width: 35px; height: 33px; clip-path: polygon(0 0, 100% 0, 67% 100%, 33% 100%); background: linear-gradient(transparent, #fff0b42e); opacity: 0.4; }
+.easter-egg-car::after { content: ""; position: absolute; top: 72%; left: -8px; width: 34px; height: 31px; background: radial-gradient(ellipse, #ad9d7e65, transparent 70%); filter: blur(3px); transform-origin: 50% 0; animation: rally-drift-dust .6s ease-out infinite; }
+.easter-egg-caption { position: absolute; right: 0; bottom: 105px; white-space: nowrap; font-size: 9px; color: var(--fg-bright); background: #282e37f0; border: 1px solid var(--color-border); padding: 7px 10px; border-radius: 4px; opacity: 0; transform: translateY(4px); transition: opacity 180ms, transform 180ms; pointer-events: none; }
+.easter-egg-caption span { color: var(--accent-orange); margin-left: 5px; }
+.rally-easter-egg:hover .easter-egg-caption, .rally-easter-egg:focus-visible .easter-egg-caption { opacity: 1; transform: translateY(0); }
+.rally-easter-egg:hover .easter-egg-orbit, .rally-easter-egg:focus-visible .easter-egg-orbit { animation-play-state: paused; }
+.rally-easter-egg:hover .easter-egg-car, .rally-easter-egg:focus-visible .easter-egg-car { animation-play-state: paused; }
+.rally-easter-egg:hover .easter-egg-car::before, .rally-easter-egg:focus-visible .easter-egg-car::before { animation: rally-flash 1.2s ease-in-out infinite; }
+.rally-easter-egg:hover .easter-egg-car, .rally-easter-egg:focus-visible .easter-egg-car { filter: drop-shadow(0 0 7px #efd48c66); }
+.rally-easter-egg:focus-visible { outline: 1px dashed var(--accent-orange); outline-offset: -9px; border-radius: 50%; }
+@keyframes rally-donuts { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes rally-countersteer { 0%, 100% { transform: rotate(145deg) translateX(-1px); } 50% { transform: rotate(155deg) translateX(1px); } }
+@keyframes rally-drift-dust { from { opacity: .3; transform: scale(.55); } to { opacity: 0; transform: translate(-9px, 10px) scale(1.5); } }
+@keyframes rally-flash { 0%, 30%, 60%, 100% { opacity: .2; } 15%, 45% { opacity: 1; } }
+@media (max-width: 1200px) {
+  .rally-easter-egg { position: relative; right: auto; bottom: auto; margin: 12px auto -10px; width: 90px; height: 90px; }
+  .easter-egg-orbit { inset: 12px; }
+  .easter-egg-caption { bottom: 87px; right: 50%; transform: translate(50%, 4px); }
+  .rally-easter-egg:hover .easter-egg-caption, .rally-easter-egg:focus-visible .easter-egg-caption { transform: translate(50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .easter-egg-orbit, .easter-egg-car, .easter-egg-car::before, .easter-egg-car::after { animation: none !important; }
+  .easter-egg-caption { transition: none; }
+}
+@media print { .rally-easter-egg { display: none; } }
