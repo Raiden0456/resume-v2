@@ -238,8 +238,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; min-wi
   .touch-guide { display: block; }
   .touch-guide p { margin-top: 16px; }
   .touch-guide strong { color: var(--rally-paper); font-weight: 400; }
-  .touch-zone { position: relative; pointer-events: none; opacity: 0; border: 1px solid #c1c8b81f; background: #c1c8b806; transition: background 90ms, opacity 200ms; }
-  .is-driving .touch-zone { opacity: 1; }
+  .touch-zone { position: relative; pointer-events: none; opacity: 0; border: 1px solid #c1c8b81f; transition: background 90ms, opacity 200ms; }
+  .is-driving .touch-zone { opacity: 0.3; }
+  .is-driving .touch-zone.active { opacity: 1; }
   .touch-zone span { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); font-size: 7px; letter-spacing: 1px; color: #c1c8b86e; }
   .touch-zone[data-zone="left"] span, .touch-zone[data-zone="right"] span { font-size: 15px; }
   .touch-zone[data-zone="gas"] { border-color: #98c37933; }
