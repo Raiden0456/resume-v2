@@ -2,12 +2,13 @@ import { SPAWN, WORLD, driveHeightAt, terrainGradient } from "./world.js";
 
 export const FIXED_STEP = 1 / 120;
 export const GRAVITY = 40;
-export const TOP_SPEED = 29;
-export const DOWNHILL_BONUS = 11;
+export const TOP_SPEED = 32;
+export const DOWNHILL_BONUS = 13;
 // Compress the mountain's exaggerated grades a little for driveability;
 // free flight still uses the full gravity above.
 const HILL_GRAVITY = 26;
 const WHEELBASE = 2.6;
+const BUMP_REACH = 9, BUMP_CLEARANCE = 0.7;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
 export function createCarState(pose = SPAWN, heightAt = driveHeightAt) {
@@ -21,6 +22,17 @@ export function createCarState(pose = SPAWN, heightAt = driveHeightAt) {
 
 export function resetCar(state, pose = SPAWN, heightAt = driveHeightAt) {
   Object.assign(state, createCarState(pose, heightAt));
+}
+
+// A lift-off whose arc soon meets the ground again without clearing it by much is a bump, not a jump.
+function isBump(state, verticalMomentum, planarSpeed, supportAt) {
+  for (let ahead = 1; ahead <= BUMP_REACH; ahead++) {
+    const t = ahead / planarSpeed, arc = state.y + verticalMomentum * t - 0.5 * GRAVITY * t * t;
+    const gap = arc - supportAt(state.x + state.vx * t, state.z + state.vz * t, arc + 0.7);
+    if (gap <= 0) return true;
+    if (gap > BUMP_CLEARANCE) return false;
+  }
+  return false;
 }
 
 // Grounded tyres exchange forces with the slope. Once the surface falls away,
@@ -37,7 +49,8 @@ export function stepCar(state, input, dt, environment = {}) {
   const oldGround = supportAt(state.x, state.z, state.y + 0.7);
   const wasGrounded = state.grounded;
   state.landing *= Math.exp(-8 * dt);
-  state.surface = onRoad ? "gravel" : "scrub";
+  const snow = state.y > (environment.snowLine ?? Infinity);
+  state.surface = snow ? "snow" : onRoad ? "gravel" : "scrub";
   let forwardX = Math.sin(state.heading), forwardZ = -Math.cos(state.heading);
   let rightX = Math.cos(state.heading), rightZ = Math.sin(state.heading);
   let forward = state.vx * forwardX + state.vz * forwardZ;
@@ -50,7 +63,7 @@ export function stepCar(state, input, dt, environment = {}) {
     const forwardGrade = slope.x * forwardX + slope.z * forwardZ;
     const lowGear = 1 + 0.3 * clamp(1 - Math.abs(forward) / 8, 0, 1);
     const acceleration = throttle < 0 && forward > 0.6 ? 29 : throttle > 0 && forward < -0.6 ? 24 : 14 * lowGear;
-    const thrust = throttle * acceleration / Math.hypot(1, forwardGrade);
+    const thrust = throttle * acceleration * (snow ? 0.8 : 1) / Math.hypot(1, forwardGrade);
     forward += thrust * dt;
     const downhillTop = TOP_SPEED + DOWNHILL_BONUS * clamp(-forwardGrade / 0.5, 0, 1);
     state.topSpeed = downhillTop >= state.topSpeed ? downhillTop : Math.max(downhillTop, state.topSpeed - 6 * dt);
@@ -77,7 +90,8 @@ export function stepCar(state, input, dt, environment = {}) {
     // A sliding car still has steering authority even when most of its
     // momentum is sideways. A quick turn naturally loosens the rear tyres.
     const turnSpeed = Math.min(speed / 7, 1);
-    const targetYaw = state.steer * Math.sign(forward) * turnSpeed * (handbrake ? 2.45 : 1.85);
+    const authority = 1 + 0.25 * clamp((speed - 18) / 16, 0, 1);
+    const targetYaw = state.steer * Math.sign(forward) * turnSpeed * (handbrake ? 2.45 : 1.95) * authority;
     state.yaw += (targetYaw - state.yaw) * (1 - Math.exp(-12 * dt));
     const corner = clamp((speed - 4) / 9, 0, 1) * clamp((Math.abs(state.steer) - 0.04) / 0.5, 0, 1);
     // Once the rear steps out, throttle keeps the tyres loose even through
@@ -86,7 +100,7 @@ export function stepCar(state, input, dt, environment = {}) {
       ? clamp((Math.abs(sideways) / Math.max(speed, 1) - 0.1) / 0.45, 0, 1) * clamp((speed - 5) / 7, 0, 1) : 0;
     const slide = handbrake ? clamp((speed - 3) / 5, 0, 1) : Math.max(corner, powerSlide);
     const baseGrip = onRoad ? 5.1 : 4.5;
-    const targetGrip = baseGrip + ((handbrake ? 1.05 : 2.05) - baseGrip) * slide;
+    const targetGrip = (baseGrip + ((handbrake ? 1.05 : 2.05) - baseGrip) * slide) * (snow ? 0.6 : 1);
     // Grip breaks quickly but returns progressively, including on cambered
     // turns and after releasing the handbrake.
     state.grip += (targetGrip - state.grip) * (1 - Math.exp(-(targetGrip < state.grip ? 12 : 2.6) * dt));
@@ -164,9 +178,11 @@ export function stepCar(state, input, dt, environment = {}) {
   const verticalMomentum = wasGrounded ? Math.min(state.vy, state.launchVy) : state.vy;
   const freeVy = verticalMomentum - GRAVITY * dt;
   const freeY = state.y + (verticalMomentum + freeVy) * 0.5 * dt;
-  const moving = Math.hypot(state.vx, state.vz) > 3;
-  const crestRelease = moving && state.vy - groundVelocity > GRAVITY * dt * 1.2 && freeY > ground;
-  if (wasGrounded && !crestRelease && ((!moving && ground >= state.y - 0.3) || freeY <= ground + 0.006)) {
+  const planarSpeed = Math.hypot(state.vx, state.vz);
+  const moving = planarSpeed > 3;
+  const bump = wasGrounded && moving && freeY > ground && isBump(state, verticalMomentum, planarSpeed, supportAt);
+  const crestRelease = !bump && moving && state.vy - groundVelocity > GRAVITY * dt * 1.2 && freeY > ground;
+  if (wasGrounded && !crestRelease && (bump || (!moving && ground >= state.y - 0.3) || freeY <= ground + 0.006)) {
     // Slow cars must keep ground velocity, or the next incline projection eats their climb.
     state.y = ground; state.vy = groundVelocity; state.grounded = true;
     // The sprung body responds over a wheelbase, so a short stone or deck seam

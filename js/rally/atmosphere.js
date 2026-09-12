@@ -189,7 +189,7 @@ export function createAtmosphere(scene, batch, landmarks) {
 
   for (const sight of landmarks) {
     const f = frame(sight.x, sight.z), a = f.add;
-    planter(f, -9.2, 7.2, sight.type === "salon" ? "#ad8588" : "#728969");
+    planter(f, -9.2, 7.2, sight.type === "salon" ? "#7f86b8" : "#728969");
     planter(f, 9.2, 7.2);
     const pennant = frame(sight.x + 9.3, sight.z - 6.5, 0, f.base);
     flag(pennant, sight.color, 4.2);
@@ -201,11 +201,7 @@ export function createAtmosphere(scene, batch, landmarks) {
       }
       sign(f, "EXCHANGE / 24H", 0, 4.6, 7, 5, sight.color);
       rotor(f, -3.7, 7.2, -2, "#8d9e94", 0.8);
-    } else if (sight.type === "town") {
-      for (let i = 0; i < 6; i++) {
-        a("box", i % 2 ? "#b8b29b" : "#7195a5", -6 + i * 0.7, 0.8 + (i % 2) * 1.3, 7.8, 0.65, 1.2, 0.8);
-        a("box", DARK, -6 + i * 0.7, 0.8 + (i % 2) * 1.3, 8.22, 0.32, 0.08, 0.04);
-      }
+    } else if (sight.type === "hub") {
       for (const x of [3, 5]) {
         for (const z of [6.6, 8]) a("torus", "#89998f", x, 0.7, z, 0.6, 0.6, 0.6, 0, Math.PI / 2);
         a("box", "#a8bcac", x, 1.1, 7.3, 0.1, 0.1, 1.5);
@@ -214,8 +210,14 @@ export function createAtmosphere(scene, batch, landmarks) {
         a("box", DARK, x, 1.5, 7.7, 0.4, 0.1, 0.45);
         a("box", DARK, x, 1.7, 6.6, 0.8, 0.1, 0.1);
       }
-      sign(f, "PARCELS / PICKUP", -4, 3.2, 7.8, 4.6, sight.color);
-      beacon(f, -1.3, 2.1, 8, sight.color);
+      for (const x of [-3.6, 0.4]) {
+        a("cylinder", "#636d68", x, 0.55, 9.3, 0.09, 0.9, 0.09);
+        a("cylinder", CREAM, x, 1.02, 9.3, 0.8, 0.08, 0.8);
+        for (const dx of [-1.1, 1.1]) a("box", "#6f7c78", x + dx, 0.6, 9.3, 0.55, 0.9, 0.55);
+      }
+      sign(f, "MEET / CONNECT", 0, 5.2, 4.8, 5.6, sight.color);
+      for (const x of [-6, 6]) beacon(f, x, 2.4, 9.8, sight.color);
+      rotor(f, 3.2, 14.9, -3, "#aab8b6", 0.9);
     } else if (sight.type === "accelerator") {
       a("box", TIMBER, -4, 0.4, 8.2, 6, 0.5, 3);
       a("box", DARK, -4, 2.1, 8, 4.2, 2.6, 0.2);
@@ -228,7 +230,7 @@ export function createAtmosphere(scene, batch, landmarks) {
         a("box", "#3b6378", x, 1.6, 7.8, 3, 0.14, 2.8, -0.32);
         for (const dx of [-0.8, 0, 0.8]) a("box", "#91aab3", x + dx, 1.75, 7.8, 0.035, 0.035, 2.7, -0.32);
       }
-      rotor(f, 0, 16.8, 0, "#b9c4ba", 1.7); beacon(f, 0, 18, 0, "#df9280");
+      rotor(f, 0, 16.8, 0, "#dfe6e4", 1.7); beacon(f, 0, 18.9, 0, "#98c379");
       sign(f, "SIGNAL / ONLINE", 0, 3.5, 6.5, 4.6, sight.color);
     } else if (sight.type === "arcade") {
       for (let i = 0; i < 4; i++) beacon(f, (i - 1.5) * 2.6, 3.2, 5.1, i % 2 ? "#e5c07b" : "#98c379");
@@ -236,27 +238,29 @@ export function createAtmosphere(scene, batch, landmarks) {
       a("box", "#c092a3", 7.2, 2.15, 6.34, 1.3, 1.9, 0.04, 0, 0, 0, "light");
       sign(f, "INSERT COIN", 0, 4.9, 7, 5, sight.color);
       rotor(f, -4.4, 6.8, -2.4, "#9b8ea3", 0.9);
-    } else if (sight.type === "garage") {
-      tyres(f, -8.4, 5, 4); tyres(f, -8.4, 7, 3);
-      a("box", "#aa735d", 6, 0.9, 7, 2.2, 1.7, 1.1);
-      for (const y of [0.4, 0.8, 1.2]) a("box", CREAM, 6, y, 7.58, 1.8, 0.08, 0.03);
-      a("cylinder", "#6a8791", 8.3, 1.05, 4.5, 0.65, 2, 0.65);
-      sign(f, "SERVICE / OPEN", 0, 5, 8, 6, sight.color);
-      rotor(f, -4, 6.2, -1.5, "#aab3a4", 1); steam(f, -6, 6.1, -3);
-    } else if (sight.type === "observatory") {
-      a("box", DARK, -6, 1.7, 7, 3.6, 2.7, 0.3);
-      sign(f, "NIGHT SKY", -6, 3.6, 7.2, 3.5, sight.color);
-      for (let i = 0; i < 5; i++) a("rock", CREAM, -7.2 + i * 0.6, 1.3 + Math.sin(i * 1.6) * 0.65, 7.2, 0.07, 0.07, 0.07, 0, 0, 0, "light");
-      a("cylinder", "#798d87", 6.8, 1.9, 2, 0.12, 3.8, 0.12);
-      rotor(f, 6.8, 3.8, 2, "#8daeb9", 1.5); beacon(f, 6.8, 4.1, 2, "#88bdbf");
+    } else if (sight.type === "showroom") {
+      sign(f, "AURUS / SALON", 0, 8.4, -6.6, 7, "#d9c07a");
+      sign(f, "BY APPOINTMENT", 6.2, 1.9, 8.2, 3.6, "#d9c07a");
+      for (const x of [-3.4, 3.4]) beacon(f, x, 2.3, 6.9, "#f1dc9a");
+      for (const x of [-8, 8]) beacon(f, x, 7.4, 9.4, "#d9c07a");
+      a("box", "#3b3f47", 6.2, 0.7, 8.2, 2.4, 1.2, 0.9);
+    } else if (sight.type === "web3") {
+      sign(f, "ADS / ON-CHAIN", 8.6, 7.6, -0.5, 4.6, sight.color);
+      sign(f, "NODE 07 / SYNCED", -5.6, 3.3, 7.4, 4.2, sight.color);
+      beacon(f, 0, 12.4, 0, "#f0d58a");
+      for (const [x, z] of [[-8, -6], [-9.5, 3], [7, -7.5]]) {
+        a("cylinder", "#4b4360", x, 3, z, 0.11, 6, 0.11);
+        a("box", "#3a2f4f", x, 5.6, z, 0.9, 0.6, 0.3);
+        beacon(f, x, 6.3, z, sight.color);
+      }
     } else if (sight.type === "salon") {
       const terrace = frame(sight.x + 3.2, sight.z + 8.7, 0, f.base);
       terrace.add("cylinder", "#aebba6", 0, 1.8, 0, 0.08, 3.6, 0.08);
-      terrace.add("cone", "#d5b2a2", 0, 3.7, 0, 2.5, 0.8, 2.5, 0, Math.PI / 4);
-      terrace.add("cylinder", CREAM, 0, 1.05, 0, 1.1, 0.14, 1.1);
-      for (const x of [-1.7, 1.7]) terrace.add("box", "#a48b81", x, 0.55, 0, 0.75, 1.1, 0.75);
-      sign(f, "BEAUTY / OPEN", 0, 4.8, 7.2, 5.3, sight.color);
-      beacon(f, -5.8, 4.6, 4.9, "#e4c2ae");
+      terrace.add("cone", "#e3e5ea", 0, 3.7, 0, 2.5, 0.8, 2.5, 0, Math.PI / 4);
+      terrace.add("cylinder", "#e3e5ea", 0, 1.05, 0, 1.1, 0.14, 1.1);
+      for (const x of [-1.7, 1.7]) terrace.add("box", "#8a93b0", x, 0.55, 0, 0.75, 1.1, 0.75);
+      sign(f, "THE BEAUTY LAB", 0, 4.9, 7.2, 5.3, sight.color);
+      beacon(f, -5.8, 4.6, 4.9, "#a8a2e0");
     } else if (sight.type === "depot") {
       for (let i = 0; i < 3; i++) {
         a("box", TIMBER, 9.5, 0.12 + i * 0.8, -3, 2.6, 0.18, 2.6);

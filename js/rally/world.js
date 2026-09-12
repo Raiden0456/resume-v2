@@ -1,6 +1,8 @@
 import { CatmullRomCurve3, Vector3 } from "../vendor/three/three.module.min.js";
 
 export const WORLD = { width: 840, depth: 980, limitX: 400, limitZ: 465, summit: 300 };
+export const SNOW_LINE = 238;
+export const MEADOW_LINE = 45;
 export const SPAWN = { x: -110, z: -351, heading: Math.PI };
 export const START_LINE = { x: SPAWN.x, z: SPAWN.z + 6.6, heading: SPAWN.heading, elevation: 300, halfWidth: 7 };
 
@@ -40,15 +42,15 @@ export const ROUTES = STAGES.map((stage, index) => {
 });
 
 const SIGHTS = {
-  "Rowte.io": { id: "rowte", stage: 8, type: "bank", label: "THE SUMMIT EXCHANGE", color: "#98c379", x: -133, z: -331, marker: [-110,-326], altitude: 300 },
-  "NextStreet": { id: "nextstreet", stage: 7, type: "town", label: "THE UPPER VILLAGE", color: "#61afef", x: -208, z: -243, marker: [-208,-221], altitude: 258 },
-  "Supplier Success Accelerator": { id: "supplier", stage: 6, type: "accelerator", label: "THE BUSINESS ACCELERATOR", color: "#56b6c2", x: -89, z: -130, marker: [-71,-146], altitude: 226 },
-  "OkVPN": { id: "okvpn", stage: 5, type: "tower", label: "SIGNAL RIDGE", color: "#c678dd", x: 159, z: -278, marker: [157,-256], altitude: 182 },
+  "Rowte.io": { id: "rowte", stage: 8, type: "bank", label: "THE SUMMIT EXCHANGE", color: "#df8b74", x: -133, z: -331, marker: [-110,-326], altitude: 300 },
+  "NextStreet": { id: "nextstreet", stage: 7, type: "hub", label: "THE BUSINESS HUB", color: "#dfae5a", x: -206, z: -247, marker: [-208,-221], altitude: 258 },
+  "Supplier Success Accelerator": { id: "supplier", stage: 6, type: "accelerator", label: "THE BUSINESS ACCELERATOR", color: "#dfae5a", x: -89, z: -130, marker: [-71,-146], altitude: 226 },
+  "OkVPN": { id: "okvpn", stage: 5, type: "tower", label: "SIGNAL RIDGE", color: "#8fc48e", x: 159, z: -278, marker: [157,-256], altitude: 182 },
   "RedNeck Studio": { id: "redneck", stage: 4, type: "arcade", label: "THE QUARRY ARCADE", color: "#e06c75", x: 282, z: -69, marker: [257,-68], altitude: 137 },
-  "AURUS": { id: "aurus", stage: 3, type: "garage", label: "THE MOTOR HOUSE", color: "#e5c07b", x: 131, z: 123, marker: [112,107], altitude: 96 },
-  "CROSSNETICS": { id: "crossnetics", stage: 2, type: "observatory", label: "THE FOREST OBSERVATORY", color: "#c678dd", x: -202, z: 76, marker: [-179,87], altitude: 69 },
-  "FaceStellar": { id: "facestellar", stage: 1, type: "salon", label: "THE BEAUTY SALON", color: "#d19a9c", x: -212, z: 282, marker: [-205,260], altitude: 38, summary: "A CRM system for a beauty salon, built with Node.js, Express, and React to support customer service." },
-  "Highway Logistic Group": { id: "highway", stage: 0, type: "depot", label: "THE VALLEY DEPOT", color: "#61afef", x: 170, z: 322, marker: [150,337], altitude: 6 },
+  "AURUS": { id: "aurus", stage: 3, type: "showroom", label: "THE GRAND SHOWROOM", color: "#e5c07b", x: 131, z: 123, marker: [112,107], altitude: 96 },
+  "CROSSNETICS": { id: "crossnetics", stage: 2, type: "web3", label: "THE FOREST NODE", color: "#7a86d6", x: -202, z: 76, marker: [-179,87], altitude: 69 },
+  "FaceStellar": { id: "facestellar", stage: 1, type: "salon", label: "THE BEAUTY SALON", color: "#8f86cf", x: -212, z: 282, marker: [-205,260], altitude: 38, summary: "A CRM system for a beauty salon, built with Node.js, Express, and React to support customer service." },
+  "Highway Logistic Group": { id: "highway", stage: 0, type: "depot", label: "THE VALLEY DEPOT", color: "#c9926b", x: 170, z: 322, marker: [150,337], altitude: 6 },
 };
 const smoothstep = (min, max, value) => {
   const t = Math.max(0, Math.min(1, (value - min) / (max - min)));
@@ -309,7 +311,7 @@ export function createLandmarks(resume) {
         description: design.summary || project.description || subsections.flatMap(section => section.items || [])[0] || job.role,
         stack: project.stack || job.stack || [],
         url: project.url || job.companyUrl || null,
-        radius: design.type === "tower" ? 5.5 : 8,
+        radius: { tower: 5.5, hub: 11.5, showroom: 10 }[design.type] ?? 8,
       });
     }
   }

@@ -287,6 +287,33 @@ test("railed bridges keep a sliding car on the deck while the timber bridge lets
   }
 });
 
+test("the suspension soaks up real road texture instead of skipping the car along it", () => {
+  const route = ROUTES.find(route => route.name === "THE FAST DESCENT"), profile = [];
+  for (let i = 1; i < route.samples.length; i++) {
+    const [ax, az] = route.samples[i - 1], [bx, bz] = route.samples[i], length = Math.hypot(bx - ax, bz - az);
+    for (let d = 0; d < length; d += 0.25) profile.push(driveHeightAt(ax + (bx - ax) * d / length, az + (bz - az) * d / length));
+  }
+  const heightAt = x => { const f = Math.max(0, Math.min(profile.length - 1.001, x * 4)), i = Math.floor(f); return profile[i] + (profile[i + 1] - profile[i]) * (f - i); };
+  const car = createCarState({ x: 0, z: 0, heading: Math.PI / 2 }, heightAt);
+  let airborne = 0, steps = 0;
+  while (car.x < (profile.length - 2) * 0.25 && steps < 6000) { stepCar(car, { throttle: car.speed < 29 ? 1 : 0 }, FIXED_STEP, { heightAt }); steps++; if (!car.grounded) airborne++; }
+  assert.ok(steps > 600 && airborne / steps < 0.05, `the car must stay planted, was airborne ${Math.round(airborne / steps * 100)}%`);
+});
+
+test("snow above the snow line cuts grip and shows up as its own surface", () => {
+  const drive = altitude => {
+    const heightAt = () => altitude;
+    const car = createCarState({ x: 0, z: 0, heading: 0 }, heightAt);
+    car.vz = -22; car.speed = 22;
+    run(car, { throttle: 1, steer: 0.5 }, 1.2, { heightAt, onRoad: true, snowLine: 238 });
+    return car;
+  };
+  const gravel = drive(100), snow = drive(260);
+  assert.equal(gravel.surface, "gravel");
+  assert.equal(snow.surface, "snow");
+  assert.ok(snow.slip > gravel.slip * 1.15, "the same corner must slide more on snow");
+});
+
 test("a descent lifts the top speed and the flat gently takes it back", () => {
   const heightAt = x => Math.max(0, -x * 0.5);
   const car = createCarState({ x: -300, z: 0, heading: Math.PI / 2 }, heightAt);

@@ -1,5 +1,5 @@
 import * as THREE from "../vendor/three/three.module.min.js";
-import { WORLD, SPAWN, FINISH_LINE, CAMPS, terrainHeight, terrainGradient } from "./world.js";
+import { WORLD, SPAWN, FINISH_LINE, CAMPS, SNOW_LINE, MEADOW_LINE, terrainHeight, terrainGradient } from "./world.js";
 
 function drawContours(context) {
   const step = 6, columns = Math.ceil(WORLD.width / step), rows = Math.ceil(WORLD.depth / step);
@@ -47,7 +47,7 @@ export function makeGround(scene, routes, landmarks) {
   for (let z = -WORLD.depth / 2; z < WORLD.depth / 2; z += 6) for (let x = -WORLD.width / 2; x < WORLD.width / 2; x += 6) {
     const y = terrainHeight(x + 3, z + 3), slope = terrainGradient(x + 3, z + 3);
     const steepness = Math.hypot(slope.x, slope.z);
-    context.fillStyle = y > 170 ? (steepness > 0.8 ? "#50595b" : "#3d484b") : steepness > 1 ? "#45504e" : y > 45 ? "#303f39" : "#2b3636";
+    context.fillStyle = y > SNOW_LINE ? (steepness > 0.8 ? "#727b7e" : "#9aa3a3") : y > 170 ? (steepness > 0.8 ? "#50595b" : "#3d484b") : steepness > 1 ? "#45504e" : y > MEADOW_LINE ? "#303f39" : "#2f4636";
     context.fillRect(x, z, 6.05, 6.05);
   }
   context.strokeStyle = "#48534e70";

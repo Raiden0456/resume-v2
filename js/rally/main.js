@@ -1,4 +1,4 @@
-import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, driveHeightAt, roadAt, RIVER, CROSSINGS, RAILS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
+import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, SNOW_LINE, driveHeightAt, roadAt, RIVER, CROSSINGS, RAILS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
 import { createCarState, resetCar, stepCar, FIXED_STEP } from "./physics.js";
 import { createScene } from "./scene.js";
 import { RallyInput } from "./input.js";
@@ -434,9 +434,10 @@ export async function start() {
     const control = input.sample();
     if (!paused) {
       accumulator += dt;
-      const environment = { obstacles: graphics.obstacles, rails: RAILS, heightAt: driveHeightAt, supportAt: driveHeightAt, waterAt: riverAt };
+      const environment = { rails: RAILS, snowLine: SNOW_LINE, heightAt: driveHeightAt, supportAt: driveHeightAt, waterAt: riverAt };
       while (accumulator >= FIXED_STEP) {
         environment.onRoad = graphics.isRoad(car.x, car.z);
+        environment.obstacles = graphics.obstaclesNear(car.x, car.z);
         if (!recovery.crashed) stepCar(car, control, FIXED_STEP, environment);
         const event = recovery.update(car, FIXED_STEP);
         accumulator -= FIXED_STEP;
@@ -485,7 +486,7 @@ export async function start() {
       updateTiming();
       const speed = Math.round(car.speed * 3.6);
       if (lastSpeed !== speed) { $("speed").textContent = speed; lastSpeed = speed; }
-      $("surface").textContent = recovery.crashed ? "BOOM!" : car.inWater ? "SPLASH" : !car.grounded && car.airtime > 0.12 ? "AIRBORNE" : car.wheelspin > 0.5 ? "WHEELSPIN" : car.surface === "gravel" ? "GRAVEL" : "OFF ROAD";
+      $("surface").textContent = recovery.crashed ? "BOOM!" : car.inWater ? "SPLASH" : !car.grounded && car.airtime > 0.12 ? "AIRBORNE" : car.wheelspin > 0.5 ? "WHEELSPIN" : car.surface === "snow" ? "SNOW" : car.surface === "gravel" ? "GRAVEL" : "OFF ROAD";
       $("stage-name").textContent = roadAt(car.x, car.z)?.name || "THE SCENIC ROUTE";
       $("drift-status").classList.toggle("visible", car.drift && !paused);
       $("map-car").setAttribute("transform", `translate(${car.x.toFixed(2)} ${car.z.toFixed(2)}) rotate(${(car.heading * 180 / Math.PI).toFixed(1)}) scale(2.8)`);
