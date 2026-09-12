@@ -1,6 +1,6 @@
 import * as THREE from "../vendor/three/three.module.min.js";
 import { createCameraRig } from "./camera.js";
-import { ROUTES, WORLD, SPAWN, FINISH_LINE, CAMPS, COTTAGE, SNOW_LINE, MEADOW_LINE, terrainHeight, terrainGradient, driveHeightAt, riverAt, roadAt, CROSSINGS } from "./world.js";
+import { ROUTES, WORLD, SPAWN, FINISH_LINE, CAMPS, COTTAGE, GRAVE_SITE, SNOW_LINE, MEADOW_LINE, terrainHeight, terrainGradient, driveHeightAt, riverAt, roadAt, CROSSINGS } from "./world.js";
 import { makeGround } from "./terrain.js";
 import { makeWater, buildCrossings } from "./water.js";
 import { createCrashEffect, createSplashEffect, createFireworks } from "./effects.js";
@@ -329,6 +329,7 @@ function buildScenery(batch, landmarks, isRoad, routes) {
     const water = riverAt(x, z);
     if ((water && water.distance < water.width + 4) || isRoad(x, z, 5) || !farFromSights(x, z)) continue;
     if (COTTAGE && (Math.hypot(x - COTTAGE.x, z - COTTAGE.z) < COTTAGE.radius || nearPath(x, z))) continue;
+    if (Math.hypot(x - GRAVE_SITE.x, z - GRAVE_SITE.z) < 8) continue;
     const elevation = terrainHeight(x, z);
     const slope = terrainGradient(x, z);
     const rocky = elevation > 175 || Math.hypot(slope.x, slope.z) > 0.9;

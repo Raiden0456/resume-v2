@@ -1,5 +1,5 @@
 import * as THREE from "../vendor/three/three.module.min.js";
-import { CAMPS, COTTAGE, terrainHeight, roadAt } from "./world.js";
+import { CAMPS, COTTAGE, GRAVE_SITE, terrainHeight, roadAt } from "./world.js";
 
 const CREAM = "#e7dfc5", DARK = "#28343a", TIMBER = "#9b8061";
 
@@ -332,6 +332,49 @@ export function createAtmosphere(scene, batch, landmarks) {
     cat(-3.6, 4.6, 0.5, "#c98a4b", "#e8c9a0");
     cat(3.9, 5.6, -1.1, "#2e3236", "#e6e6e2");
     solid(f, 3.4, 4);
+  }
+
+  {
+    const f = frame(GRAVE_SITE.x, GRAVE_SITE.z, GRAVE_SITE.heading), a = f.add;
+    const stone = "#7d8484", soil = "#3b332c", skin = "#e0c2a6";
+    a("box", soil, 0, 0.12, 0, 1.4, 0.3, 2.4);
+    a("dome", "#46403a", 0, 0.2, 0.1, 0.6, 0.35, 1.1);
+    a("box", stone, 0, 0.75, -1.35, 1.2, 1.3, 0.22);
+    a("dome", stone, 0, 1.4, -1.35, 0.6, 0.35, 0.22);
+    a("box", "#59615f", 0, 0.9, -1.22, 0.7, 0.45, 0.03);
+    for (const dx of [-0.35, 0.35]) a("box", stone, dx, 0.2, -1.35, 0.3, 0.4, 0.3);
+    for (let i = 0; i < 4; i++) a("rock", ["#e5c07b", "#e06c75", "#e2dfcd", "#c678dd"][i], -0.3 + i * 0.2, 0.42, -0.9 + (i % 2) * 0.15, 0.1, 0.1, 0.1, 0, i, 0, "light");
+    const canYaw = 1.1, cs = Math.sin(canYaw), cc = Math.cos(canYaw), canX = -1.35, canZ = -0.55, canR = 0.24;
+    const along = (shape, color, d, py, sx, sy, sz, kind = "solid") => a(shape, color, canX + cs * d, py, canZ + cc * d, sx, sy, sz, Math.PI / 2, canYaw, 0, kind);
+    along("cylinder", "#4fc3c7", -0.2, canR, canR, 0.3, canR, "light");
+    along("cylinder", "#3b8fd0", 0.06, canR, canR, 0.24, canR, "light");
+    along("cylinder", "#2f3fa8", 0.3, canR, canR, 0.26, canR, "light");
+    along("cylinder", "#c9d3d6", -0.36, canR, canR * 0.96, 0.03, canR * 0.96);
+    along("cylinder", "#1d2126", 0.45, canR, canR * 0.98, 0.06, canR * 0.98);
+    along("cylinder", "#c9d3d6", 0.49, canR, canR * 0.9, 0.025, canR * 0.9);
+    for (const [d, w, thick] of [[-0.14, 0.3, 0.11], [0.01, 0.3, 0.11], [0.17, 0.22, 0.05]]) a("box", "#1d2126", canX + cs * d, canR * 2 - 0.02, canZ + cc * d, w, 0.05, thick, 0, canYaw, 0);
+    a("cylinder", "#565e5c", -1.6, 1.2, -1.2, 0.06, 2.4, 0.06);
+    a("box", "#3b4245", -1.6, 2.45, -1.2, 0.36, 0.3, 0.36);
+    beacon(f, -1.6, 2.45, -1.2, "#f0c979");
+    const glow = new THREE.PointLight("#ffd9a0", 26, 14, 1.6);
+    glow.position.copy(f.point(-1.6, 2.4, -1.2)); scene.add(glow);
+    const mx = 1.9, mz = 0.6;
+    for (const dx of [-0.13, 0.13]) a("box", "#3a3f4a", mx + dx, 0.42, mz, 0.2, 0.84, 0.24);
+    a("box", "#5c6b5a", mx, 1.22, mz, 0.6, 0.78, 0.34);
+    for (const dx of [-0.38, 0.38]) a("box", "#5c6b5a", mx + dx, 1.2, mz, 0.15, 0.66, 0.17, dx > 0 ? 0.5 : 0, 0, dx > 0 ? -0.2 : 0.15);
+    a("rock", skin, mx, 1.8, mz, 0.26, 0.28, 0.26);
+    a("dome", "#4a3a2e", mx, 1.86, mz, 0.29, 0.2, 0.29);
+    a("box", "#c9a26f", mx + 0.42, 1.24, mz + 0.35, 0.03, 0.03, 0.7, 0.9, 0, 0);
+    const dx0 = mx + 0.7, dz0 = mz + 0.75, brown = "#6b3f26";
+    a("box", brown, dx0, 0.3, dz0, 0.26, 0.24, 0.85);
+    a("box", brown, dx0, 0.42, dz0 + 0.5, 0.22, 0.2, 0.32);
+    a("box", "#4a2a18", dx0, 0.36, dz0 + 0.76, 0.14, 0.12, 0.26);
+    for (const side of [-1, 1]) a("box", "#4a2a18", dx0 + side * 0.13, 0.4, dz0 + 0.5, 0.06, 0.2, 0.14);
+    for (const px of [-0.09, 0.09]) for (const pz of [-0.32, 0.3]) a("box", brown, dx0 + px, 0.09, dz0 + pz, 0.07, 0.18, 0.08);
+    a("box", brown, dx0, 0.42, dz0 - 0.5, 0.05, 0.05, 0.3, -0.7, 0, 0);
+    a("cylinder", "#8a8f86", -1.3, 0.35, 0.9, 0.6, 0.7, 0.55);
+    const marker = f.point(0, 0, -1.35);
+    solid(frame(marker.x, marker.z), 0.7, 1.6);
   }
 
   return {

@@ -174,6 +174,8 @@ export const COTTAGE_SITE = (() => {
   const path = [[edge.x + (turn[0] - edge.x) / toTurn * shoulder, edge.z + (turn[1] - edge.z) / toTurn * shoulder], turn, [parking.x, parking.z]];
   return { x, z, y: river.y + 4.8, radius: 10, outer: 24, heading, porch, parking, path, pathStartY: edge.y, corridor: 5, corridorOuter: 13 };
 })();
+export const GRAVE_SITE = { x: 153, z: -113, y: 116, radius: 5, outer: 11, heading: Math.atan2(-50, 85) + 0.4 };
+const TERRACES = [COTTAGE_SITE, GRAVE_SITE];
 function pathProfile(x, z) {
   const path = COTTAGE_SITE.path;
   let best = Infinity, along = 0, total = 0;
@@ -267,8 +269,10 @@ export function terrainHeight(x, z) {
     const target = COTTAGE_SITE.pathStartY + (COTTAGE_SITE.y - COTTAGE_SITE.pathStartY) * grade;
     height += (target - height) * (1 - smoothstep(COTTAGE_SITE.corridor, COTTAGE_SITE.corridorOuter, trail.distance)) * dry * smoothstep(0, 0.08, trail.fraction);
   }
-  const terrace = Math.hypot(x - COTTAGE_SITE.x, z - COTTAGE_SITE.z);
-  if (terrace < COTTAGE_SITE.outer) height += (COTTAGE_SITE.y - height) * (1 - smoothstep(COTTAGE_SITE.radius, COTTAGE_SITE.outer, terrace)) * dry;
+  for (const site of TERRACES) {
+    const terrace = Math.hypot(x - site.x, z - site.z);
+    if (terrace < site.outer) height += (site.y - height) * (1 - smoothstep(site.radius, site.outer, terrace)) * dry;
+  }
   return height;
 }
 // Curved crossings can run almost parallel to the river at one bank. Extend

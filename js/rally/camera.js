@@ -39,7 +39,7 @@ export function createCameraRig(camera, groundAt = terrainHeight) {
       desired.copy(DRIVE_OFFSET);
       const targetFocus = drivingFocus.clone();
       if (sight) {
-        const cottage = sight.type === "cottage";
+        const cottage = sight.type === "rest";
         if ((mode === "orbit" || cottage) && !view.paused && !reducedMotion) {
           swayPhase = (swayPhase + dt * Math.PI * 2 / SWAY_PERIOD) % (Math.PI * 2);
           // Stay on the original side of the mountain, easing into each reversal.

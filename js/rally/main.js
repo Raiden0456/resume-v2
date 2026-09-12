@@ -1,4 +1,4 @@
-import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, SNOW_LINE, COTTAGE, terrainHeight, driveHeightAt, roadAt, RIVER, CROSSINGS, RAILS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
+import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, SNOW_LINE, COTTAGE, GRAVE_SITE, terrainHeight, driveHeightAt, roadAt, RIVER, CROSSINGS, RAILS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
 import { createCarState, resetCar, stepCar, FIXED_STEP } from "./physics.js";
 import { createScene } from "./scene.js";
 import { RallyInput } from "./input.js";
@@ -56,8 +56,8 @@ export async function start() {
     $("start-button").firstChild.textContent = "Continue driving ";
   }
   let started = false, blurred = false, stopped = false;
-  let currentSight = null, toastTimer = 0, cottageStill = 0, cottageVisit = false;
-  const cottageSight = COTTAGE && { x: COTTAGE.x, z: COTTAGE.z, elevation: terrainHeight(COTTAGE.x, COTTAGE.z), type: "cottage" };
+  let currentSight = null, toastTimer = 0, restStill = 0, restVisit = null;
+  const restSpots = [COTTAGE && { ...COTTAGE, meow: true }, GRAVE_SITE].filter(Boolean).map(spot => ({ ...spot, sight: { x: spot.x, z: spot.z, elevation: terrainHeight(spot.x, spot.z), type: "rest" } }));
   let previousTime = 0, accumulator = 0, uiElapsed = 0;
   let lastSpeed = -1;
   let lastSafePose = stops.restartPose;
@@ -473,13 +473,13 @@ export async function start() {
         announce(`${split.finished ? "FINISH" : `CP ${pad(split.index + 1)}`} · ${formatTime(split.time)} · ${formatDelta(split.delta)}${split.delta === null ? "" : " vs previous descent"}`);
       }
     }
-    const atCottage = cottageSight && !paused && car.grounded && Math.hypot(car.x - COTTAGE.x, car.z - COTTAGE.z) < 16;
-    cottageStill = atCottage && car.speed < 1.2 ? cottageStill + dt : 0;
-    if (cottageStill >= 0.5 && !cottageVisit) { cottageVisit = true; audio.meow(); }
-    if (!atCottage) cottageVisit = false;
+    const restSpot = !paused && car.grounded ? restSpots.find(spot => Math.hypot(car.x - spot.x, car.z - spot.z) < 16) : null;
+    restStill = restSpot && car.speed < 1.2 ? restStill + dt : 0;
+    if (restStill >= 0.5 && !restVisit) { restVisit = restSpot; if (restSpot.meow) audio.meow(); }
+    if (!restSpot) restVisit = null;
     const stopSight = stops.viewing || (stops.ready ? stops.nearby : null);
-    const parked = cottageVisit && car.speed < 3 && !control.throttle;
-    const cameraSight = stopSight || (cottageVisit && car.speed < 3 ? cottageSight : null);
+    const parked = Boolean(restVisit) && car.speed < 3 && !control.throttle;
+    const cameraSight = stopSight || (restVisit && car.speed < 3 ? restVisit.sight : null);
     const cameraPanel = stops.viewing ? panel : $("nearby-card");
     const cameraInset = stopSight ? cameraPanel.getBoundingClientRect().right + 24 : 0;
     graphics.render(car, isSuspended() && started ? 0 : dt, !paused && !recovery.crashed, reducedMotion.matches, {
