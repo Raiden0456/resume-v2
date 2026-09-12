@@ -15,7 +15,7 @@ export function createCarState(pose = SPAWN, heightAt = driveHeightAt) {
     suspension: 0, suspensionVelocity: 0,
     pitch: Math.atan(slope.x * Math.sin(pose.heading) - slope.z * Math.cos(pose.heading)),
     roll: Math.atan(slope.x * Math.cos(pose.heading) + slope.z * Math.sin(pose.heading)),
-    vx: 0, vz: 0, yaw: 0, steer: 0, grip: 5.1, speed: 0, slip: 0, drift: false, surface: "gravel" };
+    vx: 0, vz: 0, yaw: 0, steer: 0, grip: 5.1, speed: 0, slip: 0, drift: false, wheelspin: 0, surface: "gravel" };
 }
 
 export function resetCar(state, pose = SPAWN, heightAt = driveHeightAt) {
@@ -42,21 +42,25 @@ export function stepCar(state, input, dt, environment = {}) {
   let forward = state.vx * forwardX + state.vz * forwardZ;
   let sideways = state.vx * rightX + state.vz * rightZ;
   state.steer += (steering - state.steer) * (1 - Math.exp(-18 * dt));
+  state.wheelspin = 0;
 
   if (state.grounded) {
     const slope = terrainGradient(state.x, state.z, (x, z) => supportAt(x, z, state.y + 1.1));
     const forwardGrade = slope.x * forwardX + slope.z * forwardZ;
-    const acceleration = throttle < 0 && forward > 0.6 ? 29 : throttle > 0 && forward < -0.6 ? 24 : 14;
-    forward += throttle * acceleration / Math.hypot(1, forwardGrade) * dt;
+    const lowGear = 1 + 0.3 * clamp(1 - Math.abs(forward) / 8, 0, 1);
+    const acceleration = throttle < 0 && forward > 0.6 ? 29 : throttle > 0 && forward < -0.6 ? 24 : 14 * lowGear;
+    const thrust = throttle * acceleration / Math.hypot(1, forwardGrade);
+    forward += thrust * dt;
     if (Math.abs(forward) > 0.8 || throttle) {
       // Gravity acts along the incline, and engine thrust is spent climbing.
       // Keep the existing low-speed hill hold and modest downhill assistance.
       const gravity = HILL_GRAVITY * forwardGrade / (1 + forwardGrade * forwardGrade);
       const uphill = forward * forwardGrade > 0;
+      if (throttle > 0 && forwardGrade > 0 && forward < 2) state.wheelspin = clamp(1 + (gravity + 1 - thrust) / 4, 0, 1);
       const beforeGravity = forward;
       forward -= (uphill ? gravity : clamp(gravity, -2.2, 2.2)) * dt;
       if (uphill && beforeGravity * forward < 0) forward = 0;
-      sideways -= clamp(slope.x * rightX + slope.z * rightZ, -1, 1) * (handbrake ? 1.3 : 0.35) * dt;
+      sideways -= clamp(slope.x * rightX + slope.z * rightZ, -1, 1) * (handbrake || state.wheelspin > 0.5 ? 1.3 : 0.35) * dt;
     }
     const resistance = !throttle ? (handbrake ? 3.8 : 3.2) : 0.65;
     forward -= Math.sign(forward) * Math.min(Math.abs(forward), resistance * dt);
@@ -143,7 +147,8 @@ export function stepCar(state, input, dt, environment = {}) {
   const moving = Math.hypot(state.vx, state.vz) > 3;
   const crestRelease = moving && state.vy - groundVelocity > GRAVITY * dt * 1.2 && freeY > ground;
   if (wasGrounded && !crestRelease && ((!moving && ground >= state.y - 0.3) || freeY <= ground + 0.006)) {
-    state.y = ground; state.vy = moving ? groundVelocity : 0; state.grounded = true;
+    // Slow cars must keep ground velocity, or the next incline projection eats their climb.
+    state.y = ground; state.vy = groundVelocity; state.grounded = true;
     // The sprung body responds over a wheelbase, so a short stone or deck seam
     // cannot give the whole car the wheel's instantaneous upward velocity.
     state.launchVy = moving ? state.launchVy + (state.vy - state.launchVy) * (1 - Math.exp(-distance / WHEELBASE)) : 0;

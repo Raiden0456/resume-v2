@@ -364,7 +364,7 @@ export async function start() {
     if (portrait.matches || stopped) return;
     enterImmersive(); beginDriving();
     syncInput(); focusGame();
-    if (window.matchMedia("(pointer: coarse)").matches) announce("Left: drag to steer. Right: hold to drive, slide up to drift, down to reverse.");
+    if (window.matchMedia("(pointer: coarse)").matches) announce("Left half: steer left and right buttons. Right half: gas, brake and handbrake.");
   });
   $("help-button").addEventListener("click", openHelp);
   $("map-toggle").addEventListener("click", () => {
@@ -485,7 +485,7 @@ export async function start() {
       updateTiming();
       const speed = Math.round(car.speed * 3.6);
       if (lastSpeed !== speed) { $("speed").textContent = speed; lastSpeed = speed; }
-      $("surface").textContent = recovery.crashed ? "BOOM!" : car.inWater ? "SPLASH" : !car.grounded && car.airtime > 0.12 ? "AIRBORNE" : car.surface === "gravel" ? "GRAVEL" : "OFF ROAD";
+      $("surface").textContent = recovery.crashed ? "BOOM!" : car.inWater ? "SPLASH" : !car.grounded && car.airtime > 0.12 ? "AIRBORNE" : car.wheelspin > 0.5 ? "WHEELSPIN" : car.surface === "gravel" ? "GRAVEL" : "OFF ROAD";
       $("stage-name").textContent = roadAt(car.x, car.z)?.name || "THE SCENIC ROUTE";
       $("drift-status").classList.toggle("visible", car.drift && !paused);
       $("map-car").setAttribute("transform", `translate(${car.x.toFixed(2)} ${car.z.toFixed(2)}) rotate(${(car.heading * 180 / Math.PI).toFixed(1)}) scale(2.8)`);

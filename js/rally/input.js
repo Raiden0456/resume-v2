@@ -24,19 +24,17 @@ export class RallyInput {
     window.addEventListener("keyup", event => this.keys.delete(event.code));
     window.addEventListener("blur", () => this.clear());
     document.addEventListener("visibilitychange", () => this.clear());
+    this.zones = [...surface.querySelectorAll("[data-zone]")];
     surface.addEventListener("pointerdown", event => {
       if (!this.enabled || event.pointerType === "mouse") return;
       event.preventDefault();
       surface.setPointerCapture(event.pointerId);
-      const side = event.clientX < window.innerWidth / 2 ? "steer" : "pedal";
-      this.pointers.set(event.pointerId, { side, x: event.clientX, y: event.clientY, dx: 0, dy: 0 });
+      this.pointers.set(event.pointerId, this.zoneAt(event.clientX, event.clientY));
       this.updateTouchHint();
     });
     surface.addEventListener("pointermove", event => {
-      const pointer = this.pointers.get(event.pointerId);
-      if (!pointer) return;
-      pointer.dx = event.clientX - pointer.x;
-      pointer.dy = event.clientY - pointer.y;
+      if (!this.pointers.has(event.pointerId)) return;
+      this.pointers.set(event.pointerId, this.zoneAt(event.clientX, event.clientY));
       this.updateTouchHint();
     });
     const release = event => {
@@ -49,18 +47,17 @@ export class RallyInput {
     surface.addEventListener("contextmenu", event => event.preventDefault());
   }
 
+  zoneAt(x, y) {
+    const hit = this.zones.find(zone => {
+      const rect = zone.getBoundingClientRect();
+      return x >= rect.left && x < rect.right && y >= rect.top && y < rect.bottom;
+    });
+    return hit?.dataset.zone ?? null;
+  }
+
   updateTouchHint() {
-    for (const side of ["steer", "pedal"]) {
-      const indicator = document.getElementById(`touch-${side}`);
-      const pointer = [...this.pointers.values()].find(value => value.side === side);
-      indicator.classList.toggle("active", Boolean(pointer));
-      if (pointer) {
-        indicator.style.left = `${pointer.x}px`;
-        indicator.style.top = `${pointer.y}px`;
-        indicator.style.setProperty("--touch-x", `${Math.max(-40, Math.min(40, pointer.dx))}px`);
-        indicator.style.setProperty("--touch-y", `${Math.max(-40, Math.min(40, pointer.dy))}px`);
-      }
-    }
+    const active = new Set(this.pointers.values());
+    for (const zone of this.zones) zone.classList.toggle("active", active.has(zone.dataset.zone));
   }
 
   sample() {
@@ -68,13 +65,10 @@ export class RallyInput {
     this.value.throttle = Number(has("ArrowUp", "KeyW")) - Number(has("ArrowDown", "KeyS"));
     this.value.steer = Number(has("ArrowRight", "KeyD")) - Number(has("ArrowLeft", "KeyA"));
     this.value.handbrake = has("Space");
-    for (const pointer of this.pointers.values()) {
-      if (pointer.side === "steer") this.value.steer = Math.max(-1, Math.min(1, pointer.dx / 45));
-      else {
-        this.value.throttle = pointer.dy > 58 ? -1 : 1;
-        this.value.handbrake = pointer.dy < -35;
-      }
-    }
+    const zones = new Set(this.pointers.values());
+    if (zones.has("left") || zones.has("right")) this.value.steer = Number(zones.has("right")) - Number(zones.has("left"));
+    if (zones.has("gas") || zones.has("brake")) this.value.throttle = Number(zones.has("gas")) - Number(zones.has("brake"));
+    if (zones.has("handbrake")) this.value.handbrake = true;
     if (!this.enabled) { this.value.throttle = 0; this.value.steer = 0; this.value.handbrake = false; }
     return this.value;
   }

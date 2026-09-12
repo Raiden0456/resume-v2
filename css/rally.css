@@ -195,7 +195,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; min-wi
 .keyboard-guide dt { font-size: 10px; color: #73867d; }
 .keyboard-guide dd { font-size: 10px; }
 .help-tip { color: #c1b18d; border-left: 2px solid #9e8c64; padding-left: 13px; margin-top: 18px; }
-.touch-guide, .mobile-hints, .touch-indicator { display: none; }
+.touch-guide, .mobile-hints { display: none; }
 .loading-panel, .error-panel { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 22px; z-index: 8; background: #22272e; }
 .loading-panel p { font-size: 11px; color: #aeb6ad; }
 .loading-wheel { width: 28px; height: 28px; border: 2px solid #e7e2d02e; border-top-color: var(--rally-red); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -228,7 +228,9 @@ kbd { display: inline-flex; justify-content: center; align-items: center; min-wi
   .travel-button kbd { display: none; }
   .nearby-card { pointer-events: none; }
   .nearby-card button { pointer-events: auto; }
-  #touch-surface { display: block; }
+  #touch-surface { display: grid; grid-template-columns: 1fr 1fr 0.8fr 1.2fr; grid-template-rows: 1fr 2fr; }
+  .touch-zone[data-zone="left"], .touch-zone[data-zone="right"] { grid-row: 1 / -1; }
+  .touch-zone[data-zone="handbrake"] { grid-column: 3 / -1; }
   .desktop-hints, .keyboard-guide { display: none; }
   .mobile-hints { display: flex; gap: 25px; font-size: 6px; letter-spacing: 0.5px; color: #8fa3a1; }
   .mobile-hints span { display: block; max-width: 180px; }
@@ -236,11 +238,19 @@ kbd { display: inline-flex; justify-content: center; align-items: center; min-wi
   .touch-guide { display: block; }
   .touch-guide p { margin-top: 16px; }
   .touch-guide strong { color: var(--rally-paper); font-weight: 400; }
-  .touch-indicator { position: fixed; z-index: 3; display: none; width: 88px; height: 88px; border: 1px solid #c1c8b855; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; background: #c1c8b806; }
-  .touch-indicator.active { display: block; }
-  .touch-indicator span { position: absolute; left: 32px; top: 32px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid #e7e2d099; background: #e7e2d029; transform: translate(var(--touch-x, 0px), var(--touch-y, 0px)); }
-  #touch-pedal { border-color: #dd735f55; }
-  #touch-pedal span { background: #dd735f35; border-color: #dd735f99; }
+  .touch-zone { position: relative; pointer-events: none; opacity: 0; border: 1px solid #c1c8b81f; background: #c1c8b806; transition: background 90ms, opacity 200ms; }
+  .is-driving .touch-zone { opacity: 1; }
+  .touch-zone span { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); font-size: 7px; letter-spacing: 1px; color: #c1c8b86e; }
+  .touch-zone[data-zone="left"] span, .touch-zone[data-zone="right"] span { font-size: 15px; }
+  .touch-zone[data-zone="gas"] { border-color: #98c37933; }
+  .touch-zone[data-zone="brake"] { border-color: #dd735f33; }
+  .touch-zone[data-zone="handbrake"] { border-color: #e5c07b33; }
+  .touch-zone[data-zone="handbrake"] span { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
+  .touch-zone.active { background: #c1c8b81a; }
+  .touch-zone.active span { color: var(--rally-paper); }
+  .touch-zone[data-zone="gas"].active { background: #98c37926; }
+  .touch-zone[data-zone="brake"].active { background: #dd735f26; }
+  .touch-zone[data-zone="handbrake"].active { background: #e5c07b26; }
   .nearby-card kbd { display: none; }
 }
 @media (max-height: 550px) and (orientation: landscape) {

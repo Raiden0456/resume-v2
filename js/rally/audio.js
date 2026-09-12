@@ -90,9 +90,9 @@ export class RallyAudio {
     const time = this.context.currentTime;
     this.master.gain.setTargetAtTime(this.enabled && !paused ? 0.14 : 0, time, 0.08);
     const gearSpeed = car.speed % 10;
-    const rpm = 38 + gearSpeed * 7 + Math.abs(throttle) * 15;
+    const rpm = 38 + gearSpeed * 7 + Math.abs(throttle) * 15 + car.wheelspin * 45;
     for (const { oscillator, ratio } of this.oscillators) oscillator.frequency.setTargetAtTime(rpm * ratio, time, 0.12);
     this.engineGain.gain.setTargetAtTime(0.16 + Math.abs(throttle) * 0.1, time, 0.1);
-    this.gravelGain.gain.setTargetAtTime(car.grounded && !car.inWater ? Math.min(car.speed * 0.008 + car.slip * 0.045, 0.7) : 0, time, 0.08);
+    this.gravelGain.gain.setTargetAtTime(car.grounded && !car.inWater ? Math.min(car.speed * 0.008 + car.slip * 0.045 + car.wheelspin * 0.35, 0.7) : 0, time, 0.08);
   }
 }

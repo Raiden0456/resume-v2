@@ -271,6 +271,26 @@ test("the car and its pitch follow the terrain while uphill travel costs speed",
   assert.ok(uphill.speed < flat.speed * 0.75, "even a moderate climb must noticeably cost speed");
 });
 
+test("the car pulls away from rest on a moderate climb instead of crawling", () => {
+  for (const grade of [0.3, 0.45]) {
+    const heightAt = x => x * grade;
+    const car = createCarState({ x: 0, z: 0, heading: Math.PI / 2 }, heightAt);
+    run(car, { throttle: 1 }, 3, { heightAt });
+    assert.ok(car.speed > 5, `grade ${grade} must be climbable from a standstill`);
+    assert.ok(car.grounded && car.wheelspin < 0.5);
+  }
+});
+
+test("holding the gas on an unclimbable grade spins the wheels in place", () => {
+  const heightAt = x => x * 1.2;
+  const car = createCarState({ x: 0, z: 0, heading: Math.PI / 2 }, heightAt);
+  run(car, { throttle: 1 }, 2, { heightAt });
+  assert.ok(car.wheelspin > 0.9);
+  assert.ok(Math.abs(car.x) < 0.1 && car.grounded);
+  const flat = run(createCarState({ x: 0, z: 0, heading: Math.PI / 2 }, () => 0), { throttle: 1 }, 1, { heightAt: () => 0 });
+  assert.equal(flat.wheelspin, 0);
+});
+
 test("a steep bank consumes the run-up and cannot be climbed at full speed", () => {
   const heightAt = x => Math.max(0, Math.min(18, (x - 8) * 1.2));
   const car = createCarState({ x: 0, z: 0, heading: Math.PI / 2 }, heightAt);

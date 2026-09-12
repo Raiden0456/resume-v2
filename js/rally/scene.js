@@ -432,6 +432,14 @@ function makeTrails(scene) {
       }
       lastX = car.x; lastZ = car.z;
     } else if (distance >= 3 || !active) { lastX = car.x; lastZ = car.z; }
+    if (active && car.grounded && !car.inWater && car.wheelspin > 0 && Math.random() < car.wheelspin * dt * 40) {
+      const sin = Math.sin(car.heading), cos = Math.cos(car.heading), side = Math.random() < 0.5 ? -1 : 1;
+      const i = dustCursor++ % dustCapacity;
+      particles[i] = { life: 1, vx: -sin * 4 + (Math.random() - 0.5) * 2, vz: cos * 4 + (Math.random() - 0.5) * 2 };
+      positions[i * 3] = car.x - sin * 1.4 + cos * side;
+      positions[i * 3 + 1] = car.y + 0.3;
+      positions[i * 3 + 2] = car.z + cos * 1.4 + sin * side;
+    }
     particles.forEach((particle, i) => {
       particle.life = Math.max(0, particle.life - dt * 0.7);
       positions[i * 3] += particle.vx * dt;
