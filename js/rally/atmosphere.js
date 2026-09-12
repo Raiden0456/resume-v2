@@ -1,5 +1,5 @@
 import * as THREE from "../vendor/three/three.module.min.js";
-import { CAMPS, terrainHeight, roadAt } from "./world.js";
+import { CAMPS, COTTAGE, terrainHeight, roadAt } from "./world.js";
 
 const CREAM = "#e7dfc5", DARK = "#28343a", TIMBER = "#9b8061";
 
@@ -272,6 +272,66 @@ export function createAtmosphere(scene, batch, landmarks) {
       for (const x of [7.4, 8.6]) a("box", "#a5b5a9", x, 0.15, 3.6, 0.18, 0.18, 2);
       beacon(f, 8, 1.7, 5.5, "#e2b66e"); sign(f, "DISPATCH / 24H", -2, 5.2, 8, 6, sight.color);
     }
+  }
+
+  if (COTTAGE) {
+    const f = frame(COTTAGE.x, COTTAGE.z, COTTAGE.heading), a = f.add;
+    const plaster = "#d9cfb8", roofColor = "#7a4f43", skin = "#e8c9ae", hair = "#a98a63";
+    a("box", "#5a5f5b", 0, -0.35, 0, 6.4, 1.2, 5.4);
+    a("box", plaster, 0, 1.55, 0, 5.4, 2.7, 4.4);
+    for (const x of [-2.7, 2.7]) a("box", TIMBER, x, 1.55, 0, 0.18, 2.7, 4.5);
+    a("box", TIMBER, 0, 2.95, 0, 5.6, 0.2, 4.6);
+    for (const side of [-1, 1]) a("box", roofColor, side * 1.5, 4.1, 0, 3.6, 0.16, 5.2, 0, 0, side * -0.72);
+    a("box", "#5a4238", 0, 5.3, 0, 0.3, 0.2, 5.3);
+    a("box", "#6b6f6c", 1.6, 4.6, -1.2, 0.7, 2, 0.7);
+    steam(f, 1.6, 5.8, -1.2);
+    a("box", DARK, 0, 1.05, 2.26, 0.9, 1.9, 0.08);
+    a("rock", "#d9c07a", 0.3, 1.05, 2.33, 0.06, 0.06, 0.06, 0, 0, 0, "light");
+    for (const x of [-1.7, 1.7]) {
+      a("box", "#f2d79a", x, 1.7, 2.26, 0.9, 0.9, 0.06, 0, 0, 0, "light");
+      a("box", TIMBER, x, 1.7, 2.3, 0.08, 1, 0.05); a("box", TIMBER, x, 1.7, 2.3, 1, 0.08, 0.05);
+    }
+    a("box", "#f2d79a", -2.83, 1.7, 0.4, 0.06, 0.8, 0.9, 0, 0, 0, "light");
+    a("box", TIMBER, -2.87, 1.7, 0.4, 0.05, 0.9, 0.08); a("box", TIMBER, -2.87, 1.7, 0.4, 0.05, 0.08, 1);
+    a("box", TIMBER, 0, 0.3, 3.4, 4.2, 0.14, 2.2);
+    for (const x of [-1.9, 1.9]) a("cylinder", TIMBER, x, 0.8, 3.4, 0.08, 1, 0.08);
+    a("cylinder", "#565e5c", 2.9, 1.1, 3.9, 0.06, 2.2, 0.06);
+    beacon(f, 2.9, 2.3, 3.9, "#f0c979");
+    for (let i = 0; i < 3; i++) a("cylinder", "#8a8f86", (i % 2) * 0.5 - 0.25, 0.04, 4.9 + i * 0.75, 0.42, 0.08, 0.34);
+    a("box", "#6d5a45", -2.2, 0.55, 3.3, 0.6, 0.5, 0.6);
+    a("rock", "#c67a8a", -2.2, 0.95, 3.3, 0.3, 0.25, 0.3);
+    a("rock", "#e5c07b", -2, 1.05, 3.15, 0.12, 0.12, 0.12, 0, 0, 0, "light");
+    const gx = 0.9, gz = 4.7;
+    for (const dx of [-0.13, 0.13]) a("box", "#4a5568", gx + dx, 0.4, gz, 0.2, 0.8, 0.22);
+    a("box", "#6f9aa6", gx, 0.72, gz, 0.66, 0.24, 0.42);
+    a("box", "#6f9aa6", gx, 1.15, gz, 0.56, 0.7, 0.34);
+    for (const dx of [-0.36, 0.36]) a("box", skin, gx + dx, 1.15, gz, 0.14, 0.62, 0.16, 0, 0, dx > 0 ? -0.25 : 0.25);
+    a("rock", skin, gx, 1.72, gz, 0.26, 0.28, 0.26);
+    a("box", hair, gx, 1.6, gz - 0.17, 0.5, 1, 0.2);
+    a("dome", hair, gx, 1.8, gz, 0.29, 0.22, 0.29);
+    const cat = (cx, cz, yaw, coat, patch) => {
+      const sin = Math.sin(yaw), cos = Math.cos(yaw);
+      const part = (shape, color, px, py, pz, sx, sy, sz, rx = 0, rz = 0) => a(shape, color, cx + px * cos - pz * sin, py, cz + px * sin + pz * cos, sx, sy, sz, rx, -yaw, rz);
+      part("box", coat, 0, 0.22, 0, 0.28, 0.3, 0.42);
+      if (patch) part("box", patch, 0, 0.16, 0.16, 0.2, 0.18, 0.12);
+      part("rock", coat, 0, 0.5, 0.18, 0.15, 0.14, 0.15);
+      if (patch) part("rock", patch, 0, 0.46, 0.3, 0.08, 0.07, 0.06);
+      for (const dx of [-0.08, 0.08]) part("cone", coat, dx, 0.62, 0.18, 0.06, 0.1, 0.06);
+      part("box", coat, 0.06, 0.12, -0.22, 0.07, 0.07, 0.12);
+      part("box", coat, 0.1, 0.24, -0.36, 0.06, 0.06, 0.42, 0.9, 0);
+    };
+    const trunk = "#5a4034", blossom = ["#e8a9b8", "#d98ea3", "#f2c4cf", "#e39bb0"];
+    a("cylinder", trunk, -6.6, 1.1, 0.8, 0.26, 2.2, 0.26, 0, 0, 0.12);
+    a("cylinder", trunk, -7.1, 2.6, 0.9, 0.18, 1.6, 0.18, 0.25, 0, 0.45);
+    a("cylinder", trunk, -6.1, 2.7, 0.6, 0.15, 1.5, 0.15, -0.3, 0, -0.5);
+    [[-6.6, 3.9, 0.8, 2.3], [-7.9, 3.4, 1.2, 1.6], [-5.3, 3.5, 0.3, 1.5], [-6.9, 4.6, -0.4, 1.4], [-6.1, 3.1, 1.9, 1.2]].forEach(([px, py, pz, size], i) => a("rock", blossom[i % 4], px, py, pz, size, size * 0.75, size, i * 0.7, i * 1.3, 0));
+    for (let i = 0; i < 9; i++) a("rock", blossom[i % 4], -6.6 + Math.sin(i * 2.4) * (1.2 + i * 0.22), 0.04, 0.8 + Math.cos(i * 2.4) * (1 + i * 0.2), 0.12, 0.03, 0.12, 0, i, 0);
+    const trunkAt = f.point(-6.6, 0, 0.8);
+    solid(frame(trunkAt.x, trunkAt.z), 0.5, 5);
+    cat(2.1, 5.2, -0.3, "#b3b8c0", "#eceae4");
+    cat(-3.6, 4.6, 0.5, "#c98a4b", "#e8c9a0");
+    cat(3.9, 5.6, -1.1, "#2e3236", "#e6e6e2");
+    solid(f, 3.4, 4);
   }
 
   return {

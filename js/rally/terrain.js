@@ -1,5 +1,5 @@
 import * as THREE from "../vendor/three/three.module.min.js";
-import { WORLD, SPAWN, FINISH_LINE, CAMPS, SNOW_LINE, MEADOW_LINE, terrainHeight, terrainGradient } from "./world.js";
+import { WORLD, SPAWN, FINISH_LINE, CAMPS, COTTAGE, SNOW_LINE, MEADOW_LINE, terrainHeight, terrainGradient } from "./world.js";
 
 function drawContours(context) {
   const step = 6, columns = Math.ceil(WORLD.width / step), rows = Math.ceil(WORLD.depth / step);
@@ -71,6 +71,15 @@ export function makeGround(scene, routes, landmarks) {
     context.fillStyle = "#454b42";
     context.beginPath(); context.ellipse(0, camp.id === "start" ? 9 : -3, camp.id === "start" ? 31 : 38, camp.id === "start" ? 23 : 33, 0, 0, Math.PI * 2); context.fill();
     context.strokeStyle = "#a4a38a65"; context.lineWidth = 0.18; context.stroke();
+    context.restore();
+  }
+  if (COTTAGE) {
+    context.beginPath();
+    context.moveTo(...COTTAGE.path[0]); context.quadraticCurveTo(...COTTAGE.path[1], ...COTTAGE.path[2]);
+    for (const [color, width] of [["#4a463c66", 2.6], ["#6b615266", 1.4]]) { context.strokeStyle = color; context.lineWidth = width; context.stroke(); }
+    context.save(); context.translate(COTTAGE.parking.x, COTTAGE.parking.z); context.rotate(COTTAGE.parking.heading);
+    context.fillStyle = "#4a463c80"; context.beginPath(); context.ellipse(0, 0, 4.6, 3.4, 0, 0, Math.PI * 2); context.fill();
+    context.fillStyle = "#6b615266"; context.beginPath(); context.ellipse(0, 0, 3.6, 2.5, 0, 0, Math.PI * 2); context.fill();
     context.restore();
   }
   for (const route of routes) {

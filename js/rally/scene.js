@@ -1,6 +1,6 @@
 import * as THREE from "../vendor/three/three.module.min.js";
 import { createCameraRig } from "./camera.js";
-import { ROUTES, WORLD, SPAWN, FINISH_LINE, CAMPS, SNOW_LINE, MEADOW_LINE, terrainHeight, terrainGradient, driveHeightAt, riverAt, roadAt, CROSSINGS } from "./world.js";
+import { ROUTES, WORLD, SPAWN, FINISH_LINE, CAMPS, COTTAGE, SNOW_LINE, MEADOW_LINE, terrainHeight, terrainGradient, driveHeightAt, riverAt, roadAt, CROSSINGS } from "./world.js";
 import { makeGround } from "./terrain.js";
 import { makeWater, buildCrossings } from "./water.js";
 import { createCrashEffect, createSplashEffect, createFireworks } from "./effects.js";
@@ -318,11 +318,17 @@ function buildLandmark(batch, sight) {
 function buildScenery(batch, landmarks, isRoad, routes) {
   const random = seededRandom(83);
   const obstacles = [];
+  const nearPath = (x, z) => COTTAGE.path.some(([px, pz], i) => {
+    const [qx, qz] = COTTAGE.path[Math.min(i + 1, COTTAGE.path.length - 1)], dx = qx - px, dz = qz - pz;
+    const t = Math.max(0, Math.min(1, ((x - px) * dx + (z - pz) * dz) / (dx * dx + dz * dz || 1)));
+    return Math.hypot(x - px - dx * t, z - pz - dz * t) < 4;
+  });
   const farFromSights = (x, z) => landmarks.every(sight => Math.hypot(x - sight.x, z - sight.z) > sight.radius + 9 && Math.hypot(x - sight.marker[0], z - sight.marker[1]) > 13);
   for (let i = 0; i < 3400; i++) {
     const x = random() * 740 - 370, z = random() * 890 - 445;
     const water = riverAt(x, z);
     if ((water && water.distance < water.width + 4) || isRoad(x, z, 5) || !farFromSights(x, z)) continue;
+    if (COTTAGE && (Math.hypot(x - COTTAGE.x, z - COTTAGE.z) < COTTAGE.radius || nearPath(x, z))) continue;
     const elevation = terrainHeight(x, z);
     const slope = terrainGradient(x, z);
     const rocky = elevation > 175 || Math.hypot(slope.x, slope.z) > 0.9;
@@ -466,15 +472,17 @@ function makeCar(scene) {
   box("#d87760", 0, 1.84, 2.06, 2.4, 0.15, 0.05);
   box("#313a40", 0, 0.68, -2.09, 2.27, 0.28, 0.25);
   box("#242c30", 0, 1.05, -2.05, 1.1, 0.3, 0.04);
+  const lights = [];
+  const lit = (mesh, color, off) => { lights.push({ mesh, on: material(color, true), off: material(off) }); return mesh; };
   for (const x of [-0.83, 0.83]) {
-    box("#fff1c3", x, 1.06, -2.08, 0.4, 0.23, 0.06, body, true);
-    box("#e87566", x, 1.08, 2.05, 0.44, 0.2, 0.05, body, true);
+    lit(box("#fff1c3", x, 1.06, -2.08, 0.4, 0.23, 0.06, body, true), "#fff1c3", "#8e8a78");
+    lit(box("#e87566", x, 1.08, 2.05, 0.44, 0.2, 0.05, body, true), "#e87566", "#6e3f39");
   }
   for (const x of [-0.56, -0.19, 0.19, 0.56]) {
     const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.12, 12), material("#fff0bd", true));
     lamp.rotation.x = Math.PI / 2;
     lamp.position.set(x, 0.83, -2.24);
-    body.add(lamp);
+    body.add(lit(lamp, "#fff0bd", "#8e8a78"));
   }
   // Small racing number on the roof, drawn locally without image downloads.
   const numberCanvas = document.createElement("canvas"); numberCanvas.width = 64; numberCanvas.height = 64;
@@ -506,11 +514,11 @@ function makeCar(scene) {
   for (const x of [-0.8, 0.8]) {
     const beam = new THREE.Mesh(new THREE.PlaneGeometry(7, 15), beamMaterial);
     beam.rotation.x = -Math.PI / 2; beam.position.set(x, 0.07, -9.8); group.add(beam);
-    beams.push(beam);
     const light = new THREE.SpotLight("#ffedb5", 18, 22, 0.38, 0.75, 1.1);
     light.position.set(x, 1.2, -2);
     light.target.position.set(x, 0, -13);
     group.add(light, light.target);
+    beams.push(beam, light);
   }
   scene.add(group);
   const shadowCanvas = document.createElement("canvas"); shadowCanvas.width = 64; shadowCanvas.height = 64;
@@ -518,7 +526,7 @@ function makeCar(scene) {
   shade.addColorStop(0, "#000000b0"); shade.addColorStop(1, "#00000000"); sc.fillStyle = shade; sc.fillRect(0, 0, 64, 64);
   const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4, 6), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false, opacity: 0.5 }));
   shadow.rotation.x = -Math.PI / 2; scene.add(shadow);
-  return { group, body, wheels, beams, shadow };
+  return { group, body, wheels, beams, lights, shadow };
 }
 
 function makeTrails(scene) {
@@ -673,7 +681,8 @@ export function createScene(canvas, landmarks) {
       car.body.rotation.z = reducedMotion ? 0 : clamp(state.yaw * state.speed * 0.002, -0.065, 0.065);
       car.body.rotation.x = reducedMotion ? 0 : Math.sin(elapsed * 26) * Math.min(state.speed / 2000, 0.015);
       car.body.position.y = reducedMotion ? 0 : state.suspension;
-      car.beams.forEach(beam => { beam.visible = state.grounded && !state.inWater; });
+      car.beams.forEach(beam => { beam.visible = state.grounded && !state.inWater && !view.parked; });
+      car.lights.forEach(light => { light.mesh.material = view.parked ? light.off : light.on; });
       const ground = driveHeightAt(state.x, state.z, state.y + 0.7), clearance = Math.max(0, state.y - ground);
       const water = riverAt(state.x, state.z);
       car.shadow.position.set(state.x, Math.max(ground, water && water.distance < water.width ? water.y : ground) + 0.12, state.z);

@@ -85,14 +85,35 @@ export class RallyAudio {
     noise.stop(time + duration); thump.stop(time + duration);
   }
 
-  update(car, throttle, paused) {
+  meow() {
+    if (!this.enabled || this.context?.state !== "running") return;
+    const context = this.context, time = context.currentTime, duration = 0.55;
+    const voice = context.createOscillator(), formant = context.createBiquadFilter(), envelope = context.createGain();
+    voice.type = "sawtooth";
+    voice.frequency.setValueAtTime(520, time);
+    voice.frequency.linearRampToValueAtTime(760, time + 0.16);
+    voice.frequency.exponentialRampToValueAtTime(430, time + duration);
+    formant.type = "bandpass"; formant.Q.value = 2.2;
+    formant.frequency.setValueAtTime(1100, time);
+    formant.frequency.linearRampToValueAtTime(1900, time + 0.18);
+    formant.frequency.exponentialRampToValueAtTime(900, time + duration);
+    envelope.gain.setValueAtTime(0.001, time);
+    envelope.gain.linearRampToValueAtTime(0.22, time + 0.06);
+    envelope.gain.setValueAtTime(0.22, time + 0.3);
+    envelope.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    voice.connect(formant).connect(envelope).connect(this.master);
+    voice.onended = () => { voice.disconnect(); formant.disconnect(); envelope.disconnect(); };
+    voice.start(time); voice.stop(time + duration);
+  }
+
+  update(car, throttle, paused, parked = false) {
     if (!this.context) return;
     const time = this.context.currentTime;
     this.master.gain.setTargetAtTime(this.enabled && !paused ? 0.14 : 0, time, 0.08);
     const gearSpeed = car.speed % 10;
     const rpm = 38 + gearSpeed * 7 + Math.abs(throttle) * 15 + car.wheelspin * 45;
     for (const { oscillator, ratio } of this.oscillators) oscillator.frequency.setTargetAtTime(rpm * ratio, time, 0.12);
-    this.engineGain.gain.setTargetAtTime(0.16 + Math.abs(throttle) * 0.1, time, 0.1);
+    this.engineGain.gain.setTargetAtTime(parked ? 0 : 0.16 + Math.abs(throttle) * 0.1, time, parked ? 0.25 : 0.1);
     this.gravelGain.gain.setTargetAtTime(car.grounded && !car.inWater ? Math.min(car.speed * 0.008 + car.slip * 0.045 + car.wheelspin * 0.35, 0.7) : 0, time, 0.08);
   }
 }

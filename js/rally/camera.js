@@ -39,17 +39,18 @@ export function createCameraRig(camera, groundAt = terrainHeight) {
       desired.copy(DRIVE_OFFSET);
       const targetFocus = drivingFocus.clone();
       if (sight) {
-        if (mode === "orbit" && !view.paused && !reducedMotion) {
+        const cottage = sight.type === "cottage";
+        if ((mode === "orbit" || cottage) && !view.paused && !reducedMotion) {
           swayPhase = (swayPhase + dt * Math.PI * 2 / SWAY_PERIOD) % (Math.PI * 2);
           // Stay on the original side of the mountain, easing into each reversal.
-          angle = START_ANGLE + Math.sin(swayPhase) * SWAY_AMPLITUDE;
+          angle = START_ANGLE + (cottage ? 0.1 : 0) + Math.sin(swayPhase) * SWAY_AMPLITUDE;
         }
-        targetFocus.set(sight.x, sight.elevation + (sight.type === "tower" ? 8 : 4), sight.z);
+        targetFocus.set(sight.x, sight.elevation + (sight.type === "tower" ? 8 : cottage ? 2 : 4), sight.z);
         if (mode === "preview") {
           targetFocus.x += (view.car.x - sight.x) * 0.25;
           targetFocus.z += (view.car.z - sight.z) * 0.25;
         }
-        const radius = mode === "orbit" ? 52 : 66;
+        const radius = mode === "orbit" ? 52 : cottage ? 46 : 66;
         desired.set(Math.sin(angle) * radius, mode === "orbit" ? 58 : 78, Math.cos(angle) * radius);
         // Raise the camera over nearby ridges during the close-up, including
         // the sightlines between the camera and the building.
@@ -61,7 +62,7 @@ export function createCameraRig(camera, groundAt = terrainHeight) {
         targetInset = Math.min(view.panelWidth || 0, width * 0.65);
         const room = Math.max(0.3, (width - targetInset) / width);
         const minimumForBuilding = 18 * height / (width * room);
-        targetSpan = Math.max(minimumForBuilding, mode === "orbit" ? (height < 550 ? 18 : 21) : (height < 550 ? 23 : 29));
+        targetSpan = cottage ? (height < 550 ? 11 : 14) : Math.max(minimumForBuilding, mode === "orbit" ? (height < 550 ? 18 : 21) : (height < 550 ? 23 : 29));
       }
       const blend = reducedMotion ? 1 : 1 - Math.exp(-(mode === "drive" ? 4 : 3) * dt);
       focus.lerp(targetFocus, blend); offset.lerp(desired, blend);

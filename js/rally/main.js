@@ -1,4 +1,4 @@
-import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, SNOW_LINE, driveHeightAt, roadAt, RIVER, CROSSINGS, RAILS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
+import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, SNOW_LINE, COTTAGE, terrainHeight, driveHeightAt, roadAt, RIVER, CROSSINGS, RAILS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
 import { createCarState, resetCar, stepCar, FIXED_STEP } from "./physics.js";
 import { createScene } from "./scene.js";
 import { RallyInput } from "./input.js";
@@ -56,7 +56,8 @@ export async function start() {
     $("start-button").firstChild.textContent = "Continue driving ";
   }
   let started = false, blurred = false, stopped = false;
-  let currentSight = null, toastTimer = 0;
+  let currentSight = null, toastTimer = 0, cottageStill = 0, cottageVisit = false;
+  const cottageSight = COTTAGE && { x: COTTAGE.x, z: COTTAGE.z, elevation: terrainHeight(COTTAGE.x, COTTAGE.z), type: "cottage" };
   let previousTime = 0, accumulator = 0, uiElapsed = 0;
   let lastSpeed = -1;
   let lastSafePose = stops.restartPose;
@@ -472,14 +473,20 @@ export async function start() {
         announce(`${split.finished ? "FINISH" : `CP ${pad(split.index + 1)}`} · ${formatTime(split.time)} · ${formatDelta(split.delta)}${split.delta === null ? "" : " vs previous descent"}`);
       }
     }
-    const cameraSight = stops.viewing || (stops.ready ? stops.nearby : null);
+    const atCottage = cottageSight && !paused && car.grounded && Math.hypot(car.x - COTTAGE.x, car.z - COTTAGE.z) < 16;
+    cottageStill = atCottage && car.speed < 1.2 ? cottageStill + dt : 0;
+    if (cottageStill >= 0.5 && !cottageVisit) { cottageVisit = true; audio.meow(); }
+    if (!atCottage) cottageVisit = false;
+    const stopSight = stops.viewing || (stops.ready ? stops.nearby : null);
+    const parked = cottageVisit && car.speed < 3 && !control.throttle;
+    const cameraSight = stopSight || (cottageVisit && car.speed < 3 ? cottageSight : null);
     const cameraPanel = stops.viewing ? panel : $("nearby-card");
-    const cameraInset = cameraSight ? cameraPanel.getBoundingClientRect().right + 24 : 0;
+    const cameraInset = stopSight ? cameraPanel.getBoundingClientRect().right + 24 : 0;
     graphics.render(car, isSuspended() && started ? 0 : dt, !paused && !recovery.crashed, reducedMotion.matches, {
       sight: cameraSight, orbit: Boolean(stops.viewing), paused: orbitPaused,
-      panelWidth: cameraInset, checkpoint: stops.checkpoint, crashed: recovery.crashed,
+      panelWidth: cameraInset, checkpoint: stops.checkpoint, crashed: recovery.crashed, parked,
     });
-    audio.update(car, control.throttle, paused);
+    audio.update(car, control.throttle, paused, parked);
     uiElapsed += dt;
     if (uiElapsed >= 0.075) {
       uiElapsed = 0;
