@@ -118,6 +118,22 @@ export function stepCar(state, input, dt, environment = {}) {
     const impact = state.vx * nx + state.vz * nz;
     if (impact < 0) { state.vx -= impact * nx * 1.25; state.vz -= impact * nz * 1.25; state.yaw *= 0.45; }
   }
+  for (const rail of environment.rails || []) {
+    if (state.y > rail.y + 1.2 || state.y < rail.y - 3) continue;
+    const ex = rail.bx - rail.ax, ez = rail.bz - rail.az;
+    const t = clamp(((state.x - rail.ax) * ex + (state.z - rail.az) * ez) / (ex * ex + ez * ez || 1), 0, 1);
+    let dx = state.x - rail.ax - ex * t, dz = state.z - rail.az - ez * t;
+    const distance = Math.hypot(dx, dz), clearance = 0.9;
+    if (distance >= clearance) continue;
+    if (distance < 0.0001) { dx = -ez; dz = ex; }
+    const length = Math.hypot(dx, dz), nx = dx / length, nz = dz / length;
+    state.x += nx * (clearance - distance); state.z += nz * (clearance - distance);
+    const impact = state.vx * nx + state.vz * nz;
+    if (impact < 0) {
+      state.vx = (state.vx - impact * nx * 1.3) * 0.94; state.vz = (state.vz - impact * nz * 1.3) * 0.94;
+      state.yaw *= 0.5; state.suspensionVelocity -= Math.min(-impact * 0.1, 1.5);
+    }
+  }
   if (Math.abs(state.x) > WORLD.limitX) { state.x = clamp(state.x, -WORLD.limitX, WORLD.limitX); state.vx *= -0.2; }
   if (Math.abs(state.z) > WORLD.limitZ) { state.z = clamp(state.z, -WORLD.limitZ, WORLD.limitZ); state.vz *= -0.2; }
 

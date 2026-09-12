@@ -42,15 +42,16 @@
 @keyframes rally-drift-dust { from { opacity: .3; transform: scale(.55); } to { opacity: 0; transform: translate(-9px, 10px) scale(1.5); } }
 @keyframes rally-flash { 0%, 30%, 60%, 100% { opacity: .2; } 15%, 45% { opacity: 1; } }
 @media (max-width: 1200px) {
-  .rally-easter-egg { position: relative; right: auto; bottom: auto; margin: 0 0 0 auto; width: 90px; height: 90px; flex-shrink: 0; }
+  .resume-container { position: relative; }
+  .rally-easter-egg { position: absolute; top: 30px; right: 30px; bottom: auto; width: 90px; height: 90px; }
+  .hero-info { padding-right: 96px; }
   .easter-egg-orbit { inset: 12px; }
-  .easter-egg-caption { bottom: 87px; right: 50%; transform: translate(50%, 4px); }
+  .easter-egg-caption { bottom: auto; top: 87px; right: 50%; transform: translate(50%, 4px); }
   .rally-easter-egg:hover .easter-egg-caption, .rally-easter-egg:focus-visible .easter-egg-caption { transform: translate(50%, 0); }
 }
 @media (max-width: 768px) {
-  .hero-section { position: relative; }
-  .rally-easter-egg { position: absolute; top: calc(var(--space-xl) + 10px); right: var(--space-lg); margin: 0; }
-  .easter-egg-caption { bottom: auto; top: 87px; }
+  .rally-easter-egg { top: calc(var(--space-xl) + 10px); right: var(--space-lg); }
+  .hero-info { padding-right: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .easter-egg-orbit, .easter-egg-car, .easter-egg-car::before, .easter-egg-car::after { animation: none !important; }

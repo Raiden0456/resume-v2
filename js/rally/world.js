@@ -175,11 +175,12 @@ for (const route of ROUTES) for (let i = 1; i < route.samples.length; i++) {
     if (CROSSINGS.some(crossing => Math.hypot(x - crossing.x, z - crossing.z) < 4)) continue;
     const angle = Math.abs(denominator) / (Math.hypot(dx, dz) * Math.hypot(ex, ez));
     const type = ["KNIFE EDGE", "VALLEY RUN"].includes(route.name) ? "jump" : "bridge";
-    CROSSINGS.push({ id: `crossing-${CROSSINGS.length}`, type, x, z, y: a[2] + (b[2] - a[2]) * t,
+    const bridgeIndex = CROSSINGS.filter(crossing => crossing.type === "bridge").length;
+    CROSSINGS.push({ id: `crossing-${CROSSINGS.length}`, type, x, z, y: a[2] + (b[2] - a[2]) * t, style: bridgeIndex === 1 ? "timber" : "rail",
       heading: Math.atan2(dx, -dz), grade: (b[2] - a[2]) / Math.hypot(dx, dz), progress: roadAt(x, z).progress,
       halfWidth: route.width / 2 + 0.6, gap: c[3] / Math.max(0.3, angle) + (type === "jump" ? 1 : 2.2),
       rampLength: 17, rise: type === "jump" ? 6 : 0, riverIndex: index,
-      label: type === "jump" ? (route.name === "KNIFE EDGE" ? "RIDGE JUMP" : "VALLEY JUMP") : `${["SLATE", "FOREST", "CREEK"][CROSSINGS.filter(crossing => crossing.type === "bridge").length]} BRIDGE`,
+      label: type === "jump" ? (route.name === "KNIFE EDGE" ? "RIDGE JUMP" : "VALLEY JUMP") : `${["SLATE", "FOREST", "CREEK"][bridgeIndex]} BRIDGE`,
     });
   }
 }
@@ -256,6 +257,19 @@ for (const crossing of CROSSINGS.filter(crossing => crossing.type === "bridge"))
 export function crossingSections(crossing) {
   return crossing.type === "bridge" ? [[crossing.deckStart, crossing.deckEnd]]
     : [[-crossing.gap - crossing.rampLength, -crossing.gap], [crossing.gap, crossing.gap + crossing.rampLength]];
+}
+
+export const RAILS = [];
+for (const crossing of CROSSINGS.filter(crossing => crossing.style === "rail")) {
+  for (const side of [-1, 1]) {
+    const across = side * (crossing.halfWidth - 0.1);
+    let previous = crossingPoint(crossing, crossing.deckStart, across);
+    for (let along = crossing.deckStart + 2; along < crossing.deckEnd + 2; along += 2) {
+      const end = Math.min(along, crossing.deckEnd), point = crossingPoint(crossing, end, across);
+      RAILS.push({ ax: previous.x, az: previous.z, bx: point.x, bz: point.z, y: crossingDeckHeight(crossing, end - 1, across) });
+      previous = point;
+    }
+  }
 }
 
 export function driveHeightAt(x, z, ceiling = Infinity) {

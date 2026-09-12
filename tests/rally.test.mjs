@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createCarState, resetCar, stepCar, FIXED_STEP, TOP_SPEED } from "../js/rally/physics.js";
 import { RallyRecovery } from "../js/rally/recovery.js";
-import { createLandmarks, loadVisits, saveVisits, SPAWN, WORLD, ROUTES, terrainHeight, terrainGradient, roadAt, driveHeightAt, riverAt, RIVER, CROSSINGS, crossingPoint, crossingCoordinates, crossingSections, crossingDeckHeight } from "../js/rally/world.js";
+import { createLandmarks, loadVisits, saveVisits, SPAWN, WORLD, ROUTES, terrainHeight, terrainGradient, roadAt, driveHeightAt, riverAt, RIVER, CROSSINGS, RAILS, crossingPoint, crossingCoordinates, crossingSections, crossingDeckHeight } from "../js/rally/world.js";
 
 const resume = JSON.parse(await readFile(new URL("../resume.json", import.meta.url), "utf8"));
 const run = (state, input, seconds, environment) => {
@@ -269,6 +269,22 @@ test("the car and its pitch follow the terrain while uphill travel costs speed",
   assert.equal(uphill.y, slope(uphill.x, uphill.z));
   assert.ok(uphill.pitch > 0.1);
   assert.ok(uphill.speed < flat.speed * 0.75, "even a moderate climb must noticeably cost speed");
+});
+
+test("railed bridges keep a sliding car on the deck while the timber bridge lets it drop", () => {
+  const bridges = CROSSINGS.filter(crossing => crossing.type === "bridge");
+  assert.deepEqual(bridges.map(crossing => crossing.style), ["rail", "timber", "rail"]);
+  assert.ok(RAILS.length > 20);
+  const environment = { heightAt: driveHeightAt, supportAt: driveHeightAt, waterAt: riverAt, rails: RAILS };
+  for (const crossing of bridges) {
+    const heading = crossing.heading + Math.PI / 2;
+    const car = createCarState({ x: crossing.x, z: crossing.z, heading }, driveHeightAt);
+    car.vx = Math.sin(heading) * 9; car.vz = -Math.cos(heading) * 9; car.speed = 9;
+    run(car, { throttle: 1 }, 1.5, environment);
+    const { across } = crossingCoordinates(crossing, car.x, car.z);
+    if (crossing.style === "rail") assert.ok(across > 2 && across < crossing.halfWidth - 0.5 && car.grounded, `${crossing.label} must hold the car`);
+    else assert.ok(across > crossing.halfWidth, `${crossing.label} has no rail to lean on`);
+  }
 });
 
 test("the car pulls away from rest on a moderate climb instead of crawling", () => {

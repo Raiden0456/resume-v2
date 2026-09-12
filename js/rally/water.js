@@ -55,6 +55,7 @@ export function makeWater(scene, batch) {
 export function buildCrossings(scene, batch) {
   const deckMaterial = new THREE.MeshStandardMaterial({ color: "#879288", roughness: 0.9, side: THREE.DoubleSide });
   const rampMaterial = new THREE.MeshStandardMaterial({ color: "#a79062", roughness: 0.88, side: THREE.DoubleSide });
+  const timberMaterial = new THREE.MeshStandardMaterial({ color: "#8b6a44", roughness: 0.95, side: THREE.DoubleSide });
   const add = batch.absolute;
   for (const crossing of CROSSINGS) {
     const sections = crossingSections(crossing);
@@ -67,7 +68,8 @@ export function buildCrossings(scene, batch) {
           return [x, crossingDeckHeight(crossing, along, across) + 0.035, z];
         }));
       }
-      const deck = new THREE.Mesh(stripGeometry(rows), crossing.type === "bridge" ? deckMaterial : rampMaterial);
+      const timber = crossing.style === "timber";
+      const deck = new THREE.Mesh(stripGeometry(rows), timber ? timberMaterial : crossing.type === "bridge" ? deckMaterial : rampMaterial);
       deck.castShadow = true; deck.receiveShadow = true; scene.add(deck);
       // Visible abutments and joists make the water below the deck readable.
       for (let i = 0; i <= count; i += 3) {
@@ -76,17 +78,24 @@ export function buildCrossings(scene, batch) {
         const ahead = crossingPoint(crossing, along + 0.4), behind = crossingPoint(crossing, along - 0.4);
         const heading = Math.atan2(ahead.x - behind.x, behind.z - ahead.z);
         const pitch = Math.atan2(crossingDeckHeight(crossing, along + 0.4) - crossingDeckHeight(crossing, along - 0.4), Math.hypot(ahead.x - behind.x, ahead.z - behind.z));
-        add("box", "#3f5557", x, y - 0.28, z, crossing.halfWidth * 2 + 0.25, 0.5, 0.55, pitch, -heading, 0);
+        add("box", timber ? "#5e4630" : "#3f5557", x, y - 0.28, z, crossing.halfWidth * 2 + 0.25, 0.5, 0.55, pitch, -heading, 0);
         for (const side of [-1, 1]) {
           const p = crossingPoint(crossing, along, side * (crossing.halfWidth - 0.1));
           const py = crossingDeckHeight(crossing, along, side * (crossing.halfWidth - 0.1));
-          if (crossing.type === "bridge") {
+          if (timber) {
+            add("box", "#6b4f33", p.x, py + 0.14, p.z, 0.32, 0.28, 2.5, pitch, -heading, 0);
+          } else if (crossing.type === "bridge") {
             add("box", "#a5b3aa", p.x, py + 0.7, p.z, 0.15, 1.4, 0.15);
             add("box", "#a4b8b4", p.x, py + 1.1, p.z, 0.12, 0.17, 2.65, pitch, -heading, 0);
           } else {
             add("box", i % 2 ? "#e1c78c" : "#303d43", p.x, py + 0.12, p.z, 0.28, 0.25, 2.2, pitch, -heading, 0);
           }
         }
+      }
+      if (timber) for (let i = 0; i <= count; i++) {
+        const along = from + (to - from) * i / count, { x, z } = crossingPoint(crossing, along);
+        const ahead = crossingPoint(crossing, along + 0.4), behind = crossingPoint(crossing, along - 0.4);
+        add("box", "#6a4d31", x, crossingDeckHeight(crossing, along) + 0.045, z, crossing.halfWidth * 2, 0.03, 0.1, 0, -Math.atan2(ahead.x - behind.x, behind.z - ahead.z), 0);
       }
       for (const along of [from + 1.5, to - 1.5]) for (const side of [-1, 1]) {
         const { x, z } = crossingPoint(crossing, along, side * (crossing.halfWidth - 0.8));

@@ -1,4 +1,4 @@
-import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, driveHeightAt, roadAt, RIVER, CROSSINGS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
+import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, driveHeightAt, roadAt, RIVER, CROSSINGS, RAILS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
 import { createCarState, resetCar, stepCar, FIXED_STEP } from "./physics.js";
 import { createScene } from "./scene.js";
 import { RallyInput } from "./input.js";
@@ -113,7 +113,7 @@ export async function start() {
     const element = document.createElement("div"); element.className = "world-label crossing-label";
     element.style.setProperty("--sight-color", crossing.type === "jump" ? "#e5c07b" : "#76c9d4");
     const title = document.createElement("span"); title.className = "world-label-name"; title.textContent = `${crossing.type === "jump" ? "↗" : "≈"} ${crossing.label}`;
-    const caption = document.createElement("small"); caption.textContent = crossing.type === "jump" ? "KEEP YOUR SPEED / CLEAR THE RIVER" : "OVER THE MOUNTAIN STREAM";
+    const caption = document.createElement("small"); caption.textContent = crossing.type === "jump" ? "KEEP YOUR SPEED / CLEAR THE RIVER" : crossing.style === "timber" ? "NO RAILS / MIND THE EDGE" : "OVER THE MOUNTAIN STREAM";
     element.append(title, caption); $("world-labels").append(element);
     const along = crossing.type === "jump" ? -crossing.gap - 8 : 0;
     return { element, ...crossingPoint(crossing, along), y: crossingDeckHeight(crossing, along) + 7 };
@@ -434,7 +434,7 @@ export async function start() {
     const control = input.sample();
     if (!paused) {
       accumulator += dt;
-      const environment = { obstacles: graphics.obstacles, heightAt: driveHeightAt, supportAt: driveHeightAt, waterAt: riverAt };
+      const environment = { obstacles: graphics.obstacles, rails: RAILS, heightAt: driveHeightAt, supportAt: driveHeightAt, waterAt: riverAt };
       while (accumulator >= FIXED_STEP) {
         environment.onRoad = graphics.isRoad(car.x, car.z);
         if (!recovery.crashed) stepCar(car, control, FIXED_STEP, environment);
