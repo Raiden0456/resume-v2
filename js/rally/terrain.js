@@ -1,5 +1,19 @@
 import * as THREE from "../vendor/three/three.module.min.js";
-import { WORLD, SPAWN, FINISH_LINE, CAMPS, COTTAGE, SNOW_LINE, MEADOW_LINE, terrainHeight, terrainGradient } from "./world.js";
+import { WORLD, SPAWN, FINISH_LINE, CAMPS, SNOW_LINE, MEADOW_LINE, terrainHeight, terrainGradient } from "./world.js";
+import { COTTAGE, CAMERA_FACING } from "./secrets.js";
+
+function groundLabel(scene, text, x, z, width) {
+  const canvas = document.createElement("canvas"); canvas.width = 1024; canvas.height = 192;
+  const ctx = canvas.getContext("2d");
+  ctx.font = "600 118px 'Fira Code', monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.lineWidth = 14; ctx.strokeStyle = "#1a1f2488"; ctx.strokeText(text, 512, 100, 980);
+  ctx.fillStyle = "#e7e2d0"; ctx.fillText(text, 512, 100, 980);
+  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 8;
+  const label = new THREE.Mesh(new THREE.PlaneGeometry(width, width * 192 / 1024), new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false }));
+  label.rotation.set(-Math.PI / 2, -CAMERA_FACING, 0, "YXZ");
+  label.position.set(x, terrainHeight(x, z) + 0.09, z);
+  scene.add(label);
+}
 
 function drawContours(context) {
   const step = 6, columns = Math.ceil(WORLD.width / step), rows = Math.ceil(WORLD.depth / step);
@@ -34,7 +48,7 @@ function drawContours(context) {
 
 export function makeGround(scene, routes, landmarks) {
   const canvas = document.createElement("canvas");
-  canvas.width = 3456; canvas.height = 4032;
+  canvas.width = 3600; canvas.height = Math.round(3600 * WORLD.depth / WORLD.width);
   const context = canvas.getContext("2d");
   const scale = canvas.width / WORLD.width;
   let seed = 41;
@@ -126,10 +140,6 @@ export function makeGround(scene, routes, landmarks) {
     context.fillStyle = (row + col) % 2 ? "#d9d3bd" : "#31363a";
     context.fillRect(-5.4 + col * 0.9, -7.5 + row * 0.9, 0.9, 0.9);
   }
-  context.font = "600 1.8px monospace"; context.textAlign = "center"; context.fillStyle = "#bac0ac";
-  context.fillText("300 M / THE DESCENT", 0, 16);
-  context.font = "500 1.1px monospace"; context.fillStyle = "#879888";
-  context.fillText("NOW → 2022 / TAKE YOUR TIME", 0, 20);
   context.strokeStyle = "#20262660"; context.lineWidth = 0.25;
   for (const radius of [4.1, 5.3]) { context.beginPath(); context.ellipse(0, 0, radius, radius * 0.8, -0.4, 0, 5.4); context.stroke(); }
   context.restore();
@@ -141,21 +151,34 @@ export function makeGround(scene, routes, landmarks) {
     context.fillStyle = (row + col) % 2 ? "#e7e2d0" : "#293338";
     context.fillRect(-9 + col * 0.9, -0.9 + row * 0.9, 0.9, 0.9);
   }
-  context.font = "600 2.2px monospace"; context.textAlign = "center"; context.fillStyle = "#e7e2d0";
-  context.fillText("FINISH", 0, 5);
   context.restore();
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 8;
-  const geometry = new THREE.PlaneGeometry(WORLD.width, WORLD.depth, 336, 392);
-  geometry.rotateX(-Math.PI / 2);
-  const positions = geometry.attributes.position;
-  for (let i = 0; i < positions.count; i++) positions.setY(i, terrainHeight(positions.getX(i), positions.getZ(i)));
-  geometry.computeVertexNormals();
-  const mountain = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ map: texture, roughness: 1, flatShading: true }));
-  mountain.receiveShadow = true; mountain.castShadow = true; scene.add(mountain);
+  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 1, flatShading: true });
+  // Tiles let camera and shadow frusta cull terrain instead of drawing 625k triangles per pass.
+  const tiles = 16, tileWidth = WORLD.width / tiles, tileDepth = WORLD.depth / tiles;
+  const mountain = new THREE.Group(); mountain.name = "terrain";
+  for (let row = 0; row < tiles; row++) for (let col = 0; col < tiles; col++) {
+    const x = (col + 0.5) * tileWidth - WORLD.width / 2, z = (row + 0.5) * tileDepth - WORLD.depth / 2;
+    const geometry = new THREE.PlaneGeometry(tileWidth, tileDepth, 528 / tiles, 592 / tiles);
+    geometry.rotateX(-Math.PI / 2);
+    const positions = geometry.attributes.position, uv = geometry.attributes.uv;
+    for (let i = 0; i < positions.count; i++) {
+      const wx = positions.getX(i) + x, wz = positions.getZ(i) + z;
+      positions.setY(i, terrainHeight(wx, wz));
+      uv.setXY(i, (wx + WORLD.width / 2) / WORLD.width, 1 - (wz + WORLD.depth / 2) / WORLD.depth);
+    }
+    geometry.computeVertexNormals(); geometry.computeBoundingSphere();
+    const tile = new THREE.Mesh(geometry, material);
+    tile.position.set(x, 0, z); tile.updateMatrix(); tile.matrixAutoUpdate = false;
+    tile.receiveShadow = true; tile.castShadow = true; mountain.add(tile);
+  }
+  scene.add(mountain);
   const valley = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshStandardMaterial({ color: "#252c32", roughness: 1 }));
   valley.rotation.x = -Math.PI / 2; valley.position.y = -4; scene.add(valley);
   const grid = new THREE.GridHelper(2400, 400, "#404b4d", "#404b4d");
   grid.position.y = -3.95; grid.material.transparent = true; grid.material.opacity = 0.3; scene.add(grid);
+  const down = { x: -Math.sin(CAMERA_FACING), z: Math.cos(CAMERA_FACING) };
+  groundLabel(scene, "FINISH", FINISH_LINE.x + down.x * 6, FINISH_LINE.z + down.z * 6, 16);
 }

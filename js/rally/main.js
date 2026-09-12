@@ -1,4 +1,4 @@
-import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, SNOW_LINE, COTTAGE, GRAVE_SITE, terrainHeight, driveHeightAt, roadAt, RIVER, CROSSINGS, RAILS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
+import { createLandmarks, loadVisits, saveVisits, WORLD, SPAWN, START_LINE, FINISH_LINE, SNOW_LINE, driveHeightAt, roadAt, RIVER, CROSSINGS, RAILS, riverAt, crossingPoint, crossingDeckHeight } from "./world.js";
 import { createCarState, resetCar, stepCar, FIXED_STEP } from "./physics.js";
 import { createScene } from "./scene.js";
 import { RallyInput } from "./input.js";
@@ -7,6 +7,9 @@ import { RallyStops } from "./stops.js";
 import { RallyTiming, formatTime, formatDelta } from "./timing.js";
 import { RallyRecovery } from "./recovery.js";
 import { enterImmersive } from "./fullscreen.js";
+import { SECRETS } from "./secrets.js";
+import { RallyRest } from "./rest.js";
+import { GRAPHICS_PROFILES, RallyFrameLoop, loadGraphicsQuality, saveGraphicsQuality } from "./performance.js";
 
 const $ = id => document.getElementById(id);
 const pad = value => String(value).padStart(2, "0");
@@ -38,14 +41,15 @@ export async function start() {
   const resume = await response.json();
   const landmarks = createLandmarks(resume);
   if (!landmarks.length) throw new Error("No places to discover in this resume.");
-  const graphics = createScene($("rally-scene"), landmarks);
+  let storage;
+  try { storage = window.localStorage; } catch { /* Progress remains available for this session. */ }
+  let quality = loadGraphicsQuality(storage);
+  const graphics = createScene($("rally-scene"), landmarks, { quality });
   const car = createCarState();
   const input = new RallyInput($("touch-surface"));
   const audio = new RallyAudio();
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const portrait = window.matchMedia("(pointer: coarse) and (orientation: portrait)");
-  let storage;
-  try { storage = window.localStorage; } catch { /* Progress remains available for this session. */ }
   const visits = loadVisits(storage, landmarks);
   const stops = new RallyStops(landmarks, storage);
   const timing = new RallyTiming(landmarks, storage);
@@ -55,10 +59,14 @@ export async function start() {
     $("intro-description").textContent = `Continue from ${stops.checkpoint.name}. Your checkpoint and field notes are saved.`;
     $("start-button").firstChild.textContent = "Continue driving ";
   }
+  document.body.classList.toggle("is-first-visit", !stops.checkpoint && !visits.size);
   let started = false, blurred = false, stopped = false;
-  let currentSight = null, toastTimer = 0, restStill = 0, restVisit = null;
-  const restSpots = [COTTAGE && { ...COTTAGE, meow: true }, GRAVE_SITE].filter(Boolean).map(spot => ({ ...spot, sight: { x: spot.x, z: spot.z, elevation: terrainHeight(spot.x, spot.z), type: "rest" } }));
-  let previousTime = 0, accumulator = 0, uiElapsed = 0;
+  let currentSight = null, toastTimer = 0;
+  const rest = new RallyRest(SECRETS, storage);
+  const updateSecrets = () => { $("secret-count").textContent = `SECRETS ${pad(rest.found.size)} / ${pad(rest.spots.length)}${rest.found.size === rest.spots.length ? " · you found them all" : " · stop by anything odd off the road"}`; };
+  updateSecrets();
+  let accumulator = 0, uiElapsed = 1, settleUntil = 0;
+  const frameLoop = new RallyFrameLoop(frame);
   let lastSpeed = -1;
   let lastSafePose = stops.restartPose;
   let shownCheckpoint = stops.checkpoint, orbitPaused = reducedMotion.matches;
@@ -131,7 +139,7 @@ export async function start() {
     const points = route.samples.map(([x, z]) => `${x.toFixed(1)},${z.toFixed(1)}`).join(" ");
     $("map-routes").append(svgElement("polyline", { points, class: "map-road", "stroke-width": route.width * 0.42 }));
   }
-  $("minimap").setAttribute("viewBox", `${-WORLD.width / 2} ${-WORLD.depth / 2} ${WORLD.width} ${WORLD.depth}`);
+  $("minimap").setAttribute("viewBox", "-420 -490 840 980");
 
   function updateProgress() {
     const remainder = document.createElement("span"); remainder.textContent = `/ ${pad(landmarks.length)}`;
@@ -195,6 +203,17 @@ export async function start() {
 
   function isPaused() { return isSuspended() || Boolean(stops.viewing); }
 
+  function syncRendering(invalidate = false) {
+    const visible = !blurred && !document.hidden && !portrait.matches && !stopped;
+    let fps = 0;
+    if (!isSuspended()) {
+      if (!stops.viewing) fps = GRAPHICS_PROFILES[quality].fps;
+      else if ((!orbitPaused && !reducedMotion.matches) || performance.now() < settleUntil) fps = Math.min(30, GRAPHICS_PROFILES[quality].fps);
+    }
+    frameLoop.setRate(fps);
+    if (invalidate && visible) frameLoop.invalidate();
+  }
+
   function syncInput() {
     input.enabled = !isPaused() && !recovery.crashed;
     if (!input.enabled) {
@@ -207,6 +226,8 @@ export async function start() {
     panel.inert = portrait.matches;
     $("race-panel").inert = portrait.matches;
     document.querySelector(".rally-header").inert = portrait.matches;
+    updateTiming();
+    syncRendering();
   }
 
   function focusGame() {
@@ -216,6 +237,7 @@ export async function start() {
   function openHelp() {
     if (stopped || portrait.matches || dialogs.some(dialog => dialog.open)) return;
     $("help-dialog").showModal();
+    document.body.classList.remove("is-first-visit");
     syncInput();
   }
 
@@ -229,6 +251,7 @@ export async function start() {
   function beginDriving() {
     started = true;
     $("intro").hidden = true;
+    document.body.classList.remove("is-first-visit");
     document.body.classList.add("is-driving");
   }
 
@@ -286,6 +309,7 @@ export async function start() {
     $("details-button").setAttribute("aria-expanded", "true");
     $("nearby-card").hidden = true;
     orbitPaused = reducedMotion.matches; updateOrbitButton();
+    settleUntil = performance.now() + 2500;
     document.body.classList.add("is-viewing-project");
     syncInput();
     $("project-title").focus({ preventScroll: true });
@@ -367,7 +391,7 @@ export async function start() {
     syncInput(); focusGame();
     if (window.matchMedia("(pointer: coarse)").matches) announce("Left half: steer left and right buttons. Right half: gas, brake and handbrake.");
   });
-  $("help-button").addEventListener("click", openHelp);
+  for (const id of ["help-button", "intro-help-button"]) $(id).addEventListener("click", openHelp);
   $("map-toggle").addEventListener("click", () => {
     const shown = document.body.classList.toggle("show-map");
     $("map-toggle").setAttribute("aria-pressed", String(shown));
@@ -378,17 +402,31 @@ export async function start() {
   $("checkpoint-button").addEventListener("click", restartCheckpoint);
   $("summit-button").addEventListener("click", () => travelTo(null));
   for (const id of ["close-project", "resume-driving"]) $(id).addEventListener("click", () => closeProject());
-  $("orbit-button").addEventListener("click", () => { orbitPaused = !orbitPaused; updateOrbitButton(); });
+  $("orbit-button").addEventListener("click", () => {
+    orbitPaused = !orbitPaused; updateOrbitButton();
+    settleUntil = performance.now() + 2500; syncRendering(true);
+  });
   $("expand-project").addEventListener("click", () => {
     const expanded = panel.classList.toggle("expanded");
     $("expand-project").setAttribute("aria-expanded", String(expanded));
     $("expand-project").textContent = expanded ? "Compact view ↔" : "Wider view ↔";
+    settleUntil = performance.now() + 2500; syncRendering(true);
   });
   panel.addEventListener("keydown", event => {
     if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || !["Escape", "KeyE", "KeyR", "KeyM"].includes(event.code)) return;
     event.preventDefault(); event.stopPropagation(); input.onAction(event.code);
   });
-  reducedMotion.addEventListener("change", () => { if (reducedMotion.matches) orbitPaused = true; updateOrbitButton(); });
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) orbitPaused = true;
+    updateOrbitButton(); syncRendering(true);
+  });
+  $("graphics-quality").value = quality;
+  $("graphics-quality").addEventListener("change", event => {
+    quality = event.target.value;
+    graphics.setQuality(quality);
+    saveGraphicsQuality(storage, quality);
+    syncRendering(true);
+  });
   $("sound-button").addEventListener("click", async () => {
     try {
       const enabled = await audio.toggle();
@@ -407,13 +445,16 @@ export async function start() {
     });
   }
   window.addEventListener("blur", () => { blurred = true; syncInput(); });
-  window.addEventListener("focus", () => { blurred = false; syncInput(); });
-  document.addEventListener("visibilitychange", syncInput);
+  window.addEventListener("focus", () => { blurred = false; syncInput(); syncRendering(true); });
+  document.addEventListener("visibilitychange", () => { syncInput(); syncRendering(true); });
   portrait.addEventListener("change", () => {
     if (portrait.matches) dialogs.forEach(dialog => { if (dialog.open) dialog.close(); });
-    graphics.resize(); syncInput();
+    graphics.resize(); syncInput(); syncRendering(true);
   });
-  window.addEventListener("resize", () => { graphics.resize(); syncInput(); });
+  window.addEventListener("resize", () => {
+    graphics.resize(); settleUntil = performance.now() + 2500;
+    syncInput(); syncRendering(true);
+  });
   $("touch-surface").addEventListener("pointerdown", enterImmersive);
   $("rally-scene").addEventListener("webglcontextlost", event => {
     event.preventDefault(); stopped = true; syncInput();
@@ -426,11 +467,8 @@ export async function start() {
     $("retry-button").onclick = () => window.location.reload();
   });
 
-  function frame(time) {
+  function frame(time, dt) {
     if (stopped) return;
-    requestAnimationFrame(frame);
-    const dt = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 1 / 60;
-    previousTime = time;
     const paused = isPaused();
     const control = input.sample();
     if (!paused) {
@@ -473,13 +511,14 @@ export async function start() {
         announce(`${split.finished ? "FINISH" : `CP ${pad(split.index + 1)}`} · ${formatTime(split.time)} · ${formatDelta(split.delta)}${split.delta === null ? "" : " vs previous descent"}`);
       }
     }
-    const restSpot = !paused && car.grounded ? restSpots.find(spot => Math.hypot(car.x - spot.x, car.z - spot.z) < 16) : null;
-    restStill = restSpot && car.speed < 1.2 ? restStill + dt : 0;
-    if (restStill >= 0.5 && !restVisit) { restVisit = restSpot; if (restSpot.meow) audio.meow(); }
-    if (!restSpot) restVisit = null;
+    const arrival = rest.update(car, dt, !paused && car.grounded);
+    if (arrival.arrived) audio.cue(rest.visit.sound);
+    if (arrival.discovered) { updateSecrets(); announce(`Secret ${pad(rest.found.size)} / ${pad(rest.spots.length)} · ${rest.visit.name}`); }
     const stopSight = stops.viewing || (stops.ready ? stops.nearby : null);
-    const parked = Boolean(restVisit) && car.speed < 3 && !control.throttle;
-    const cameraSight = stopSight || (restVisit && car.speed < 3 ? restVisit.sight : null);
+    const resting = Boolean(rest.visit) && car.speed < 3;
+    const parked = resting && !control.throttle;
+    if ($("secret-line").hidden === resting) { $("secret-line").hidden = !resting; if (resting) $("secret-line").textContent = rest.visit.line; }
+    const cameraSight = stopSight || (resting ? rest.visit.sight : null);
     const cameraPanel = stops.viewing ? panel : $("nearby-card");
     const cameraInset = stopSight ? cameraPanel.getBoundingClientRect().right + 24 : 0;
     graphics.render(car, isSuspended() && started ? 0 : dt, !paused && !recovery.crashed, reducedMotion.matches, {
@@ -520,11 +559,12 @@ export async function start() {
       label.element.hidden = Boolean(stops.viewing) || !labelVisible(projected) || Math.hypot(car.x - label.x, car.z - label.z) > 95;
       if (!label.element.hidden) label.element.style.transform = `translate(${Math.round(projected.x)}px, ${Math.round(projected.y)}px) translate(-50%, -100%)`;
     });
+    syncRendering();
   }
   graphics.render(car, 1 / 60, false, reducedMotion.matches);
   $("loading").hidden = true;
   $("intro").hidden = false;
   document.body.classList.remove("is-loading");
   syncInput();
-  requestAnimationFrame(frame);
+  syncRendering(true);
 }

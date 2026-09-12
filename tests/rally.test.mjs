@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createCarState, resetCar, stepCar, FIXED_STEP, TOP_SPEED, DOWNHILL_BONUS } from "../js/rally/physics.js";
 import { RallyRecovery } from "../js/rally/recovery.js";
+import { SECRETS } from "../js/rally/secrets.js";
 import { createLandmarks, loadVisits, saveVisits, SPAWN, WORLD, ROUTES, terrainHeight, terrainGradient, roadAt, driveHeightAt, riverAt, RIVER, CROSSINGS, RAILS, crossingPoint, crossingCoordinates, crossingSections, crossingDeckHeight } from "../js/rally/world.js";
 
 const resume = JSON.parse(await readFile(new URL("../resume.json", import.meta.url), "utf8"));
@@ -324,6 +325,20 @@ test("a descent lifts the top speed and the flat gently takes it back", () => {
   const fastest = car.speed;
   run(car, { throttle: 1 }, 8, { heightAt });
   assert.ok(car.x > 0 && car.speed <= TOP_SPEED + 1e-6 && car.speed < fastest, "the flat must bring the car back to the regular top speed");
+});
+
+test("every secret sits on a flat terrace off the road, apart from the others", () => {
+  assert.equal(SECRETS.length, 14);
+  assert.equal(new Set(SECRETS.map(secret => secret.id)).size, SECRETS.length);
+  for (const secret of SECRETS) {
+    const road = roadAt(secret.x, secret.z), river = riverAt(secret.x, secret.z);
+    assert.ok(!road || road.distance > road.width / 2 + 10, `${secret.id} must stay clear of the road`);
+    assert.ok(!river || river.distance > river.width + 1, `${secret.id} must stay out of the water`);
+    assert.ok(Math.abs(secret.x) < WORLD.limitX - 10 && Math.abs(secret.z) < WORLD.limitZ - 10);
+    const heights = [[0, 0], [-2.5, 0], [2.5, 0], [0, -2.5], [0, 2.5]].map(([dx, dz]) => terrainHeight(secret.x + dx, secret.z + dz));
+    assert.ok(Math.max(...heights) - Math.min(...heights) < 0.3, `${secret.id} needs level ground`);
+    for (const other of SECRETS) if (other !== secret) assert.ok(Math.hypot(secret.x - other.x, secret.z - other.z) > 40, `${secret.id} is too close to ${other.id}`);
+  }
 });
 
 test("the car pulls away from rest on a moderate climb instead of crawling", () => {

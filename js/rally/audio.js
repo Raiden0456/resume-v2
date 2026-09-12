@@ -85,6 +85,36 @@ export class RallyAudio {
     noise.stop(time + duration); thump.stop(time + duration);
   }
 
+  cue(kind) {
+    if (kind === "meow") return this.meow();
+    if (!this.enabled || this.context?.state !== "running") return;
+    const context = this.context, time = context.currentTime;
+    const tone = (frequency, start, length, gain, type = "sine", glide = frequency) => {
+      const voice = context.createOscillator(), envelope = context.createGain();
+      voice.type = type; voice.frequency.setValueAtTime(frequency, time + start);
+      voice.frequency.exponentialRampToValueAtTime(glide, time + start + length);
+      envelope.gain.setValueAtTime(0.001, time + start);
+      envelope.gain.linearRampToValueAtTime(gain, time + start + 0.04);
+      envelope.gain.exponentialRampToValueAtTime(0.001, time + start + length);
+      voice.connect(envelope).connect(this.master);
+      voice.onended = () => { voice.disconnect(); envelope.disconnect(); };
+      voice.start(time + start); voice.stop(time + start + length);
+    };
+    if (kind === "hoot") { tone(390, 0, 0.35, 0.3, "sine", 300); tone(360, 0.45, 0.5, 0.3, "sine", 280); }
+    else if (kind === "crackle") {
+      for (let i = 0; i < 9; i++) {
+        const noise = context.createBufferSource(), filter = context.createBiquadFilter(), envelope = context.createGain(), start = i * 0.13 + (i % 3) * 0.04;
+        noise.buffer = this.effectNoise; filter.type = "bandpass"; filter.frequency.value = 1400 + (i % 4) * 600; filter.Q.value = 1.5;
+        envelope.gain.setValueAtTime(0.001, time + start);
+        envelope.gain.linearRampToValueAtTime(0.35 - i * 0.02, time + start + 0.01);
+        envelope.gain.exponentialRampToValueAtTime(0.001, time + start + 0.09);
+        noise.connect(filter).connect(envelope).connect(this.master);
+        noise.onended = () => { noise.disconnect(); filter.disconnect(); envelope.disconnect(); };
+        noise.start(time + start); noise.stop(time + start + 0.1);
+      }
+    } else { tone(660, 0, 0.5, 0.16); tone(990, 0.16, 0.7, 0.12); }
+  }
+
   meow() {
     if (!this.enabled || this.context?.state !== "running") return;
     const context = this.context, time = context.currentTime, duration = 0.55;

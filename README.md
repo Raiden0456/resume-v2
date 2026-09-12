@@ -15,6 +15,15 @@ Quick countersteering catches the rear, with grip returning
 progressively and most of the cornering momentum retained. Sound is optional. Discovered places
 are saved in local storage. The game needs WebGL 2.
 
+Graphics default to Balanced: up to 60 FPS, a 2.1 megapixel rendering budget
+and dynamic shadows refreshed 15 times a second. Open the driving guide with
+Escape or the help button to pick Energy saver (30 FPS, no dynamic shadows) or
+High detail (sharper shadows, larger pixel budget); the choice is saved on this device. Physics runs at the same fixed rate in every mode.
+The intro is a still view. Rendering stops while a menu is open, the window is
+unfocused, the tab is hidden, or the phone shows the rotation notice. Project
+camera motion runs at up to 30 FPS; pausing it stops rendering after the camera
+settles. Terrain tiles and scenery batches are culled outside the camera view.
+
 Every lookout is a checkpoint, saved as you drive through its coloured marker.
 Brake to a stop there: the camera moves closer and E becomes available. Press E
 or tap Explore to open a scrollable side card while the camera slowly sways left

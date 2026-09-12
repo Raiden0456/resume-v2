@@ -1,5 +1,6 @@
 import * as THREE from "../vendor/three/three.module.min.js";
-import { CAMPS, COTTAGE, GRAVE_SITE, terrainHeight, roadAt } from "./world.js";
+import { CAMPS, terrainHeight, roadAt } from "./world.js";
+import { buildSecretScenes } from "./secret-scenes.js";
 
 const CREAM = "#e7dfc5", DARK = "#28343a", TIMBER = "#9b8061";
 
@@ -8,7 +9,7 @@ const CREAM = "#e7dfc5", DARK = "#28343a", TIMBER = "#9b8061";
 export function createAtmosphere(scene, batch, landmarks) {
   const animated = [], obstacles = [], parkedCars = [];
   const geometries = { box: new THREE.BoxGeometry(1, 1, 1), puff: new THREE.IcosahedronGeometry(1, 0) };
-  let elapsed = 0;
+  let elapsed = 0, lastReducedMotion;
 
   function frame(x, z, heading = 0, base = terrainHeight(x, z)) {
     const sin = Math.sin(heading), cos = Math.cos(heading);
@@ -274,118 +275,21 @@ export function createAtmosphere(scene, batch, landmarks) {
     }
   }
 
-  if (COTTAGE) {
-    const f = frame(COTTAGE.x, COTTAGE.z, COTTAGE.heading), a = f.add;
-    const plaster = "#d9cfb8", roofColor = "#7a4f43", skin = "#e8c9ae", hair = "#a98a63";
-    a("box", "#5a5f5b", 0, -0.35, 0, 6.4, 1.2, 5.4);
-    a("box", plaster, 0, 1.55, 0, 5.4, 2.7, 4.4);
-    for (const x of [-2.7, 2.7]) a("box", TIMBER, x, 1.55, 0, 0.18, 2.7, 4.5);
-    a("box", TIMBER, 0, 2.95, 0, 5.6, 0.2, 4.6);
-    for (const side of [-1, 1]) a("box", roofColor, side * 1.5, 4.1, 0, 3.6, 0.16, 5.2, 0, 0, side * -0.72);
-    a("box", "#5a4238", 0, 5.3, 0, 0.3, 0.2, 5.3);
-    a("box", "#6b6f6c", 1.6, 4.6, -1.2, 0.7, 2, 0.7);
-    steam(f, 1.6, 5.8, -1.2);
-    a("box", DARK, 0, 1.05, 2.26, 0.9, 1.9, 0.08);
-    a("rock", "#d9c07a", 0.3, 1.05, 2.33, 0.06, 0.06, 0.06, 0, 0, 0, "light");
-    for (const x of [-1.7, 1.7]) {
-      a("box", "#f2d79a", x, 1.7, 2.26, 0.9, 0.9, 0.06, 0, 0, 0, "light");
-      a("box", TIMBER, x, 1.7, 2.3, 0.08, 1, 0.05); a("box", TIMBER, x, 1.7, 2.3, 1, 0.08, 0.05);
-    }
-    a("box", "#f2d79a", -2.83, 1.7, 0.4, 0.06, 0.8, 0.9, 0, 0, 0, "light");
-    a("box", TIMBER, -2.87, 1.7, 0.4, 0.05, 0.9, 0.08); a("box", TIMBER, -2.87, 1.7, 0.4, 0.05, 0.08, 1);
-    a("box", TIMBER, 0, 0.3, 3.4, 4.2, 0.14, 2.2);
-    for (const x of [-1.9, 1.9]) a("cylinder", TIMBER, x, 0.8, 3.4, 0.08, 1, 0.08);
-    a("cylinder", "#565e5c", 2.9, 1.1, 3.9, 0.06, 2.2, 0.06);
-    beacon(f, 2.9, 2.3, 3.9, "#f0c979");
-    for (let i = 0; i < 3; i++) a("cylinder", "#8a8f86", (i % 2) * 0.5 - 0.25, 0.04, 4.9 + i * 0.75, 0.42, 0.08, 0.34);
-    a("box", "#6d5a45", -2.2, 0.55, 3.3, 0.6, 0.5, 0.6);
-    a("rock", "#c67a8a", -2.2, 0.95, 3.3, 0.3, 0.25, 0.3);
-    a("rock", "#e5c07b", -2, 1.05, 3.15, 0.12, 0.12, 0.12, 0, 0, 0, "light");
-    const gx = 0.9, gz = 4.7;
-    for (const dx of [-0.13, 0.13]) a("box", "#4a5568", gx + dx, 0.4, gz, 0.2, 0.8, 0.22);
-    a("box", "#6f9aa6", gx, 0.72, gz, 0.66, 0.24, 0.42);
-    a("box", "#6f9aa6", gx, 1.15, gz, 0.56, 0.7, 0.34);
-    for (const dx of [-0.36, 0.36]) a("box", skin, gx + dx, 1.15, gz, 0.14, 0.62, 0.16, 0, 0, dx > 0 ? -0.25 : 0.25);
-    a("rock", skin, gx, 1.72, gz, 0.26, 0.28, 0.26);
-    a("box", hair, gx, 1.6, gz - 0.17, 0.5, 1, 0.2);
-    a("dome", hair, gx, 1.8, gz, 0.29, 0.22, 0.29);
-    const cat = (cx, cz, yaw, coat, patch) => {
-      const sin = Math.sin(yaw), cos = Math.cos(yaw);
-      const part = (shape, color, px, py, pz, sx, sy, sz, rx = 0, rz = 0) => a(shape, color, cx + px * cos - pz * sin, py, cz + px * sin + pz * cos, sx, sy, sz, rx, -yaw, rz);
-      part("box", coat, 0, 0.22, 0, 0.28, 0.3, 0.42);
-      if (patch) part("box", patch, 0, 0.16, 0.16, 0.2, 0.18, 0.12);
-      part("rock", coat, 0, 0.5, 0.18, 0.15, 0.14, 0.15);
-      if (patch) part("rock", patch, 0, 0.46, 0.3, 0.08, 0.07, 0.06);
-      for (const dx of [-0.08, 0.08]) part("cone", coat, dx, 0.62, 0.18, 0.06, 0.1, 0.06);
-      part("box", coat, 0.06, 0.12, -0.22, 0.07, 0.07, 0.12);
-      part("box", coat, 0.1, 0.24, -0.36, 0.06, 0.06, 0.42, 0.9, 0);
-    };
-    const trunk = "#5a4034", blossom = ["#e8a9b8", "#d98ea3", "#f2c4cf", "#e39bb0"];
-    a("cylinder", trunk, -6.6, 1.1, 0.8, 0.26, 2.2, 0.26, 0, 0, 0.12);
-    a("cylinder", trunk, -7.1, 2.6, 0.9, 0.18, 1.6, 0.18, 0.25, 0, 0.45);
-    a("cylinder", trunk, -6.1, 2.7, 0.6, 0.15, 1.5, 0.15, -0.3, 0, -0.5);
-    [[-6.6, 3.9, 0.8, 2.3], [-7.9, 3.4, 1.2, 1.6], [-5.3, 3.5, 0.3, 1.5], [-6.9, 4.6, -0.4, 1.4], [-6.1, 3.1, 1.9, 1.2]].forEach(([px, py, pz, size], i) => a("rock", blossom[i % 4], px, py, pz, size, size * 0.75, size, i * 0.7, i * 1.3, 0));
-    for (let i = 0; i < 9; i++) a("rock", blossom[i % 4], -6.6 + Math.sin(i * 2.4) * (1.2 + i * 0.22), 0.04, 0.8 + Math.cos(i * 2.4) * (1 + i * 0.2), 0.12, 0.03, 0.12, 0, i, 0);
-    const trunkAt = f.point(-6.6, 0, 0.8);
-    solid(frame(trunkAt.x, trunkAt.z), 0.5, 5);
-    cat(2.1, 5.2, -0.3, "#b3b8c0", "#eceae4");
-    cat(-3.6, 4.6, 0.5, "#c98a4b", "#e8c9a0");
-    cat(3.9, 5.6, -1.1, "#2e3236", "#e6e6e2");
-    solid(f, 3.4, 4);
-  }
 
-  {
-    const f = frame(GRAVE_SITE.x, GRAVE_SITE.z, GRAVE_SITE.heading), a = f.add;
-    const stone = "#7d8484", soil = "#3b332c", skin = "#e0c2a6";
-    a("box", soil, 0, 0.12, 0, 1.4, 0.3, 2.4);
-    a("dome", "#46403a", 0, 0.2, 0.1, 0.6, 0.35, 1.1);
-    a("box", stone, 0, 0.75, -1.35, 1.2, 1.3, 0.22);
-    a("dome", stone, 0, 1.4, -1.35, 0.6, 0.35, 0.22);
-    a("box", "#59615f", 0, 0.9, -1.22, 0.7, 0.45, 0.03);
-    for (const dx of [-0.35, 0.35]) a("box", stone, dx, 0.2, -1.35, 0.3, 0.4, 0.3);
-    for (let i = 0; i < 4; i++) a("rock", ["#e5c07b", "#e06c75", "#e2dfcd", "#c678dd"][i], -0.3 + i * 0.2, 0.42, -0.9 + (i % 2) * 0.15, 0.1, 0.1, 0.1, 0, i, 0, "light");
-    const canYaw = 1.1, cs = Math.sin(canYaw), cc = Math.cos(canYaw), canX = -1.35, canZ = -0.55, canR = 0.24;
-    const along = (shape, color, d, py, sx, sy, sz, kind = "solid") => a(shape, color, canX + cs * d, py, canZ + cc * d, sx, sy, sz, Math.PI / 2, canYaw, 0, kind);
-    along("cylinder", "#4fc3c7", -0.2, canR, canR, 0.3, canR, "light");
-    along("cylinder", "#3b8fd0", 0.06, canR, canR, 0.24, canR, "light");
-    along("cylinder", "#2f3fa8", 0.3, canR, canR, 0.26, canR, "light");
-    along("cylinder", "#c9d3d6", -0.36, canR, canR * 0.96, 0.03, canR * 0.96);
-    along("cylinder", "#1d2126", 0.45, canR, canR * 0.98, 0.06, canR * 0.98);
-    along("cylinder", "#c9d3d6", 0.49, canR, canR * 0.9, 0.025, canR * 0.9);
-    for (const [d, w, thick] of [[-0.14, 0.3, 0.11], [0.01, 0.3, 0.11], [0.17, 0.22, 0.05]]) a("box", "#1d2126", canX + cs * d, canR * 2 - 0.02, canZ + cc * d, w, 0.05, thick, 0, canYaw, 0);
-    a("cylinder", "#565e5c", -1.6, 1.2, -1.2, 0.06, 2.4, 0.06);
-    a("box", "#3b4245", -1.6, 2.45, -1.2, 0.36, 0.3, 0.36);
-    beacon(f, -1.6, 2.45, -1.2, "#f0c979");
-    const glow = new THREE.PointLight("#ffd9a0", 26, 14, 1.6);
-    glow.position.copy(f.point(-1.6, 2.4, -1.2)); scene.add(glow);
-    const mx = 1.9, mz = 0.6;
-    for (const dx of [-0.13, 0.13]) a("box", "#3a3f4a", mx + dx, 0.42, mz, 0.2, 0.84, 0.24);
-    a("box", "#5c6b5a", mx, 1.22, mz, 0.6, 0.78, 0.34);
-    for (const dx of [-0.38, 0.38]) a("box", "#5c6b5a", mx + dx, 1.2, mz, 0.15, 0.66, 0.17, dx > 0 ? 0.5 : 0, 0, dx > 0 ? -0.2 : 0.15);
-    a("rock", skin, mx, 1.8, mz, 0.26, 0.28, 0.26);
-    a("dome", "#4a3a2e", mx, 1.86, mz, 0.29, 0.2, 0.29);
-    a("box", "#c9a26f", mx + 0.42, 1.24, mz + 0.35, 0.03, 0.03, 0.7, 0.9, 0, 0);
-    const dx0 = mx + 0.7, dz0 = mz + 0.75, brown = "#6b3f26";
-    a("box", brown, dx0, 0.3, dz0, 0.26, 0.24, 0.85);
-    a("box", brown, dx0, 0.42, dz0 + 0.5, 0.22, 0.2, 0.32);
-    a("box", "#4a2a18", dx0, 0.36, dz0 + 0.76, 0.14, 0.12, 0.26);
-    for (const side of [-1, 1]) a("box", "#4a2a18", dx0 + side * 0.13, 0.4, dz0 + 0.5, 0.06, 0.2, 0.14);
-    for (const px of [-0.09, 0.09]) for (const pz of [-0.32, 0.3]) a("box", brown, dx0 + px, 0.09, dz0 + pz, 0.07, 0.18, 0.08);
-    a("box", brown, dx0, 0.42, dz0 - 0.5, 0.05, 0.05, 0.3, -0.7, 0, 0);
-    a("cylinder", "#8a8f86", -1.3, 0.35, 0.9, 0.6, 0.7, 0.55);
-    const marker = f.point(0, 0, -1.35);
-    solid(frame(marker.x, marker.z), 0.7, 1.6);
-  }
+  buildSecretScenes({ scene, batch, geometries, animated, frame, solid, sign, beacon, steam, rotor, palette: { TIMBER, DARK } });
 
   return {
     obstacles, parkedCars,
     update(dt, reducedMotion, car) {
       if (!reducedMotion) elapsed += dt;
+      const timeChanged = dt > 0 && !reducedMotion || reducedMotion !== lastReducedMotion;
       for (const animation of animated) {
         const p = animation.object.position;
-        animation.object.visible = Math.hypot(car.x - p.x, car.z - p.z) < 165;
-        if (animation.object.visible) animation.tick(reducedMotion ? 0 : elapsed, reducedMotion);
+        const wasVisible = animation.object.visible;
+        animation.object.visible = (car.x - p.x) ** 2 + (car.z - p.z) ** 2 < 165 ** 2;
+        if (animation.object.visible && (timeChanged || !wasVisible)) animation.tick?.(reducedMotion ? 0 : elapsed, reducedMotion);
       }
+      lastReducedMotion = reducedMotion;
     },
   };
 }

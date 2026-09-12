@@ -1,6 +1,6 @@
 import { CatmullRomCurve3, Vector3 } from "../vendor/three/three.module.min.js";
 
-export const WORLD = { width: 840, depth: 980, limitX: 400, limitZ: 465, summit: 300 };
+export const WORLD = { width: 1320, depth: 1480, limitX: 400, limitZ: 465, summit: 300 };
 export const SNOW_LINE = 238;
 export const MEADOW_LINE = 45;
 export const SPAWN = { x: -110, z: -351, heading: Math.PI };
@@ -41,7 +41,7 @@ export const ROUTES = STAGES.map((stage, index) => {
   return { ...stage, closed: false, samples };
 });
 
-const SIGHTS = {
+export const SIGHTS = {
   "Rowte.io": { id: "rowte", stage: 8, type: "bank", label: "THE SUMMIT EXCHANGE", color: "#df8b74", x: -133, z: -331, marker: [-110,-326], altitude: 300 },
   "NextStreet": { id: "nextstreet", stage: 7, type: "hub", label: "THE BUSINESS HUB", color: "#dfae5a", x: -206, z: -247, marker: [-208,-221], altitude: 258 },
   "Supplier Success Accelerator": { id: "supplier", stage: 6, type: "accelerator", label: "THE BUSINESS ACCELERATOR", color: "#dfae5a", x: -89, z: -130, marker: [-71,-146], altitude: 226 },
@@ -64,6 +64,7 @@ const PEAKS = [
   [45,-200,276,215,200], [156,-258,245,190,190], [290,-188,232,140,185],
   [186,-29,181,190,205], [40,56,156,215,185], [-123,117,134,210,185],
   [-250,213,92,180,180], [-26,283,47,235,170], [148,323,21,180,150],
+  [-170,-500,470,300,220], [-165,-590,490,330,260], [-520,-420,300,230,300], [430,-470,230,220,260],
 ];
 function baseHeight(x, z) {
   let height = 0;
@@ -76,7 +77,7 @@ function baseHeight(x, z) {
   height += crags * smoothstep(8, 100, height);
   const ravine = Math.exp(-(((x + 25 + z * 0.24) / 24) ** 2)) * Math.exp(-(((z - 5) / 90) ** 4)) * 65;
   const quarry = Math.exp(-(((x - 245) / 26) ** 2) - ((z + 183) / 52) ** 2) * 65;
-  const edge = (1 - smoothstep(330, 419, Math.abs(x))) * (1 - smoothstep(391, 489, Math.abs(z)));
+  const edge = (1 - smoothstep(560, 650, Math.abs(x))) * (1 - smoothstep(640, 730, Math.abs(z)));
   return Math.max(0, height - ravine - quarry) * edge;
 }
 
@@ -131,6 +132,7 @@ export function landHeight(x, z) {
 // One continuous stream from the headwaters to the valley. Its five road
 // crossings are computed from the same curves that render the road and water.
 const riverNodes = [
+  [-162,-612,424], [-166,-560,405], [-169,-500,372], [-170,-455,335],
   [-170,-415,319], [-179,-362,298], [-188,-309,273], [-169,-272,260],
   [-108,-251,232], [-30,-239,209], [76,-206,186], [116,-113,162],
   [95,-36,129], [49,24,107], [29,109,79], [-11,159,68], [-121,187,53],
@@ -164,20 +166,10 @@ export function riverAt(x, z) {
   }
   return result;
 }
-export const COTTAGE_SITE = (() => {
-  const x = 89.8, z = 308.2, river = riverAt(x, z), heading = Math.atan2(-50, 85) - 0.3;
-  const right = [Math.cos(heading), Math.sin(heading)];
-  const porch = { x: x - Math.sin(heading) * 5.5, z: z + Math.cos(heading) * 5.5 };
-  const parking = { x: x + right[0] * 8 - Math.sin(heading) * 1.5, z: z + right[1] * 8 + Math.cos(heading) * 1.5, heading };
-  const edge = roadAt(16, 307), turn = [86, 296];
-  const toTurn = Math.hypot(turn[0] - edge.x, turn[1] - edge.z), shoulder = edge.width / 2 + 2.2;
-  const path = [[edge.x + (turn[0] - edge.x) / toTurn * shoulder, edge.z + (turn[1] - edge.z) / toTurn * shoulder], turn, [parking.x, parking.z]];
-  return { x, z, y: river.y + 4.8, radius: 10, outer: 24, heading, porch, parking, path, pathStartY: edge.y, corridor: 5, corridorOuter: 13 };
-})();
-export const GRAVE_SITE = { x: 153, z: -113, y: 116, radius: 5, outer: 11, heading: Math.atan2(-50, 85) + 0.4 };
-const TERRACES = [COTTAGE_SITE, GRAVE_SITE];
-function pathProfile(x, z) {
-  const path = COTTAGE_SITE.path;
+export const TERRACES = [];
+export const CORRIDORS = [];
+function corridorProfile(corridor, x, z) {
+  const path = corridor.path;
   let best = Infinity, along = 0, total = 0;
   const lengths = path.slice(1).map(([bx, bz], i) => Math.hypot(bx - path[i][0], bz - path[i][1]));
   lengths.forEach((length, i) => {
@@ -263,11 +255,11 @@ export function terrainHeight(x, z) {
     }
   }
   const dry = river ? smoothstep(river.width + 0.2, river.width + 1.6, river.distance) : 1;
-  const trail = pathProfile(x, z);
-  if (trail.distance < COTTAGE_SITE.corridorOuter) {
-    const grade = smoothstep(0, 1, trail.fraction);
-    const target = COTTAGE_SITE.pathStartY + (COTTAGE_SITE.y - COTTAGE_SITE.pathStartY) * grade;
-    height += (target - height) * (1 - smoothstep(COTTAGE_SITE.corridor, COTTAGE_SITE.corridorOuter, trail.distance)) * dry * smoothstep(0, 0.08, trail.fraction);
+  for (const corridor of CORRIDORS) {
+    const trail = corridorProfile(corridor, x, z);
+    if (trail.distance >= corridor.outer) continue;
+    const target = corridor.startY + (corridor.endY - corridor.startY) * smoothstep(0, 1, trail.fraction);
+    height += (target - height) * (1 - smoothstep(corridor.width, corridor.outer, trail.distance)) * dry * smoothstep(0, 0.08, trail.fraction);
   }
   for (const site of TERRACES) {
     const terrace = Math.hypot(x - site.x, z - site.z);
@@ -320,8 +312,6 @@ export function driveHeightAt(x, z, ceiling = Infinity) {
   }
   return ground;
 }
-
-export const COTTAGE = { x: COTTAGE_SITE.x, z: COTTAGE_SITE.z, heading: COTTAGE_SITE.heading, radius: 12, path: COTTAGE_SITE.path, parking: COTTAGE_SITE.parking };
 
 export function terrainGradient(x, z, heightAt = terrainHeight) {
   const step = 0.7;

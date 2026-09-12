@@ -22,6 +22,8 @@ export function makeWater(scene, batch) {
     return [[x + nx * width, y + 0.08, z + nz * width], [x - nx * width, y + 0.08, z - nz * width]];
   });
   const water = new THREE.Mesh(stripGeometry(rows), new THREE.MeshStandardMaterial({ color: "#367f96", emissive: "#173b46", emissiveIntensity: 0.35, roughness: 0.27, metalness: 0.18, transparent: true, opacity: 0.9, side: THREE.DoubleSide }));
+  // These flat surfaces do not need separate back/front transparency passes.
+  water.material.forceSinglePass = true;
   water.receiveShadow = true; scene.add(water);
   for (let i = 4; i < RIVER.length - 1; i += 11) {
     for (const side of [0, 1]) {
@@ -32,11 +34,16 @@ export function makeWater(scene, batch) {
   }
   // Small drifting streaks show the flow direction, including on cascades.
   const foam = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: "#c4e4dd", transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide }), 180);
+  foam.material.forceSinglePass = true;
   foam.instanceMatrix.setUsage(THREE.DynamicDrawUsage); foam.frustumCulled = false; scene.add(foam);
   const dummy = new THREE.Object3D();
-  let flow = 0;
+  let flow = 0, pending = 0;
   const update = dt => {
     flow += dt * 4.8;
+    pending += dt;
+    // Foam phase follows total elapsed time so the 30 Hz step stays in sync at low frame rates.
+    if (dt > 0 && pending < 1 / 30) return;
+    pending %= 1 / 30;
     for (let i = 0; i < 180; i++) {
       const cursor = (i * (RIVER.length - 2) / 180 + flow) % (RIVER.length - 2), j = Math.floor(cursor), t = cursor - j;
       const a = RIVER[j], b = RIVER[j + 1], dx = b[0] - a[0], dz = b[1] - a[1], length = Math.hypot(dx, dz);

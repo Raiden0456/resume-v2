@@ -1,0 +1,51 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import * as THREE from "../js/vendor/three/three.module.min.js";
+import { createBatch } from "../js/rally/batching.js";
+import { terrainHeight } from "../js/rally/world.js";
+
+test("scenery batches retain transforms and colors while culling distant cells", () => {
+  const scene = new THREE.Scene(), batch = createBatch(scene);
+  batch.absolute("box", "#dd735f", 10, 4, 10, 2, 3, 4, 0.2, 0.6, -0.1);
+  batch.absolute("box", "#e2dfcd", 18, 1, 12, 1, 1, 1);
+  batch.absolute("box", "#445566", 800, 1, 10, 1, 1, 1);
+  batch.finish();
+  scene.updateMatrixWorld(true);
+  assert.equal(scene.children.length, 2);
+  assert.equal(scene.children.reduce((count, mesh) => count + mesh.count, 0), 3);
+  const near = scene.children[0], far = scene.children[1];
+  const actual = new THREE.Matrix4(), expected = new THREE.Object3D();
+  expected.position.set(10, 4, 10); expected.scale.set(2, 3, 4);
+  expected.rotation.set(0.2, 0.6, -0.1, "YXZ"); expected.updateMatrix();
+  near.getMatrixAt(0, actual);
+  actual.elements.forEach((value, index) => assert.ok(Math.abs(value - expected.matrix.elements[index]) < 0.000001));
+  const color = new THREE.Color(); near.getColorAt(0, color);
+  const sourceColor = new THREE.Color("#dd735f");
+  for (const channel of ["r", "g", "b"]) assert.ok(Math.abs(color[channel] - sourceColor[channel]) < 0.000001);
+  const camera = new THREE.OrthographicCamera(-40, 40, 40, -40, 0.1, 300);
+  camera.position.set(0, 100, 0); camera.lookAt(0, 0, 0); camera.updateMatrixWorld();
+  const frustum = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+  assert.equal(frustum.intersectsObject(near), true);
+  assert.equal(frustum.intersectsObject(far), false);
+  assert.equal(near.matrixAutoUpdate, false);
+  assert.equal(near.castShadow, true);
+});
+
+test("scenery bounds include geometry extending across a cell boundary and preserve terrain offsets", () => {
+  const scene = new THREE.Scene(), batch = createBatch(scene);
+  batch.absolute("box", "#ffffff", 129, 0, 0, 100, 2, 2);
+  batch.add("rock", "#ffffff", -15, 3, -4, 1, 1, 1);
+  batch.building(-15, -4)("box", "#ffffff", 2, 6, 5, 1, 1, 1, 0, 0, 0, "light");
+  batch.finish(); scene.updateMatrixWorld(true);
+  const [wide, rock, light] = scene.children;
+  assert.ok(wide.boundingSphere.containsPoint(new THREE.Vector3(79, 0, 0)));
+  assert.ok(wide.boundingSphere.containsPoint(new THREE.Vector3(179, 0, 0)));
+  const matrix = new THREE.Matrix4(), position = new THREE.Vector3();
+  rock.getMatrixAt(0, matrix); position.setFromMatrixPosition(matrix);
+  assert.ok(Math.abs(position.y - (terrainHeight(-15, -4) + 3)) < 0.0001);
+  light.getMatrixAt(0, matrix); position.setFromMatrixPosition(matrix);
+  assert.equal(position.x, -13); assert.equal(position.z, 1);
+  assert.ok(Math.abs(position.y - (terrainHeight(-15, -4) + 6)) < 0.0001);
+  assert.equal(light.material.isMeshBasicMaterial, true);
+  assert.equal(light.castShadow, false);
+});
