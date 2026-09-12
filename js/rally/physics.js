@@ -3,6 +3,7 @@ import { SPAWN, WORLD, driveHeightAt, terrainGradient } from "./world.js";
 export const FIXED_STEP = 1 / 120;
 export const GRAVITY = 40;
 export const TOP_SPEED = 29;
+export const DOWNHILL_BONUS = 11;
 // Compress the mountain's exaggerated grades a little for driveability;
 // free flight still uses the full gravity above.
 const HILL_GRAVITY = 26;
@@ -15,7 +16,7 @@ export function createCarState(pose = SPAWN, heightAt = driveHeightAt) {
     suspension: 0, suspensionVelocity: 0,
     pitch: Math.atan(slope.x * Math.sin(pose.heading) - slope.z * Math.cos(pose.heading)),
     roll: Math.atan(slope.x * Math.cos(pose.heading) + slope.z * Math.sin(pose.heading)),
-    vx: 0, vz: 0, yaw: 0, steer: 0, grip: 5.1, speed: 0, slip: 0, drift: false, wheelspin: 0, surface: "gravel" };
+    vx: 0, vz: 0, yaw: 0, steer: 0, grip: 5.1, speed: 0, slip: 0, drift: false, wheelspin: 0, topSpeed: TOP_SPEED, surface: "gravel" };
 }
 
 export function resetCar(state, pose = SPAWN, heightAt = driveHeightAt) {
@@ -51,6 +52,8 @@ export function stepCar(state, input, dt, environment = {}) {
     const acceleration = throttle < 0 && forward > 0.6 ? 29 : throttle > 0 && forward < -0.6 ? 24 : 14 * lowGear;
     const thrust = throttle * acceleration / Math.hypot(1, forwardGrade);
     forward += thrust * dt;
+    const downhillTop = TOP_SPEED + DOWNHILL_BONUS * clamp(-forwardGrade / 0.5, 0, 1);
+    state.topSpeed = downhillTop >= state.topSpeed ? downhillTop : Math.max(downhillTop, state.topSpeed - 6 * dt);
     if (Math.abs(forward) > 0.8 || throttle) {
       // Gravity acts along the incline, and engine thrust is spent climbing.
       // Keep the existing low-speed hill hold and modest downhill assistance.
@@ -58,7 +61,8 @@ export function stepCar(state, input, dt, environment = {}) {
       const uphill = forward * forwardGrade > 0;
       if (throttle > 0 && forwardGrade > 0 && forward < 2) state.wheelspin = clamp(1 + (gravity + 1 - thrust) / 4, 0, 1);
       const beforeGravity = forward;
-      forward -= (uphill ? gravity : clamp(gravity, -2.2, 2.2)) * dt;
+      const assist = throttle > 0 ? 5 : 2.2;
+      forward -= (uphill ? gravity : clamp(gravity, -assist, assist)) * dt;
       if (uphill && beforeGravity * forward < 0) forward = 0;
       sideways -= clamp(slope.x * rightX + slope.z * rightZ, -1, 1) * (handbrake || state.wheelspin > 0.5 ? 1.3 : 0.35) * dt;
     }
@@ -68,7 +72,7 @@ export function stepCar(state, input, dt, environment = {}) {
     forward *= Math.exp(-(onRoad ? 0.38 : 0.46) * dt);
     const slidingBrake = throttle || Math.abs(state.steer) > 0.1 || Math.abs(sideways) > 2;
     forward *= Math.exp(-(handbrake ? (slidingBrake ? 0.16 : 0.95) : 0) * dt);
-    forward = clamp(forward, -11, TOP_SPEED);
+    forward = clamp(forward, -11, state.topSpeed);
     const speed = Math.hypot(forward, sideways);
     // A sliding car still has steering authority even when most of its
     // momentum is sideways. A quick turn naturally loosens the rear tyres.
@@ -92,7 +96,7 @@ export function stepCar(state, input, dt, environment = {}) {
     // Tyres primarily redirect momentum toward the nose. Scrub dissipates a
     // small part of it instead of deleting all sideways energy in a drift.
     forward = (Math.sign(forward) || Math.sign(throttle) || 1) * Math.sqrt(forward * forward + (lateralBeforeGrip * lateralBeforeGrip - sideways * sideways) * 0.97);
-    const speedLimit = Math.min(1, TOP_SPEED / (Math.hypot(forward, sideways) || 1));
+    const speedLimit = Math.min(1, state.topSpeed / (Math.hypot(forward, sideways) || 1));
     forward *= speedLimit; sideways *= speedLimit;
     state.vx = forwardX * forward + rightX * sideways;
     state.vz = forwardZ * forward + rightZ * sideways;

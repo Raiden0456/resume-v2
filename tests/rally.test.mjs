@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { createCarState, resetCar, stepCar, FIXED_STEP, TOP_SPEED } from "../js/rally/physics.js";
+import { createCarState, resetCar, stepCar, FIXED_STEP, TOP_SPEED, DOWNHILL_BONUS } from "../js/rally/physics.js";
 import { RallyRecovery } from "../js/rally/recovery.js";
 import { createLandmarks, loadVisits, saveVisits, SPAWN, WORLD, ROUTES, terrainHeight, terrainGradient, roadAt, driveHeightAt, riverAt, RIVER, CROSSINGS, RAILS, crossingPoint, crossingCoordinates, crossingSections, crossingDeckHeight } from "../js/rally/world.js";
 
@@ -285,6 +285,18 @@ test("railed bridges keep a sliding car on the deck while the timber bridge lets
     if (crossing.style === "rail") assert.ok(across > 2 && across < crossing.halfWidth - 0.5 && car.grounded, `${crossing.label} must hold the car`);
     else assert.ok(across > crossing.halfWidth, `${crossing.label} has no rail to lean on`);
   }
+});
+
+test("a descent lifts the top speed and the flat gently takes it back", () => {
+  const heightAt = x => Math.max(0, -x * 0.5);
+  const car = createCarState({ x: -300, z: 0, heading: Math.PI / 2 }, heightAt);
+  car.vx = TOP_SPEED; car.speed = TOP_SPEED;
+  run(car, { throttle: 1 }, 6, { heightAt });
+  assert.ok(car.x < 0 && car.speed > TOP_SPEED + 6, "the slope must carry the car well past the flat top speed");
+  assert.ok(car.speed <= TOP_SPEED + DOWNHILL_BONUS + 1e-6);
+  const fastest = car.speed;
+  run(car, { throttle: 1 }, 8, { heightAt });
+  assert.ok(car.x > 0 && car.speed <= TOP_SPEED + 1e-6 && car.speed < fastest, "the flat must bring the car back to the regular top speed");
 });
 
 test("the car pulls away from rest on a moderate climb instead of crawling", () => {
