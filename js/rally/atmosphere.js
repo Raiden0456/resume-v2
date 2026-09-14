@@ -285,9 +285,14 @@ export function createAtmosphere(scene, batch, landmarks) {
       const timeChanged = dt > 0 && !reducedMotion || reducedMotion !== lastReducedMotion;
       for (const animation of animated) {
         const p = animation.object.position;
-        const wasVisible = animation.object.visible;
-        animation.object.visible = (car.x - p.x) ** 2 + (car.z - p.z) ** 2 < 165 ** 2;
-        if (animation.object.visible && (timeChanged || !wasVisible)) animation.tick?.(reducedMotion ? 0 : elapsed, reducedMotion);
+        const wasActive = animation.active;
+        const active = (car.x - p.x) ** 2 + (car.z - p.z) ** 2 < 165 ** 2;
+        animation.active = active;
+        // Zero intensity keeps a fixed light layout; hiding a light changes
+        // shader variants for every lit material as the car crosses this range.
+        if (!animation.object.isLight) animation.object.visible = active;
+        if (animation.light && active !== wasActive) animation.light.intensity = active ? animation.intensity : 0;
+        if (active && (timeChanged || !wasActive)) animation.tick?.(reducedMotion ? 0 : elapsed, reducedMotion);
       }
       lastReducedMotion = reducedMotion;
     },

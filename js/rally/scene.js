@@ -96,15 +96,18 @@ function makeCar(scene) {
   gradient.addColorStop(1, "rgba(255,244,204,.2)");
   bc.fillStyle = gradient; bc.beginPath(); bc.moveTo(0, 0); bc.lineTo(128, 0); bc.lineTo(69, 256); bc.lineTo(59, 256); bc.closePath(); bc.fill();
   const beamMaterial = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(beamCanvas), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
-  const beams = [];
+  const beams = [], headlights = [];
   for (const x of [-0.8, 0.8]) {
     const beam = new THREE.Mesh(new THREE.PlaneGeometry(7, 15), beamMaterial);
     beam.rotation.x = -Math.PI / 2; beam.position.set(x, 0.07, -9.8); group.add(beam);
     const light = new THREE.SpotLight("#ffedb5", 18, 22, 0.38, 0.75, 1.1);
-    light.position.set(x, 1.2, -2);
-    light.target.position.set(x, 0, -13);
-    group.add(light, light.target);
-    beams.push(beam, light);
+    const position = new THREE.Vector3(x, 1.2, -2), target = new THREE.Vector3(x, 0, -13);
+    light.position.copy(position);
+    light.target.position.copy(target);
+    // Keep the shader's light count stable when jumping, parking or hiding the crashed car.
+    scene.add(light, light.target);
+    headlights.push({ light, position, target });
+    beams.push(beam);
   }
   // Lamps stay out of the shared body material because they change while parked.
   const lamps = new Set(lights.map(light => light.mesh));
@@ -129,7 +132,7 @@ function makeCar(scene) {
   shade.addColorStop(0, "#000000b0"); shade.addColorStop(1, "#00000000"); sc.fillStyle = shade; sc.fillRect(0, 0, 64, 64);
   const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4, 6), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false, opacity: 0.5 }));
   shadow.rotation.x = -Math.PI / 2; scene.add(shadow);
-  return { group, body, wheels, beams, lights, shadow };
+  return { group, body, wheels, beams, headlights, lights, shadow };
 }
 
 function makeTrails(scene) {
@@ -212,7 +215,8 @@ export function createScene(canvas, landmarks, { quality = "balanced" } = {}) {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.25;
   renderer.shadowMap.enabled = profile.shadows;
-  renderer.shadowMap.autoUpdate = false;
+  // Shadows use the current car pose on every rendered frame, including still-view redraws.
+  renderer.shadowMap.autoUpdate = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   scene.add(new THREE.HemisphereLight("#c2d7ed", "#62584c", 1.35));
   const moon = new THREE.DirectionalLight("#d7e0e5", 2.7);
@@ -268,7 +272,13 @@ export function createScene(canvas, landmarks, { quality = "balanced" } = {}) {
   const lookAhead = new THREE.Vector3(0, 0, 10);
   const projection = new THREE.Vector3();
   const labelHeights = new Map(landmarks.map(sight => [`${sight.x},${sight.z}`, terrainHeight(sight.x, sight.z)]));
-  let width = 0, height = 0, elapsed = 0, shadowElapsed = Infinity;
+  const materials = new Set();
+  scene.traverse(object => {
+    const entries = Array.isArray(object.material) ? object.material : [object.material];
+    for (const material of entries) if (material) materials.add(material);
+  });
+  car.lights.forEach(light => { materials.add(light.on); materials.add(light.off); });
+  let width = 0, height = 0, elapsed = 0;
   const resize = () => {
     width = Math.max(1, window.innerWidth); height = Math.max(1, window.innerHeight);
     // Bound total pixels as well as DPR: a large external display needs a cap too.
@@ -281,16 +291,46 @@ export function createScene(canvas, landmarks, { quality = "balanced" } = {}) {
   cameraRig.snap(new THREE.Vector3(SPAWN.x, driveHeightAt(SPAWN.x, SPAWN.z) + 2, SPAWN.z + 10));
   return {
     renderer, routes, isRoad, resize, cameraRig, crashEffect, splashEffect, fireworks, atmosphere, obstacles, obstaclesNear,
+    async prepare() {
+      // Compile every area's materials before driving, including initially hidden effects.
+      try {
+        for (const shadows of [true, false]) {
+          renderer.shadowMap.enabled = shadows;
+          for (const state of ["on", "off"]) {
+            car.lights.forEach(light => { light.mesh.material = light[state]; });
+            await renderer.compileAsync(scene, camera);
+          }
+        }
+      } finally {
+        renderer.shadowMap.enabled = profile.shadows;
+        car.lights.forEach(light => { light.mesh.material = light.on; });
+      }
+      // Upload signs and effect textures during loading instead of their first appearance.
+      const textures = new Set();
+      for (const material of materials) {
+        for (const value of Object.values(material)) if (value?.isTexture) textures.add(value);
+      }
+      let batchStart = performance.now();
+      for (const texture of textures) {
+        renderer.initTexture(texture);
+        if (performance.now() - batchStart > 8) {
+          await new Promise(resolve => setTimeout(resolve, 0));
+          batchStart = performance.now();
+        }
+      }
+    },
     get quality() { return quality; },
     setQuality(next) {
       if (!Object.hasOwn(GRAPHICS_PROFILES, next) || next === quality) return;
+      const shadowsChanged = profile.shadows !== GRAPHICS_PROFILES[next].shadows;
       quality = next; profile = GRAPHICS_PROFILES[quality];
       renderer.shadowMap.enabled = profile.shadows;
+      // Reselect the already compiled variant, including lamps currently switched off.
+      if (shadowsChanged) for (const material of materials) material.needsUpdate = true;
       moon.shadow.mapSize.set(profile.shadowSize || 1024, profile.shadowSize || 1024);
       // Three.js allocates the shadow target lazily; discard its old resolution.
       moon.shadow.map?.dispose();
       moon.shadow.map = null;
-      shadowElapsed = Infinity;
       resize();
     },
     render(state, dt, active, reducedMotion, view = {}) {
@@ -302,7 +342,14 @@ export function createScene(canvas, landmarks, { quality = "balanced" } = {}) {
       car.body.rotation.z = reducedMotion ? 0 : clamp(state.yaw * state.speed * 0.002, -0.065, 0.065);
       car.body.rotation.x = reducedMotion ? 0 : Math.sin(elapsed * 26) * Math.min(state.speed / 2000, 0.015);
       car.body.position.y = reducedMotion ? 0 : state.suspension;
-      car.beams.forEach(beam => { beam.visible = state.grounded && !state.inWater && !view.parked; });
+      const headlightsOn = state.grounded && !state.inWater && !view.parked && !view.crashed;
+      car.beams.forEach(beam => { beam.visible = headlightsOn; });
+      car.group.updateMatrix();
+      car.headlights.forEach(({ light, position, target }) => {
+        light.position.copy(position).applyMatrix4(car.group.matrix);
+        light.target.position.copy(target).applyMatrix4(car.group.matrix);
+        light.intensity = headlightsOn ? 18 : 0;
+      });
       car.lights.forEach(light => { light.mesh.material = view.parked ? light.off : light.on; });
       const ground = driveHeightAt(state.x, state.z, state.y + 0.7), clearance = Math.max(0, state.y - ground);
       const water = riverAt(state.x, state.z);
@@ -324,16 +371,8 @@ export function createScene(canvas, landmarks, { quality = "balanced" } = {}) {
       target.set(state.x + lookAhead.x, cameraHeight + 2, state.z + lookAhead.z);
       cameraRig.update(target, dt, { ...view, car: state }, reducedMotion);
       const focus = cameraRig.focus;
-      shadowElapsed += dt;
-      if (profile.shadows && shadowElapsed >= 1 / profile.shadowFps) {
-        moon.position.set(focus.x - 100, focus.y + 120, focus.z - 65);
-        moon.target.position.copy(focus);
-        renderer.shadowMap.needsUpdate = true;
-        shadowElapsed = 0;
-      } else if (!profile.shadows) {
-        moon.position.set(focus.x - 100, focus.y + 120, focus.z - 65);
-        moon.target.position.copy(focus);
-      }
+      moon.position.set(focus.x - 100, focus.y + 120, focus.z - 65);
+      moon.target.position.copy(focus);
       updateTrails(state, reducedMotion ? 0 : dt, active && !reducedMotion);
       crashEffect.update(dt);
       splashEffect.update(dt); fireworks.update(dt);
@@ -351,6 +390,6 @@ export function createScene(canvas, landmarks, { quality = "balanced" } = {}) {
       projection.set(x, base + y, z).project(camera);
       return { x: (projection.x + 1) * width / 2, y: (1 - projection.y) * height / 2, visible: projection.z > -1 && projection.z < 1 && Math.abs(projection.x) < 1.1 && Math.abs(projection.y) < 1.1 };
     },
-    snapCamera(state) { shadowElapsed = Infinity; lookAhead.set(Math.sin(state.heading) * 10, 0, -Math.cos(state.heading) * 10); target.set(state.x + lookAhead.x, state.y + 2, state.z + lookAhead.z); cameraRig.snap(target); },
+    snapCamera(state) { lookAhead.set(Math.sin(state.heading) * 10, 0, -Math.cos(state.heading) * 10); target.set(state.x + lookAhead.x, state.y + 2, state.z + lookAhead.z); cameraRig.snap(target); },
   };
 }

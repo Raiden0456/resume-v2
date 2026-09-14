@@ -30,7 +30,6 @@ export function buildSecretScenes({ scene, batch, geometries, animated, frame, s
     const arm = new THREE.Mesh(geometries.box, new THREE.MeshStandardMaterial({ color: "#5a5f63" })); arm.scale.set(0.12, 2.3, 0.12); arm.position.y = -1.15;
     const glass = new THREE.Mesh(geometries.box, new THREE.MeshBasicMaterial({ color: lit ? "#f0d9a0" : "#3a4550" })); glass.scale.set(1.2, 0.7, 1.45); glass.position.y = -3.1;
     cabin.add(shell, roof, arm, glass);
-    if (lit) { const glow = new THREE.PointLight("#f0c979", 6, 9, 1.8); glow.position.y = -3.1; cabin.add(glow); }
     scene.add(cabin);
     return cabin;
   };
@@ -118,7 +117,7 @@ export function buildSecretScenes({ scene, batch, geometries, animated, frame, s
     beacon(f, -1.6, 2.45, -1.2, "#f0c979");
     const glow = new THREE.PointLight("#ffd9a0", 26, 14, 1.6);
     glow.position.copy(f.point(-1.6, 2.4, -1.2)); scene.add(glow);
-    animated.push({ object: glow });
+    animated.push({ object: glow, light: glow, intensity: 26 });
     a("cylinder", "#8a8f86", -1.3, 0.35, 0.9, 0.6, 0.7, 0.55);
     const sitYaw = -1.1, sitSin = Math.sin(sitYaw), sitCos = Math.cos(sitYaw), seat = 0.7;
     const sit = (shape, color, x, y, z, sx, sy, sz, rx = 0, rz = 0) => a(shape, color, -1.3 + x * sitCos - z * sitSin, y, 0.9 + x * sitSin + z * sitCos, sx, sy, sz, rx, -sitYaw, rz);
@@ -164,7 +163,16 @@ export function buildSecretScenes({ scene, batch, geometries, animated, frame, s
     a("rock", "#e6ebea", 2.4, 0.3, 3.4, 1, 0.5, 1); a("rock", "#dfe6e4", -3, 0.25, 2.2, 0.8, 0.4, 0.8);
     const hang = 3.4, span = Math.hypot(next.x - top.x, next.z - top.z), t = hang / span;
     const cabin = hangCabin(top.x + (next.x - top.x) * t - Math.cos(CABLEWAY.heading) * 1.4, (top.y + top.height) * (1 - t) + (next.y + next.height) * t, top.z + (next.z - top.z) * t - Math.sin(CABLEWAY.heading) * 1.4, "#8a4b3c", true);
-    animated.push({ object: cabin, tick(time, still) { cabin.rotation.z = still ? 0 : Math.sin(time * 0.9) * 0.16; cabin.rotation.x = still ? 0 : Math.sin(time * 0.6) * 0.05; } });
+    // Keep the light outside the culled cabin so hiding it does not change
+    // Three's light count and compile new shaders during a drive.
+    const glow = new THREE.PointLight("#f0c979", 6, 9, 1.8);
+    const syncGlow = () => { cabin.updateMatrix(); glow.position.set(0, -3.1, 0).applyMatrix4(cabin.matrix); };
+    syncGlow(); scene.add(glow);
+    animated.push({ object: cabin, light: glow, intensity: 6, tick(time, still) {
+      cabin.rotation.z = still ? 0 : Math.sin(time * 0.9) * 0.16;
+      cabin.rotation.x = still ? 0 : Math.sin(time * 0.6) * 0.05;
+      syncGlow();
+    } });
     solid(f, 1.6, top.height);
   },
   snowman(f) {
@@ -219,7 +227,7 @@ export function buildSecretScenes({ scene, batch, geometries, animated, frame, s
     for (const yaw of [0.5, 1.9]) a("cylinder", "#4a3a2e", 0, 0.32, 0, 0.11, 1.2, 0.11, Math.PI / 2, yaw, 0.6);
     a("cone", "#e5c07b", 0, 0.75, 0, 0.42, 0.9, 0.42, 0, 0, 0, "light"); a("cone", "#dd735f", 0.1, 0.65, 0.05, 0.55, 0.75, 0.55, 0, 0.7, 0, "light");
     const fire = new THREE.PointLight("#ffb060", 14, 12, 1.7); fire.position.copy(f.point(0, 1.1, 0)); scene.add(fire);
-    animated.push({ object: fire, tick(time, still) { fire.intensity = still ? 12 : 11 + Math.sin(time * 9) * 2 + Math.sin(time * 23) * 1.2; } });
+    animated.push({ object: fire, light: fire, intensity: 14, tick(time, still) { fire.intensity = still ? 12 : 11 + Math.sin(time * 9) * 2 + Math.sin(time * 23) * 1.2; } });
     steam(f, 0, 1.4, 0);
     a("cylinder", "#7f8782", 0.95, 0.9, 0.9, 0.04, 1.8, 0.04, 0, 0, -0.35); a("cylinder", "#7f8782", -0.95, 0.9, 0.9, 0.04, 1.8, 0.04, 0, 0, 0.35); a("cylinder", "#3a3f44", 0, 0.95, 0.9, 0.3, 0.3, 0.3);
     a("box", "#6d5a45", 2.4, 0.15, 1.6, 2, 0.3, 0.9, 0, 0.3, 0); a("box", "#8a6a4a", 2.6, 0.32, 1.7, 0.6, 0.18, 0.7);

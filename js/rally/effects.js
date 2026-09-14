@@ -9,7 +9,10 @@ export function createCrashEffect(scene) {
   const sparks = new MeshBasicMaterial({ color: "#ffc676", transparent: true, depthWrite: false });
   const core = new Mesh(geometry, new MeshBasicMaterial({ color: "#ee935a", transparent: true, depthWrite: false }));
   const light = new PointLight("#ffad65", 0, 28, 2);
-  group.add(core, light);
+  group.add(core);
+  // Keep this light in the renderer even when particles are hidden. Toggling
+  // the number of lights would compile new shaders at the moment of a crash.
+  scene.add(light);
   const particles = Array.from({ length: 28 }, (_, i) => {
     const mesh = new Mesh(geometry, i < 16 ? smoke : sparks);
     group.add(mesh);
@@ -20,6 +23,7 @@ export function createCrashEffect(scene) {
     explode(car, reducedMotion) {
       age = 0; still = reducedMotion;
       group.position.set(car.x, car.y + 1, car.z);
+      light.position.copy(group.position);
       group.visible = true;
       for (const particle of particles) {
         const angle = Math.random() * Math.PI * 2, speed = particle.smoke ? 4 + Math.random() * 5 : 10 + Math.random() * 7;
@@ -45,7 +49,7 @@ export function createCrashEffect(scene) {
       }
       if (t === 1) group.visible = false;
     },
-    clear() { group.visible = false; },
+    clear() { group.visible = false; light.intensity = 0; },
   };
 }
 

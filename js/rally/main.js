@@ -45,6 +45,7 @@ export async function start() {
   try { storage = window.localStorage; } catch { /* Progress remains available for this session. */ }
   let quality = loadGraphicsQuality(storage);
   const graphics = createScene($("rally-scene"), landmarks, { quality });
+  await graphics.prepare();
   const car = createCarState();
   const input = new RallyInput($("touch-surface"));
   const audio = new RallyAudio();

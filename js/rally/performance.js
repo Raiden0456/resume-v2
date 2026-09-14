@@ -1,7 +1,7 @@
 export const GRAPHICS_PROFILES = Object.freeze({
-  eco: { fps: 30, pixelRatio: 1, maxPixels: 921600, shadows: false, shadowSize: 0, shadowFps: 0 },
-  balanced: { fps: 60, pixelRatio: 1.25, maxPixels: 2073600, shadows: true, shadowSize: 1024, shadowFps: 15 },
-  high: { fps: 60, pixelRatio: 1.5, maxPixels: 3686400, shadows: true, shadowSize: 2048, shadowFps: 30 },
+  eco: { fps: 30, pixelRatio: 1, maxPixels: 921600, shadows: false, shadowSize: 0 },
+  balanced: { fps: 60, pixelRatio: 1.25, maxPixels: 2073600, shadows: true, shadowSize: 1024 },
+  high: { fps: 60, pixelRatio: 1.5, maxPixels: 3686400, shadows: true, shadowSize: 2048 },
 });
 
 const QUALITY_KEY = "resume-rally-graphics-v1";
