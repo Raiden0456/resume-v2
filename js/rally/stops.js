@@ -9,8 +9,10 @@ export class RallyStops {
     this.checkpoint = null;
     try {
       const id = storage?.getItem(CHECKPOINT_KEY);
-      this.checkpoint = landmarks.find(sight => sight.id === id) || null;
-    } catch { /* Checkpoints still work when persistent storage is unavailable. */ }
+      this.checkpoint = landmarks.find((sight) => sight.id === id) || null;
+    } catch {
+      /* Checkpoints still work when persistent storage is unavailable. */
+    }
     this.viewing = null;
     this.clearApproach();
   }
@@ -25,29 +27,45 @@ export class RallyStops {
   activate(sight) {
     if (!this.landmarks.includes(sight) || this.checkpoint === sight) return;
     this.checkpoint = sight;
-    try { this.storage?.setItem(CHECKPOINT_KEY, sight.id); } catch { /* Session-only checkpoint. */ }
+    try {
+      this.storage?.setItem(CHECKPOINT_KEY, sight.id);
+    } catch {
+      /* Session-only checkpoint. */
+    }
   }
 
   resetToSummit() {
     this.checkpoint = null;
-    this.close(); this.clearApproach();
-    try { this.storage?.removeItem(CHECKPOINT_KEY); } catch { /* Session-only checkpoint. */ }
+    this.close();
+    this.clearApproach();
+    try {
+      this.storage?.removeItem(CHECKPOINT_KEY);
+    } catch {
+      /* Session-only checkpoint. */
+    }
   }
 
   update(car, dt) {
     if (this.viewing) return;
-    let nearest = null, distance = Infinity;
+    let nearest = null,
+      distance = Infinity;
     for (const sight of this.landmarks) {
       const d = Math.hypot(car.x - sight.marker[0], car.z - sight.marker[1]);
-      if (d < distance) { nearest = sight; distance = d; }
+      if (d < distance) {
+        nearest = sight;
+        distance = d;
+      }
     }
-    const onGround = nearest && car.grounded && !car.inWater && Math.abs(car.y - nearest.elevation) < 3;
+    const onGround =
+      nearest && car.grounded && !car.inWater && Math.abs(car.y - nearest.elevation) < 3;
     this.reached = onGround && distance < 9 ? nearest : null;
     if (this.reached) this.activate(this.reached);
+    // A wider exit radius prevents the nearby card from flickering at the entry boundary.
     const nearby = onGround && distance < (nearest === this.nearby ? 14 : 9) ? nearest : null;
     if (nearby !== this.nearby) this.clearApproach();
     this.nearby = nearby;
     this.reached = onGround && distance < 9 ? nearest : null;
+    // Require a settled stop to enter preview, then tolerate small residual motion until leaving it.
     const stopped = nearby && car.speed < (this.ready ? 1.8 : 0.8);
     this.stoppedFor = stopped ? this.stoppedFor + Math.max(0, Math.min(dt, 0.1)) : 0;
     this.ready = Boolean(stopped && this.stoppedFor >= 0.4);
@@ -59,7 +77,11 @@ export class RallyStops {
     return this.viewing;
   }
 
-  close() { this.viewing = null; }
+  close() {
+    this.viewing = null;
+  }
 
-  get restartPose() { return { ...(this.checkpoint?.arrival || SPAWN) }; }
+  get restartPose() {
+    return { ...(this.checkpoint?.arrival || SPAWN) };
+  }
 }

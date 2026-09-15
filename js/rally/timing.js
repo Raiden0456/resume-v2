@@ -3,15 +3,28 @@ import { SPAWN, START_LINE, FINISH_LINE } from "./world.js";
 const RUN_KEY = "resume-rally-run-v2";
 
 function lineCoordinates(car, line) {
-  const dx = car.x - line.x, dz = car.z - line.z;
-  return { along: dx * Math.sin(line.heading) - dz * Math.cos(line.heading), across: dx * Math.cos(line.heading) + dz * Math.sin(line.heading) };
+  const dx = car.x - line.x,
+    dz = car.z - line.z;
+  return {
+    along: dx * Math.sin(line.heading) - dz * Math.cos(line.heading),
+    across: dx * Math.cos(line.heading) + dz * Math.sin(line.heading),
+  };
 }
 
 function crossingFraction(previous, car, line) {
-  if (!previous || !car.grounded || car.inWater || Math.abs(car.y - line.elevation) > 3
-    || Math.hypot(car.x - previous.x, car.z - previous.z) > 10) return null;
-  const a = lineCoordinates(previous, line), b = lineCoordinates(car, line);
+  // Reject airborne passes and teleport-sized moves before testing which side of the gate changed.
+  if (
+    !previous ||
+    !car.grounded ||
+    car.inWater ||
+    Math.abs(car.y - line.elevation) > 3 ||
+    Math.hypot(car.x - previous.x, car.z - previous.z) > 10
+  )
+    return null;
+  const a = lineCoordinates(previous, line),
+    b = lineCoordinates(car, line);
   if (a.along > 0 || b.along <= 0) return null;
+  // Interpolate the crossing within the frame, including its lateral position at the gate.
   const fraction = -a.along / (b.along - a.along);
   return Math.abs(a.across + (b.across - a.across) * fraction) < line.halfWidth ? fraction : null;
 }
@@ -31,17 +44,23 @@ export class RallyTiming {
   constructor(landmarks, storage) {
     this.landmarks = landmarks;
     this.finish = { ...FINISH_LINE, index: landmarks.length };
-    this.ids = [...landmarks.map(sight => sight.id), FINISH_LINE.id];
+    this.ids = [...landmarks.map((sight) => sight.id), FINISH_LINE.id];
     this.storage = storage;
     this.previous = null;
     try {
       const saved = JSON.parse(storage?.getItem(RUN_KEY) || "null");
-      if (saved?.ids?.length === this.ids.length && saved.times?.length === this.ids.length
-        && saved.ids.every((id, i) => id === this.ids[i])
-        && saved.times.every((time, i) => Number.isFinite(time) && time > (i ? saved.times[i - 1] : 0))) {
+      // Splits are comparable only when checkpoint order and the finish gate still match.
+      if (
+        saved?.ids?.length === this.ids.length &&
+        saved.times?.length === this.ids.length &&
+        saved.ids.every((id, i) => id === this.ids[i]) &&
+        saved.times.every((time, i) => Number.isFinite(time) && time > (i ? saved.times[i - 1] : 0))
+      ) {
         this.previous = saved.times;
       }
-    } catch { /* Invalid or unavailable storage does not stop a descent. */ }
+    } catch {
+      /* Invalid or unavailable storage does not stop a descent. */
+    }
     this.status = "idle";
     this.elapsed = 0;
     this.times = [];
@@ -50,9 +69,13 @@ export class RallyTiming {
   }
 
   atSummit(car) {
-    return car.grounded && !car.inWater && Math.abs(car.y - START_LINE.elevation) < 3
-      && Math.hypot(car.x - SPAWN.x, car.z - SPAWN.z) < 13
-      && lineCoordinates(car, START_LINE).along <= 0;
+    return (
+      car.grounded &&
+      !car.inWater &&
+      Math.abs(car.y - START_LINE.elevation) < 3 &&
+      Math.hypot(car.x - SPAWN.x, car.z - SPAWN.z) < 13 &&
+      lineCoordinates(car, START_LINE).along <= 0
+    );
   }
 
   arm() {
@@ -75,9 +98,11 @@ export class RallyTiming {
     const previous = this.lastPosition;
     this.lastPosition = { x: car.x, z: car.z };
     if (this.status !== "running" && this.status !== "ready" && this.atSummit(car)) this.arm();
-    const startFraction = this.status === "ready" ? crossingFraction(previous, car, START_LINE) : null;
+    const startFraction =
+      this.status === "ready" ? crossingFraction(previous, car, START_LINE) : null;
     if (startFraction !== null && dt > 0) {
       this.status = "running";
+      // Only the part of this frame after the start line belongs to the timed run.
       dt *= 1 - startFraction;
     }
     if (this.status !== "running") return null;
@@ -93,18 +118,24 @@ export class RallyTiming {
     const split = { index, time: this.elapsed, delta: this.delta(index), finished: atFinish };
     if (split.finished) {
       this.status = "finished";
+      // Keep reference pointing at the old descent while displaying deltas for this result.
       this.previous = [...this.times];
       try {
         this.storage?.setItem(RUN_KEY, JSON.stringify({ ids: this.ids, times: this.previous }));
-      } catch { /* Keep the completed run in memory when storage is unavailable. */ }
+      } catch {
+        /* Keep the completed run in memory when storage is unavailable. */
+      }
     }
     return split;
   }
 
   delta(index) {
     return Number.isFinite(this.times[index]) && Number.isFinite(this.reference?.[index])
-      ? this.times[index] - this.reference[index] : null;
+      ? this.times[index] - this.reference[index]
+      : null;
   }
 
-  get next() { return this.status === "running" ? this.landmarks[this.times.length] || this.finish : null; }
+  get next() {
+    return this.status === "running" ? this.landmarks[this.times.length] || this.finish : null;
+  }
 }

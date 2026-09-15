@@ -1,7 +1,9 @@
 import { CROSSINGS, crossingCoordinates, crossingDeckHeight, roadAt } from "./world.js";
 
 export class RallyRecovery {
-  constructor() { this.reset(); }
+  constructor() {
+    this.reset();
+  }
 
   reset(car) {
     this.waterTime = 0;
@@ -16,6 +18,7 @@ export class RallyRecovery {
       this.remaining -= dt;
       return this.remaining <= 0 ? "respawn" : null;
     }
+    // Water entry starts the effect immediately; the later "splash" event requests bank recovery.
     const enteringWater = car.inWater && this.waterTime === 0;
     this.waterTime = car.inWater ? this.waterTime + dt : 0;
     if (this.waterTime > 0.75) return "splash";
@@ -26,14 +29,19 @@ export class RallyRecovery {
       return null;
     }
     if (this.lastGrounded) {
+      // Classify the takeoff once. Flying over a ramp later must not grant landing protection.
       const launch = this.lastGrounded;
-      this.jump = CROSSINGS.find(crossing => {
-        if (crossing.type !== "jump") return false;
-        const { along, across } = crossingCoordinates(crossing, launch.x, launch.z);
-        return along >= -crossing.gap - crossing.rampLength && along <= -crossing.gap + 3
-          && Math.abs(across) < crossing.halfWidth + 1
-          && Math.abs(launch.y - crossingDeckHeight(crossing, along)) < 3;
-      }) || null;
+      this.jump =
+        CROSSINGS.find((crossing) => {
+          if (crossing.type !== "jump") return false;
+          const { along, across } = crossingCoordinates(crossing, launch.x, launch.z);
+          return (
+            along >= -crossing.gap - crossing.rampLength &&
+            along <= -crossing.gap + 3 &&
+            Math.abs(across) < crossing.halfWidth + 1 &&
+            Math.abs(launch.y - crossingDeckHeight(crossing, along)) < 3
+          );
+        }) || null;
       this.lastGrounded = null;
     }
     // Actual ramp launches get a generous landing corridor, but never an
@@ -41,8 +49,10 @@ export class RallyRecovery {
     let safeJump = false;
     if (this.jump && car.airtime < 2.7) {
       const { along, across } = crossingCoordinates(this.jump, car.x, car.z);
-      safeJump = Math.abs(across) < this.jump.halfWidth + 5
-        && along > -this.jump.gap - 4 && along < this.jump.gap + this.jump.rampLength + 20;
+      safeJump =
+        Math.abs(across) < this.jump.halfWidth + 5 &&
+        along > -this.jump.gap - 4 &&
+        along < this.jump.gap + this.jump.rampLength + 20;
     }
     const road = roadAt(car.x, car.z);
     const offCourse = !road || road.distance > road.width / 2 + 6 || Math.abs(car.y - road.y) > 22;

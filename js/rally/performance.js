@@ -5,7 +5,7 @@ export const GRAPHICS_PROFILES = Object.freeze({
 });
 
 const QUALITY_KEY = "resume-rally-graphics-v1";
-export const isGraphicsQuality = value => Object.hasOwn(GRAPHICS_PROFILES, value);
+export const isGraphicsQuality = (value) => Object.hasOwn(GRAPHICS_PROFILES, value);
 
 export function loadGraphicsQuality(storage) {
   try {
@@ -17,12 +17,18 @@ export function loadGraphicsQuality(storage) {
 
 export function saveGraphicsQuality(storage, value) {
   if (!isGraphicsQuality(value)) return;
-  try { storage?.setItem(QUALITY_KEY, value); } catch {}
+  try {
+    storage?.setItem(QUALITY_KEY, value);
+  } catch {}
 }
 
 // Render cadence is independent of physics; a zero rate cancels the callback entirely.
 export class RallyFrameLoop {
-  constructor(draw, request = callback => requestAnimationFrame(callback), cancel = id => cancelAnimationFrame(id)) {
+  constructor(
+    draw,
+    request = (callback) => requestAnimationFrame(callback),
+    cancel = (id) => cancelAnimationFrame(id),
+  ) {
     this.draw = draw;
     this.request = request;
     this.cancel = cancel;
@@ -31,13 +37,23 @@ export class RallyFrameLoop {
     this.previous = null;
     this.next = null;
     this.dirty = false;
-    this.tick = time => {
+    this.tick = (time) => {
       this.pending = null;
       const interval = this.fps ? 1000 / this.fps : 0;
+      // Allow sub-millisecond rAF timestamp jitter without skipping a whole display refresh.
       if (this.dirty || (interval && (this.next === null || time >= this.next - 0.5))) {
-        const dt = interval && this.previous !== null ? Math.min(Math.max(0, (time - this.previous) / 1000), 0.1) : 0;
+        // Bound catch-up after a stall; otherwise extra physics work can prolong the next frame.
+        const dt =
+          interval && this.previous !== null
+            ? Math.min(Math.max(0, (time - this.previous) / 1000), 0.1)
+            : 0;
         this.previous = interval ? time : null;
-        this.next = interval ? this.next === null ? time + interval : this.next + Math.max(1, Math.floor((time - this.next) / interval) + 1) * interval : null;
+        // Advance the original cadence past missed slots instead of drifting to time + interval.
+        this.next = interval
+          ? this.next === null
+            ? time + interval
+            : this.next + Math.max(1, Math.floor((time - this.next) / interval) + 1) * interval
+          : null;
         this.dirty = false;
         this.draw(time, dt);
       }
@@ -52,6 +68,7 @@ export class RallyFrameLoop {
   setRate(fps) {
     if (this.fps === fps && fps) return;
     this.fps = fps;
+    // Paused wall-clock time must never become driving time on the first resumed frame.
     this.previous = this.next = null;
     if (this.pending !== null) this.cancel(this.pending);
     this.pending = null;
@@ -60,6 +77,7 @@ export class RallyFrameLoop {
   }
 
   invalidate() {
+    // A resized or changed still view needs one redraw even while continuous rendering is off.
     this.dirty = true;
     this.schedule();
   }

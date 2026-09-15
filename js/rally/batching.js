@@ -14,7 +14,12 @@ export function createBatch(scene, cellSize = 128) {
   const materials = {
     solid: new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0.05 }),
     light: new THREE.MeshBasicMaterial(),
-    glass: new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.35, transparent: true, opacity: 0.68 }),
+    glass: new THREE.MeshStandardMaterial({
+      roughness: 0.35,
+      metalness: 0.35,
+      transparent: true,
+      opacity: 0.68,
+    }),
   };
   function add(shape, color, x, y, z, sx, sy, sz, rx = 0, ry = 0, rz = 0, kind = "solid") {
     // Spatial buckets let Three.js cull scenery outside the camera and shadow views.
@@ -24,10 +29,14 @@ export function createBatch(scene, cellSize = 128) {
   }
   return {
     absolute: add,
-    add(shape, color, x, y, z, ...rest) { add(shape, color, x, y + terrainHeight(x, z), z, ...rest); },
+    add(shape, color, x, y, z, ...rest) {
+      add(shape, color, x, y + terrainHeight(x, z), z, ...rest);
+    },
     building(x, z) {
+      // Anchor all building parts to one ground height instead of bending them with the terrain.
       const base = terrainHeight(x, z);
-      return (shape, color, px, py, pz, sx, sy, sz, rx = 0, ry = 0, rz = 0, kind = "solid") => add(shape, color, x + px, base + py, z + pz, sx, sy, sz, rx, ry, rz, kind);
+      return (shape, color, px, py, pz, sx, sy, sz, rx = 0, ry = 0, rz = 0, kind = "solid") =>
+        add(shape, color, x + px, base + py, z + pz, sx, sy, sz, rx, ry, rz, kind);
     },
     finish() {
       const dummy = new THREE.Object3D();
@@ -43,6 +52,7 @@ export function createBatch(scene, cellSize = 128) {
           mesh.setMatrixAt(index, dummy.matrix);
           mesh.setColorAt(index, color.set(item.color));
         });
+        // Bounds must enclose the transformed instances, including props crossing cell edges.
         mesh.computeBoundingSphere();
         mesh.matrixAutoUpdate = false;
         mesh.castShadow = kind === "solid";

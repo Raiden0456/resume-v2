@@ -6,17 +6,22 @@ export class RallyAudio {
   }
 
   async toggle() {
+    // Create/resume audio from the Sound button's user gesture to satisfy browser autoplay rules.
     if (!this.context) this.create();
     if (this.context.state === "suspended") await this.context.resume();
     this.enabled = !this.enabled;
-    this.master.gain.setTargetAtTime(this.enabled ? 0.14 : 0, this.context.currentTime, 0.08);
+    this.master.gain.setTargetAtTime(
+      this.enabled ? 0.14 : 0,
+      this.context.currentTime,
+      0.08,
+    );
     return this.enabled;
   }
 
   create() {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) throw new Error("Audio is unavailable in this browser.");
-    const context = this.context = new AudioContext();
+    const context = (this.context = new AudioContext());
     this.master = context.createGain();
     this.master.gain.value = 0;
     this.master.connect(context.destination);
@@ -34,11 +39,20 @@ export class RallyAudio {
       oscillator.start();
       return { oscillator, ratio };
     });
-    const buffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate);
+    const buffer = context.createBuffer(
+      1,
+      context.sampleRate * 2,
+      context.sampleRate,
+    );
     const samples = buffer.getChannelData(0);
-    this.effectNoise = context.createBuffer(1, context.sampleRate, context.sampleRate);
+    this.effectNoise = context.createBuffer(
+      1,
+      context.sampleRate,
+      context.sampleRate,
+    );
     const effectSamples = this.effectNoise.getChannelData(0);
-    for (let i = 0; i < effectSamples.length; i++) effectSamples[i] = Math.random() * 2 - 1;
+    for (let i = 0; i < effectSamples.length; i++)
+      effectSamples[i] = Math.random() * 2 - 1;
     let last = 0;
     for (let i = 0; i < samples.length; i++) {
       last = (last + (Math.random() * 2 - 1) * 0.09) / 1.09;
@@ -59,71 +73,133 @@ export class RallyAudio {
 
   impact(kind) {
     if (!this.enabled || this.context?.state !== "running") return;
-    const context = this.context, time = context.currentTime, water = kind === "splash";
+    const context = this.context,
+      time = context.currentTime,
+      water = kind === "splash";
     const duration = water ? 0.7 : 0.55;
-    const noise = context.createBufferSource(), filter = context.createBiquadFilter(), envelope = context.createGain();
+    const noise = context.createBufferSource(),
+      filter = context.createBiquadFilter(),
+      envelope = context.createGain();
     noise.buffer = this.effectNoise;
     filter.type = "lowpass";
     filter.frequency.setValueAtTime(water ? 2800 : 900, time);
-    filter.frequency.exponentialRampToValueAtTime(water ? 240 : 65, time + duration);
+    filter.frequency.exponentialRampToValueAtTime(
+      water ? 240 : 65,
+      time + duration,
+    );
     envelope.gain.setValueAtTime(0.001, time);
     envelope.gain.linearRampToValueAtTime(water ? 1.25 : 1.65, time + 0.012);
     envelope.gain.exponentialRampToValueAtTime(0.001, time + duration);
     noise.connect(filter).connect(envelope).connect(this.master);
-    const thump = context.createOscillator(), bass = context.createGain();
+    const thump = context.createOscillator(),
+      bass = context.createGain();
     thump.type = "sine";
     thump.frequency.setValueAtTime(water ? 220 : 100, time);
-    thump.frequency.exponentialRampToValueAtTime(water ? 55 : 25, time + duration * 0.7);
+    thump.frequency.exponentialRampToValueAtTime(
+      water ? 55 : 25,
+      time + duration * 0.7,
+    );
     bass.gain.setValueAtTime(water ? 0.65 : 1.4, time);
     bass.gain.exponentialRampToValueAtTime(0.001, time + duration);
     thump.connect(bass).connect(this.master);
     const effect = { kind, noise, thump };
     this.effects.add(effect);
-    noise.onended = () => { noise.disconnect(); filter.disconnect(); envelope.disconnect(); this.effects.delete(effect); };
-    thump.onended = () => { thump.disconnect(); bass.disconnect(); };
-    noise.start(time); thump.start(time);
-    noise.stop(time + duration); thump.stop(time + duration);
+    noise.onended = () => {
+      noise.disconnect();
+      filter.disconnect();
+      envelope.disconnect();
+      this.effects.delete(effect);
+    };
+    thump.onended = () => {
+      thump.disconnect();
+      bass.disconnect();
+    };
+    noise.start(time);
+    thump.start(time);
+    noise.stop(time + duration);
+    thump.stop(time + duration);
   }
 
   cue(kind) {
     if (kind === "meow") return this.meow();
     if (!this.enabled || this.context?.state !== "running") return;
-    const context = this.context, time = context.currentTime;
-    const tone = (frequency, start, length, gain, type = "sine", glide = frequency) => {
-      const voice = context.createOscillator(), envelope = context.createGain();
-      voice.type = type; voice.frequency.setValueAtTime(frequency, time + start);
-      voice.frequency.exponentialRampToValueAtTime(glide, time + start + length);
+    const context = this.context,
+      time = context.currentTime;
+    const tone = (
+      frequency,
+      start,
+      length,
+      gain,
+      type = "sine",
+      glide = frequency,
+    ) => {
+      const voice = context.createOscillator(),
+        envelope = context.createGain();
+      voice.type = type;
+      voice.frequency.setValueAtTime(frequency, time + start);
+      voice.frequency.exponentialRampToValueAtTime(
+        glide,
+        time + start + length,
+      );
       envelope.gain.setValueAtTime(0.001, time + start);
       envelope.gain.linearRampToValueAtTime(gain, time + start + 0.04);
       envelope.gain.exponentialRampToValueAtTime(0.001, time + start + length);
       voice.connect(envelope).connect(this.master);
-      voice.onended = () => { voice.disconnect(); envelope.disconnect(); };
-      voice.start(time + start); voice.stop(time + start + length);
+      voice.onended = () => {
+        voice.disconnect();
+        envelope.disconnect();
+      };
+      voice.start(time + start);
+      voice.stop(time + start + length);
     };
-    if (kind === "hoot") { tone(390, 0, 0.35, 0.3, "sine", 300); tone(360, 0.45, 0.5, 0.3, "sine", 280); }
-    else if (kind === "crackle") {
+    if (kind === "hoot") {
+      tone(390, 0, 0.35, 0.3, "sine", 300);
+      tone(360, 0.45, 0.5, 0.3, "sine", 280);
+    } else if (kind === "crackle") {
       for (let i = 0; i < 9; i++) {
-        const noise = context.createBufferSource(), filter = context.createBiquadFilter(), envelope = context.createGain(), start = i * 0.13 + (i % 3) * 0.04;
-        noise.buffer = this.effectNoise; filter.type = "bandpass"; filter.frequency.value = 1400 + (i % 4) * 600; filter.Q.value = 1.5;
+        const noise = context.createBufferSource(),
+          filter = context.createBiquadFilter(),
+          envelope = context.createGain(),
+          start = i * 0.13 + (i % 3) * 0.04;
+        noise.buffer = this.effectNoise;
+        filter.type = "bandpass";
+        filter.frequency.value = 1400 + (i % 4) * 600;
+        filter.Q.value = 1.5;
         envelope.gain.setValueAtTime(0.001, time + start);
-        envelope.gain.linearRampToValueAtTime(0.35 - i * 0.02, time + start + 0.01);
+        envelope.gain.linearRampToValueAtTime(
+          0.35 - i * 0.02,
+          time + start + 0.01,
+        );
         envelope.gain.exponentialRampToValueAtTime(0.001, time + start + 0.09);
         noise.connect(filter).connect(envelope).connect(this.master);
-        noise.onended = () => { noise.disconnect(); filter.disconnect(); envelope.disconnect(); };
-        noise.start(time + start); noise.stop(time + start + 0.1);
+        noise.onended = () => {
+          noise.disconnect();
+          filter.disconnect();
+          envelope.disconnect();
+        };
+        noise.start(time + start);
+        noise.stop(time + start + 0.1);
       }
-    } else { tone(660, 0, 0.5, 0.16); tone(990, 0.16, 0.7, 0.12); }
+    } else {
+      tone(660, 0, 0.5, 0.16);
+      tone(990, 0.16, 0.7, 0.12);
+    }
   }
 
   meow() {
     if (!this.enabled || this.context?.state !== "running") return;
-    const context = this.context, time = context.currentTime, duration = 0.55;
-    const voice = context.createOscillator(), formant = context.createBiquadFilter(), envelope = context.createGain();
+    const context = this.context,
+      time = context.currentTime,
+      duration = 0.55;
+    const voice = context.createOscillator(),
+      formant = context.createBiquadFilter(),
+      envelope = context.createGain();
     voice.type = "sawtooth";
     voice.frequency.setValueAtTime(520, time);
     voice.frequency.linearRampToValueAtTime(760, time + 0.16);
     voice.frequency.exponentialRampToValueAtTime(430, time + duration);
-    formant.type = "bandpass"; formant.Q.value = 2.2;
+    formant.type = "bandpass";
+    formant.Q.value = 2.2;
     formant.frequency.setValueAtTime(1100, time);
     formant.frequency.linearRampToValueAtTime(1900, time + 0.18);
     formant.frequency.exponentialRampToValueAtTime(900, time + duration);
@@ -132,18 +208,43 @@ export class RallyAudio {
     envelope.gain.setValueAtTime(0.22, time + 0.3);
     envelope.gain.exponentialRampToValueAtTime(0.001, time + duration);
     voice.connect(formant).connect(envelope).connect(this.master);
-    voice.onended = () => { voice.disconnect(); formant.disconnect(); envelope.disconnect(); };
-    voice.start(time); voice.stop(time + duration);
+    voice.onended = () => {
+      voice.disconnect();
+      formant.disconnect();
+      envelope.disconnect();
+    };
+    voice.start(time);
+    voice.stop(time + duration);
   }
 
   update(car, throttle, paused, parked = false) {
     if (!this.context) return;
     const time = this.context.currentTime;
-    this.master.gain.setTargetAtTime(this.enabled && !paused ? 0.14 : 0, time, 0.08);
+    this.master.gain.setTargetAtTime(
+      this.enabled && !paused ? 0.14 : 0,
+      time,
+      0.08,
+    );
+    // Repeating the pitch ramp suggests gear changes; it does not model or affect the drivetrain.
     const gearSpeed = car.speed % 10;
-    const rpm = 38 + gearSpeed * 7 + Math.abs(throttle) * 15 + car.wheelspin * 45;
-    for (const { oscillator, ratio } of this.oscillators) oscillator.frequency.setTargetAtTime(rpm * ratio, time, 0.12);
-    this.engineGain.gain.setTargetAtTime(parked ? 0 : 0.16 + Math.abs(throttle) * 0.1, time, parked ? 0.25 : 0.1);
-    this.gravelGain.gain.setTargetAtTime(car.grounded && !car.inWater ? Math.min(car.speed * 0.008 + car.slip * 0.045 + car.wheelspin * 0.35, 0.7) : 0, time, 0.08);
+    const rpm =
+      38 + gearSpeed * 7 + Math.abs(throttle) * 15 + car.wheelspin * 45;
+    for (const { oscillator, ratio } of this.oscillators)
+      oscillator.frequency.setTargetAtTime(rpm * ratio, time, 0.12);
+    this.engineGain.gain.setTargetAtTime(
+      parked ? 0 : 0.16 + Math.abs(throttle) * 0.1,
+      time,
+      parked ? 0.25 : 0.1,
+    );
+    this.gravelGain.gain.setTargetAtTime(
+      car.grounded && !car.inWater
+        ? Math.min(
+            car.speed * 0.008 + car.slip * 0.045 + car.wheelspin * 0.35,
+            0.7,
+          )
+        : 0,
+      time,
+      0.08,
+    );
   }
 }
