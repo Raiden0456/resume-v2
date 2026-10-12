@@ -1,7 +1,7 @@
 {
   "personal": {
     "name": "Vrezh Babakekhian",
-    "title": "Senior Full-Stack Developer (React, Next.js, Go, Node.js, AWS)",
+    "title": "Senior Full-Stack Engineer · Go (Golang), JS/TS, Node.js, React · Event-driven backends, AWS",
     "location": "Barcelona, Spain",
     "dob": "12.07.2001",
     "nationality": "Half Armenian and Russian",
@@ -20,19 +20,20 @@
     "linkedin": "https://www.linkedin.com/in/raiden-babakekhian",
     "telegram": "https://t.me/Raiden0456"
   },
-  "pdf": "Resume_V11_Go.pdf",
-  "profile": "Results-driven Full-Stack Developer with 6+ years of experience building scalable, high-load web platforms using React, Next.js, Go, Node.js, and AWS. Proven track record delivering performant UIs, robust APIs, and fault-tolerant backend systems. Skilled in system design, database optimization, high-throughput data processing, and integration of complex external services. Passionate about performance, maintainability, and developer experience.",
+  "pdf": "Vrezh_Babakekhian_CV.pdf",
+  "profile": "Senior full-stack engineer with 5+ years of commercial experience, specializing in Go (Golang) backends with TypeScript, React, and Next.js. Strongest area is backend reliability: payment flows, idempotent APIs, transactional outboxes, reconciliation, and resilient integrations with external providers. Took a product from zero to production, moved monoliths to Go services, and worked on systems with 3M users and 20K RPS peaks. Skilled in system design, database optimization, high-throughput data processing, performant UIs, and AWS deployments. Has led a team of five. Based in Barcelona and available remotely with overlapping US Eastern hours until approximately 2 PM ET. Passionate about performance, maintainability, and developer experience.",
   "highlights": [
-    "Lead Developer on Rowte.io — built B2B fintech platform with a Go backend from 0 to production MVP in under 3 months",
-    "Designed fault-tolerant backend systems for high-load Telegram MiniApps handling 20K+ RPS using NestJS + gRPC",
+    "Lead Full-Stack Engineer on Rowte.io — shipped a B2B fintech MVP in 3 months with a 3-person team, owning the Go backend and payment flows",
+    "Supported 10 fault-tolerant Telegram MiniApps with 3M users and peaks of 20K RPS using NestJS + gRPC",
     "Built CMS for AURUS auto brand, saving 80+ dev hours/month via admin tools",
     "Built hybrid NestJS + Go backend architecture for I/O-heavy services and CPU-intensive, high-throughput analytics",
-    "Integrated 10+ ad systems across multiple high-load frontend/backend stacks",
-    "Led frontend team for \"DONOT\" project, built modern UI with Vite + React"
+    "Integrated 10 ad platforms across C#, NestJS, and React stacks",
+    "Led a frontend team of 5 on the \"DONT\" project and delivered its Vite + React UI"
   ],
   "techStack": {
     "Frontend": [
       "React",
+      "JavaScript",
       "Next.js",
       "Vite",
       "Webpack",
@@ -40,19 +41,26 @@
       "TypeScript",
       "Tailwind CSS",
       "Shadcn UI",
-      "TanStack Query"
+      "TanStack Query",
+      "Redux",
+      "Refine"
     ],
     "Backend": [
       "Node.js",
       "Go",
+      "Gin",
+      "pgx",
+      "sqlc",
       "NestJS",
       "Express",
       "C#/.NET",
       "gRPC",
+      "protobuf",
       "TypeORM",
       "Hono",
       "oRPC",
-      "Prisma"
+      "Prisma",
+      "Better Auth"
     ],
     "Databases": [
       "PostgreSQL",
@@ -62,13 +70,43 @@
       "MongoDB",
       "ElasticSearch"
     ],
-    "DevOps": ["Docker", "CI/CD", "Git", "Linux"],
-    "Messaging / Queues": ["RabbitMQ", "Amazon SQS", "Kafka"],
+    "Cloud": [
+      "AWS",
+      "EC2",
+      "ALB",
+      "Lambda",
+      "S3",
+      "RDS",
+      "Aurora Serverless v2",
+      "CloudFront",
+      "ACM",
+      "Secrets Manager",
+      "SST",
+      "Azure App Service",
+      "Azure Virtual Machines"
+    ],
+    "DevOps": ["Docker", "Nginx", "CI/CD", "Git", "Linux", "Turborepo"],
+    "Messaging / Queues": ["RabbitMQ", "Amazon SQS", "Amazon EventBridge", "Kafka"],
+    "Reliability": [
+      "Event-driven Architecture",
+      "Microservices",
+      "Transactional Outbox",
+      "Idempotency Keys",
+      "Webhook Intake",
+      "Retries with Jittered Backoff",
+      "Circuit Breakers",
+      "Dead Letter Queues"
+    ],
+    "Observability / Testing": ["OpenTelemetry", "slog", "Sentry", "Alerting", "Amplitude", "testcontainers-go", "Contract Tests"],
     "Other": ["Swagger", "REST API", "JSON API", "Web3", "AI Algorithms"]
   },
   "skills": [
     "TypeScript",
     "Go",
+    "Gin",
+    "pgx",
+    "sqlc",
+    "JavaScript",
     "Node.js",
     "NestJS",
     "React",
@@ -76,12 +114,19 @@
     "Git",
     "Docker",
     "Event-driven Architecture",
+    "Microservices",
+    "Transactional Outbox",
+    "Idempotency",
+    "OpenTelemetry",
+    "testcontainers-go",
+    "Contract Tests",
     "Relational DBs",
     "Redis",
     "oRPC",
     "Hono",
     "ElasticSearch",
     "AWS",
+    "Azure",
     "C#",
     "PHP",
     "Python",
@@ -94,7 +139,7 @@
   "languages": [
     {
       "name": "Russian",
-      "level": "Native"
+      "level": "C1 Proficient"
     },
     {
       "name": "English",
@@ -102,7 +147,7 @@
     },
     {
       "name": "Armenian",
-      "level": "Intermediate"
+      "level": "Native"
     },
     {
       "name": "Spanish",
@@ -111,7 +156,7 @@
   ],
   "experience": [
     {
-      "role": "Senior Full-Stack Developer",
+      "role": "Senior Full-Stack Engineer",
       "company": "Interexy",
       "companyUrl": "https://interexy.com/",
       "location": "Barcelona (remote)",
@@ -124,13 +169,20 @@
           "url": "https://rowte.io",
           "stack": [
             "Go",
+            "Gin",
+            "pgx",
+            "sqlc",
             "Next.js",
             "TypeScript",
-            "TurboRepo",
+            "Turborepo",
             "PostgreSQL",
             "RabbitMQ",
             "Redis",
             "Docker",
+            "AWS (EC2, ALB, Lambda, S3, RDS, CloudFront, ACM, Secrets Manager)",
+            "Nginx",
+            "OpenTelemetry",
+            "testcontainers-go",
             "REST API",
             "Better Auth",
             "Refine"
@@ -140,21 +192,25 @@
               "title": "Actions",
               "style": "default",
               "items": [
-                "Led development of a production MVP from scratch in under 3 months with a 3-person team, owning Go backend architecture, delivery planning, and code quality",
-                "Designed and implemented a transaction-safe commission and payout system in Go with idempotency guarantees, reducing reconciliation from days to minutes",
-                "Built event-driven workflows with Go and RabbitMQ for asynchronous commission processing, payouts, notifications, and background financial operations",
+                "Led development of a production MVP from scratch in 3 months with a 3-person team, owning Go backend architecture, payment flows, delivery planning, and code quality",
+                "Built the Go payout engine using integer minor units, one transaction per state change, double-entry postings reversed by contra entries, and duplicate-payment guards on every payout-state transition",
+                "Implemented idempotency as Gin middleware: replayed keys return the original response, concurrent duplicates receive 409, and reused keys with changed payloads are rejected",
+                "Added a PostgreSQL transactional outbox to RabbitMQ and moved commission runs, payout notifications, and document callbacks onto Go workers and Lambda handlers",
+                "Built a rerunnable reconciliation job matching 40,000 enrollments against 38,000 payments in 45 seconds, replacing 2–3 days of spreadsheet work and categorizing breaks by cause for operations",
+                "Set up AWS CloudFront and ACM, an ALB over three EC2 targets with Nginx, and Secrets Manager; added OpenTelemetry tracing and alerts on payout-state age and outbox lag",
                 "Architected PostgreSQL schemas, service boundaries, and CI/CD pipelines for a fault-tolerant, multi-service production deployment",
                 "Implemented RBAC, MFA, and Better Auth to support secure access across agencies, sub-agents, institutions, and internal operations",
-                "Built an internal admin platform with Refine for partner management, reconciliation, document review, and operational monitoring"
+                "Built an internal admin platform with Refine for partner management, reconciliation, document review, and operational monitoring",
+                "Handed the platform over at the end of the engagement with runbooks and a documented event catalog"
               ]
             },
             {
               "title": "Results",
               "style": "results",
               "items": [
-                "Delivered fully functional production MVP in under 3 months as lead of a 3-person team",
-                "Zero critical financial discrepancies reported post-launch",
-                "Commission reconciliation time reduced from days to under minutes via automation",
+                "Delivered fully functional production MVP in 3 months as lead of a 3-person team",
+                "Zero critical financial discrepancies at launch, with duplicate-payment guards on every payout-state transition",
+                "Replaced 2–3 days of spreadsheet reconciliation with automated matching of 40,000 enrollments and 38,000 payments in 45 seconds",
                 "MFA + RBAC integration reduced unauthorized access risk to near zero",
                 "Event-driven Go services handled concurrent payout flows without data loss"
               ]
@@ -172,6 +228,7 @@
             "NestJS",
             "Go",
             "PostgreSQL",
+            "AWS",
             "Docker",
             "REST API"
           ],
@@ -185,9 +242,9 @@
                 "Built Go services for concurrent data processing, complex calculations, and high-load analytics pipelines, isolating CPU-intensive workloads from core API services",
                 "Integrated CRFUSA partner platform to automate data exchange and reduce manual onboarding work",
                 "Refactored PostgreSQL schemas and optimized core reporting queries, improving query response times by 60%",
-                "Modernized 15+ legacy React components with stronger TypeScript patterns and improved maintainability",
+                "Modernized 15 legacy React components with stronger TypeScript patterns and improved maintainability",
                 "Delivered UI/UX improvements in collaboration with designers, contributing to a 25% increase in application submissions",
-                "Shipped 15+ major features across three cross-functional teams while reducing admin load time by 40% and bundle size by 15%"
+                "Shipped 15 major features across three cross-functional teams while reducing admin load time by 40% and bundle size by 15%"
               ]
             },
             {
@@ -200,7 +257,7 @@
                 "CPU-intensive analytics workloads isolated into Go services for more predictable API performance under load",
                 "Application submissions increased by 25% following UX updates",
                 "Frontend bundle size reduced by 15%",
-                "15+ major feature releases with three cross-functional teams"
+                "15 major feature releases with three cross-functional teams"
               ]
             }
           ]
@@ -213,13 +270,18 @@
             "TypeScript",
             "Hono",
             "oRPC",
+            "Go",
+            "Gin",
             "Prisma",
             "PostgreSQL",
             "AWS RDS Aurora Serverless v2",
+            "AWS (Lambda, S3, SQS, EventBridge)",
             "SST v3",
             "Redis",
             "Better Auth",
             "AdminJS",
+            "OpenTelemetry",
+            "testcontainers-go",
             "TanStack Query",
             "Tailwind CSS",
             "Shadcn UI"
@@ -230,22 +292,27 @@
               "style": "default",
               "items": [
                 "Owned end-to-end integration architecture for a 7-person product team, delivering third-party integrations across support, scheduling, marketing, analytics, and learning workflows",
-                "Built Zendesk integration with embedded support chat, authentication bridging, event logging, and workflow automation, reducing support response time by 70%",
+                "Built Zendesk integration with embedded support chat, authentication bridging, event logging, and workflow automation, reducing median first support response from 4h10m to 1h15m",
                 "Integrated Calendly with webhook handling, sync polling, and event reconciliation to automate scheduling workflows",
                 "Connected Mailchimp audience sync, segmentation, and lifecycle-based campaign automation, increasing campaign engagement to 45%",
                 "Implemented Amplitude analytics tracking across user journeys, conversion funnels, and feature adoption, helping identify bottlenecks that led to a 25% adoption lift",
-                "Designed integration monitoring, retries, and recovery flows to maintain data consistency across external services with zero integration-related production incidents"
+                "Built webhook intake as a Hono route group with signature-checking middleware, provider-event-id idempotency, and raw payload storage before processing",
+                "Implemented SQS intake, per-provider retries with jittered backoff, circuit breakers, and a replayable dead letter path so provider outages delay processing without losing events",
+                "Built Go services behind Gin for compute-heavy scoring and aggregation over supplier assessment data, called from the Hono API",
+                "Ran the backend on AWS with SST and added provider-payload contract tests in CI, catching two breaking provider changes before release",
+                "Built the Next.js and TypeScript frontend with TanStack Query",
+                "Designed integration monitoring, retries, recovery flows, and daily reconciliation against provider records to maintain data consistency with zero integration-related production incidents over 11 months"
               ]
             },
             {
               "title": "Results",
               "style": "results",
               "items": [
-                "Delivered 5+ critical third-party integrations on schedule with zero production incidents",
-                "Support response time reduced by 70% through Zendesk integration",
+                "Delivered 5 critical third-party integrations on schedule with zero integration-related production incidents over 11 months",
+                "Median first support response reduced from 4h10m to 1h15m through Zendesk integration",
                 "Campaign engagement rate increased to 45% via Mailchimp lifecycle automation",
                 "Feature adoption increased by 25% following Amplitude insights and UX improvements",
-                "Event-driven architecture scaled to handle 10,000+ daily supplier actions without data loss",
+                "No lost inbound events at 10,000 daily supplier actions, confirmed by daily reconciliation against provider records",
                 "Maintained 99.5% uptime across all integrated services through proactive monitoring"
               ]
             }
@@ -254,7 +321,7 @@
       ]
     },
     {
-      "role": "Senior Full-Stack Developer",
+      "role": "Senior Full-Stack Engineer",
       "company": "OkVPN",
       "companyUrl": null,
       "location": "Barcelona (remote)",
@@ -270,11 +337,14 @@
         "Redux",
         "TypeScript",
         "NestJS",
+        "Go",
         "PostgreSQL",
         "gRPC",
+        "protobuf",
         "RabbitMQ",
         "Redis",
         "Sentry",
+        "AWS (EC2, RDS, S3)",
         "Docker"
       ],
       "subsections": [
@@ -282,12 +352,13 @@
           "title": "Actions",
           "style": "default",
           "items": [
-            "Led migration from monorepo to gRPC + RabbitMQ-based microservice architecture",
-            "Designed scalable microservices architecture",
-            "Developed full referral payout system",
+            "Led migration from a NestJS monolith to Go microservices over gRPC and RabbitMQ, keeping NestJS as a thin API layer for the dashboard",
+            "Designed Go services for subscriptions, user access, and background processing",
+            "Developed a full referral payout service driven by RabbitMQ events",
             "Built user-facing dashboard for VPN subscription management",
             "Integrated Redis for session caching and async job handling",
-            "Implemented Sentry across services with structured logging and alerting"
+            "Implemented Sentry across services with structured logging and alerting",
+            "Reworked AWS deployment pipelines, reducing downtime by 70%"
           ]
         },
         {
@@ -305,41 +376,41 @@
       ]
     },
     {
-      "role": "Middle+ Full-Stack Developer",
+      "role": "Full-Stack Engineer",
       "company": "RedNeck Studio",
       "companyUrl": null,
       "location": "Remote",
-      "type": "full-time",
+      "type": "contract",
       "period": "Aug 2024 — Jan 2025",
       "project": null,
-      "stack": ["NestJS", "gRPC", "Refine", "Vite", "React"],
+      "stack": ["TypeScript", "NestJS", "C#", "gRPC", "PostgreSQL", "AWS (EC2, S3)", "Refine", "Vite", "React"],
       "subsections": [
         {
           "title": null,
           "style": "default",
           "items": [
-            "Supported 10+ fault-tolerant, high-load Telegram MiniApps handling 20K+ RPS using NestJS + gRPC",
+            "Supported 10 fault-tolerant Telegram MiniApps with 3M users and peaks of 20K RPS using NestJS + gRPC",
             "Developed admin panels using Refine + gRPC + NestJS",
-            "Integrated 10+ ad platforms",
-            "Built gRPC file upload streaming for multi-GB transfers",
-            "Led frontend for \"DONT\" project using Vite + React"
+            "Integrated 10 ad platforms across C#, NestJS, and React stacks",
+            "Built gRPC file upload streaming for multi-GB transfers into S3",
+            "Led a frontend team of 5 on the \"DONT\" project and delivered its Vite + React UI"
           ]
         }
       ]
     },
     {
-      "role": "Backend Architect & Developer",
+      "role": "Backend Engineer",
       "company": "Kodix Agency",
       "companyUrl": "https://kodix.agency",
       "location": "Remote",
-      "type": "full-time",
+      "type": "contract",
       "period": "May 2024 — Aug 2024",
       "project": {
         "name": "AURUS",
         "description": "Customizable CMS for the AURUS auto brand.",
         "url": "https://aurusmotors.com"
       },
-      "stack": ["NestJS", "TypeScript", "TypeORM", "PostgreSQL"],
+      "stack": ["NestJS", "TypeScript", "TypeORM", "PostgreSQL", "AWS (EC2, S3)"],
       "subsections": [
         {
           "title": null,
@@ -348,14 +419,14 @@
             "Created customizable CMS saving 80+ dev hours/month",
             "Designed backend architecture (NestJS, TypeScript, TypeORM)",
             "Optimized PostgreSQL database performance",
-            "Implemented third-party integrations",
-            "Automated parsing of large JSON configs"
+            "Implemented third-party integrations, including email distribution",
+            "Automated parsing of 5,000-line JSON configs, ending manual configuration editing"
           ]
         }
       ]
     },
     {
-      "role": "Full-Stack Developer",
+      "role": "Full-Stack Engineer",
       "company": "CROSSNETICS",
       "companyUrl": null,
       "location": "Remote",
@@ -365,10 +436,13 @@
       "stack": [
         "NestJS",
         "Next.js",
+        "Go",
         "TypeScript",
         "MySQL",
         "Redis",
-        "ElasticSearch"
+        "ElasticSearch",
+        "AWS (EC2, RDS)",
+        "Swagger"
       ],
       "subsections": [
         {
@@ -376,23 +450,23 @@
           "style": "default",
           "items": [
             "Built marketing web platform with AI algorithms and Web3",
-            "Implemented automated documentation via Swagger",
-            "Built and optimized fault-tolerant REST APIs for high-throughput workloads with sub-200ms response times",
-            "Implemented microservices architecture",
+            "Implemented Swagger documentation with typed contracts shared by backend and frontend",
+            "Built and optimized fault-tolerant REST APIs on AWS serving 1M requests per day with sub-200ms response times",
+            "Split the platform into microservices, writing the new high-load services in Go",
             "Optimized DB queries by 10–25%"
           ]
         }
       ]
     },
     {
-      "role": "CRM Full-Stack Developer",
+      "role": "Full-Stack Engineer",
       "company": "FaceStellar",
       "companyUrl": "https://facestellar.com/",
       "location": "Remote",
       "type": "contract",
       "period": "Sep 2022 — Dec 2022",
       "project": null,
-      "stack": ["Node.js", "Express", "React"],
+      "stack": ["Node.js", "Express", "React", "Azure App Service"],
       "subsections": [
         {
           "title": null,
@@ -400,26 +474,26 @@
           "items": [
             "Built CRM system with Node.js + Express and React",
             "Improved customer service efficiency by 30%",
-            "Created CI/CD pipeline"
+            "Created a CI/CD pipeline deploying the CRM to Azure App Service"
           ]
         }
       ]
     },
     {
-      "role": "PHP Backend Developer",
+      "role": "Backend Engineer",
       "company": "Highway Logistic Group",
       "companyUrl": "https://hl-group.ru/",
       "location": "Moscow",
       "type": "full-time",
       "period": "Feb 2022 — Sep 2022",
       "project": null,
-      "stack": ["PHP", "MySQL"],
+      "stack": ["PHP", "MySQL", "Azure Virtual Machines"],
       "subsections": [
         {
           "title": null,
           "style": "default",
           "items": [
-            "Maintained and optimized MySQL databases",
+            "Maintained and optimized MySQL databases running on Azure Virtual Machines",
             "Expanded CRM system",
             "Debugged critical components (reliability +15%)",
             "Migrated PHP 5 → 7.4 (performance +40%)",
@@ -431,8 +505,8 @@
   ],
   "education": [
     {
-      "degree": "Bachelor — Double Degree Data Science",
-      "institution": "London School of Economics & Higher School of Economics",
+      "degree": "BSc Data Science — Double Degree",
+      "institution": "London School of Economics and Political Science (University of London) & Higher School of Economics",
       "period": "Sep 2019 — Jul 2023",
       "description": "Double degree Data Scientist Bachelor program."
     },
