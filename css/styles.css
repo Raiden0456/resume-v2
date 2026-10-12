@@ -233,7 +233,6 @@
   font-size: var(--font-size-base);
   color: var(--fg-primary);
   line-height: var(--line-height-relaxed);
-  max-width: 72ch;
 }
 
 /* ============================================
