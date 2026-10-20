@@ -1,7 +1,7 @@
 {
   "personal": {
     "name": "Vrezh Babakekhian",
-    "title": "Senior Full-Stack Engineer · Go (Golang), JS/TS, Node.js, React · Event-driven backends, AWS",
+    "title": "Senior Software Engineer | Go (Golang), Node.js, TypeScript, React",
     "location": "Barcelona, Spain",
     "dob": "12.07.2001",
     "nationality": "Half Armenian and Russian",
@@ -21,13 +21,13 @@
     "telegram": "https://t.me/Raiden0456"
   },
   "pdf": "Vrezh_Babakekhian_CV.pdf",
-  "profile": "Senior full-stack engineer with 5+ years of commercial experience, specializing in Go (Golang) backends with TypeScript, React, and Next.js. Strongest area is backend reliability: payment flows, idempotent APIs, transactional outboxes, reconciliation, and resilient integrations with external providers. Took a product from zero to production, moved monoliths to Go services, and worked on systems with 3M users and 20K RPS peaks. Skilled in system design, database optimization, high-throughput data processing, performant UIs, and AWS deployments. Has led a team of five. Based in Barcelona and available remotely with overlapping US Eastern hours until approximately 2 PM ET. Passionate about performance, maintainability, and developer experience.",
+  "profile": "Senior full-stack engineer with 5+ years of commercial experience, specializing in Go (Golang) backends with TypeScript, React, and Next.js. Strongest area is backend reliability: payment flows, idempotent APIs, transactional outboxes, reconciliation, and resilient integrations with external providers. Took a product from zero to production, moved monoliths to Go services, and worked on systems with 3M+ users and 20K+ RPS peaks. Skilled in system design, database optimization, high-throughput data processing, performant UIs, and AWS deployments. Has led a team of five.",
   "highlights": [
     "Lead Full-Stack Engineer on Rowte.io — shipped a B2B fintech MVP in 3 months with a 3-person team, owning the Go backend and payment flows",
-    "Supported 10 fault-tolerant Telegram MiniApps with 3M users and peaks of 20K RPS using NestJS + gRPC",
+    "Supported 10+ fault-tolerant Telegram MiniApps with 3M+ users and peaks of 20K+ RPS using NestJS + gRPC",
     "Built CMS for AURUS auto brand, saving 80+ dev hours/month via admin tools",
     "Built hybrid NestJS + Go backend architecture for I/O-heavy services and CPU-intensive, high-throughput analytics",
-    "Integrated 10 ad platforms across C#, NestJS, and React stacks",
+    "Integrated 10+ ad platforms across C#, NestJS, and React stacks",
     "Led a frontend team of 5 on the \"DONT\" project and delivered its Vite + React UI"
   ],
   "techStack": {
@@ -86,7 +86,12 @@
       "Azure Virtual Machines"
     ],
     "DevOps": ["Docker", "Nginx", "CI/CD", "Git", "Linux", "Turborepo"],
-    "Messaging / Queues": ["RabbitMQ", "Amazon SQS", "Amazon EventBridge", "Kafka"],
+    "Messaging / Queues": [
+      "RabbitMQ",
+      "Amazon SQS",
+      "Amazon EventBridge",
+      "Kafka"
+    ],
     "Reliability": [
       "Event-driven Architecture",
       "Microservices",
@@ -97,7 +102,15 @@
       "Circuit Breakers",
       "Dead Letter Queues"
     ],
-    "Observability / Testing": ["OpenTelemetry", "slog", "Sentry", "Alerting", "Amplitude", "testcontainers-go", "Contract Tests"],
+    "Observability / Testing": [
+      "OpenTelemetry",
+      "slog",
+      "Sentry",
+      "Alerting",
+      "Amplitude",
+      "testcontainers-go",
+      "Contract Tests"
+    ],
     "Other": ["Swagger", "REST API", "JSON API", "Web3", "AI Algorithms"]
   },
   "skills": [
@@ -242,9 +255,9 @@
                 "Built Go services for concurrent data processing, complex calculations, and high-load analytics pipelines, isolating CPU-intensive workloads from core API services",
                 "Integrated CRFUSA partner platform to automate data exchange and reduce manual onboarding work",
                 "Refactored PostgreSQL schemas and optimized core reporting queries, improving query response times by 60%",
-                "Modernized 15 legacy React components with stronger TypeScript patterns and improved maintainability",
+                "Modernized 15+ legacy React components with stronger TypeScript patterns and improved maintainability",
                 "Delivered UI/UX improvements in collaboration with designers, contributing to a 25% increase in application submissions",
-                "Shipped 15 major features across three cross-functional teams while reducing admin load time by 40% and bundle size by 15%"
+                "Shipped 15+ major features across three cross-functional teams while reducing admin load time by 40% and bundle size by 15%"
               ]
             },
             {
@@ -257,7 +270,7 @@
                 "CPU-intensive analytics workloads isolated into Go services for more predictable API performance under load",
                 "Application submissions increased by 25% following UX updates",
                 "Frontend bundle size reduced by 15%",
-                "15 major feature releases with three cross-functional teams"
+                "15+ major feature releases with three cross-functional teams"
               ]
             }
           ]
@@ -272,6 +285,9 @@
             "oRPC",
             "Go",
             "Gin",
+            "pgx",
+            "sqlc",
+            "protobuf",
             "Prisma",
             "PostgreSQL",
             "AWS RDS Aurora Serverless v2",
@@ -383,15 +399,25 @@
       "type": "contract",
       "period": "Aug 2024 — Jan 2025",
       "project": null,
-      "stack": ["TypeScript", "NestJS", "C#", "gRPC", "PostgreSQL", "AWS (EC2, S3)", "Refine", "Vite", "React"],
+      "stack": [
+        "TypeScript",
+        "NestJS",
+        "C#",
+        "gRPC",
+        "PostgreSQL",
+        "AWS (EC2, S3)",
+        "Refine",
+        "Vite",
+        "React"
+      ],
       "subsections": [
         {
           "title": null,
           "style": "default",
           "items": [
-            "Supported 10 fault-tolerant Telegram MiniApps with 3M users and peaks of 20K RPS using NestJS + gRPC",
+            "Supported 10+ fault-tolerant Telegram MiniApps with 3M+ users and peaks of 20K+ RPS using NestJS + gRPC",
             "Developed admin panels using Refine + gRPC + NestJS",
-            "Integrated 10 ad platforms across C#, NestJS, and React stacks",
+            "Integrated 10+ ad platforms across C#, NestJS, and React stacks",
             "Built gRPC file upload streaming for multi-GB transfers into S3",
             "Led a frontend team of 5 on the \"DONT\" project and delivered its Vite + React UI"
           ]
@@ -410,7 +436,13 @@
         "description": "Customizable CMS for the AURUS auto brand.",
         "url": "https://aurusmotors.com"
       },
-      "stack": ["NestJS", "TypeScript", "TypeORM", "PostgreSQL", "AWS (EC2, S3)"],
+      "stack": [
+        "NestJS",
+        "TypeScript",
+        "TypeORM",
+        "PostgreSQL",
+        "AWS (EC2, S3)"
+      ],
       "subsections": [
         {
           "title": null,
@@ -451,7 +483,7 @@
           "items": [
             "Built marketing web platform with AI algorithms and Web3",
             "Implemented Swagger documentation with typed contracts shared by backend and frontend",
-            "Built and optimized fault-tolerant REST APIs on AWS serving 1M requests per day with sub-200ms response times",
+            "Built and optimized fault-tolerant REST APIs on AWS serving 1M+ requests per day with sub-200ms response times",
             "Split the platform into microservices, writing the new high-load services in Go",
             "Optimized DB queries by 10–25%"
           ]
