@@ -21,10 +21,10 @@
     "telegram": "https://t.me/Raiden0456"
   },
   "pdf": "Vrezh_Babakekhian_CV.pdf",
-  "profile": "Senior full-stack engineer with 5+ years of commercial experience, specializing in Go (Golang) backends with TypeScript, React, and Next.js. Strongest area is backend reliability: payment flows, idempotent APIs, transactional outboxes, reconciliation, and resilient integrations with external providers. Took a product from zero to production, moved monoliths to Go services, and worked on systems with 3M+ users and 20K+ RPS peaks. Skilled in system design, database optimization, high-throughput data processing, performant UIs, and AWS deployments. Has led a team of five.",
+  "profile": "Senior full-stack engineer with 5+ years of commercial experience, specializing in Go (Golang) backends with TypeScript, React, and Next.js. Strongest area is backend reliability: payment flows, idempotent APIs, transactional outboxes, reconciliation, and resilient integrations with external providers. Took a product from zero to production, moved monoliths to Go services, and worked on systems with 3M+ users and 5K+ RPS peaks. Skilled in system design, database optimization, high-throughput data processing, performant UIs, and AWS deployments. Has led a team of five.",
   "highlights": [
     "Lead Full-Stack Engineer on Rowte.io — shipped a B2B fintech MVP in 3 months with a 3-person team, owning the Go backend and payment flows",
-    "Supported 10+ fault-tolerant Telegram MiniApps with 3M+ users and peaks of 20K+ RPS using NestJS + gRPC",
+    "Supported 10+ fault-tolerant Telegram MiniApps with 3M+ users and peaks of 5K+ RPS using NestJS + gRPC",
     "Built CMS for AURUS auto brand, saving 80+ dev hours/month via admin tools",
     "Built hybrid NestJS + Go backend architecture for I/O-heavy services and CPU-intensive, high-throughput analytics",
     "Integrated 10+ ad platforms across C#, NestJS, and React stacks",
@@ -442,7 +442,7 @@
           "title": null,
           "style": "default",
           "items": [
-            "Supported 10+ fault-tolerant Telegram MiniApps with 3M+ users and peaks of 20K+ RPS using NestJS + gRPC",
+            "Supported 10+ fault-tolerant Telegram MiniApps with 3M+ users and peaks of 5K+ RPS using NestJS + gRPC",
             "Developed admin panels using Refine + gRPC + NestJS",
             "Integrated 10+ ad platforms across C#, NestJS, and React stacks",
             "Built gRPC file upload streaming for multi-GB transfers into S3",
