@@ -27,6 +27,33 @@ test("all projects and all jobs have unique, reachable sightseeing stops", () =>
   }
 });
 
+test("rally cards follow updated resume content and keep Go visible in previews", () => {
+  const updated = structuredClone(resume);
+  for (const job of updated.experience) {
+    job.description = `Updated description for ${job.company}`;
+    job.role = `Updated role for ${job.company}`;
+    job.period = "Updated period";
+    job.companyUrl = "https://example.com/company";
+    const projects = job.projects || [job.project || { name: job.company }];
+    for (const project of projects) {
+      if (project.description) project.description = `Updated description for ${project.name}`;
+      if (project.role) project.role = `Updated role for ${project.name}`;
+      const sight = createLandmarks(updated).find((item) => item.name === project.name);
+      const sections = project.subsections || job.subsections;
+      const stack = project.stack || job.stack;
+      assert.equal(sight.company, job.company);
+      assert.equal(sight.role, project.role || job.role);
+      assert.equal(sight.period, job.period);
+      assert.equal(sight.description, project.description || job.description);
+      assert.deepEqual(sight.subsections, sections);
+      assert.equal(sight.url, project.url || job.companyUrl);
+      assert.deepEqual([...sight.stack].sort(), [...stack].sort());
+      if (stack.includes("Go")) assert.equal(sight.stack[0], "Go");
+    }
+  }
+  assert.deepEqual(createLandmarks(resume).map((sight) => sight.id), createLandmarks(updated).map((sight) => sight.id));
+});
+
 test("throttle accelerates forward and braking transitions into reverse", () => {
   const car = run(createCarState(), { throttle: 1 }, 1);
   assert.ok(car.speed > 10);

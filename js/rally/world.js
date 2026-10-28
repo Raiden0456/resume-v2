@@ -239,8 +239,6 @@ export const SIGHTS = {
     z: 282,
     marker: [-205, 260],
     altitude: 38,
-    summary:
-      "A CRM system for a beauty salon, built with Node.js, Express, and React to support customer service.",
   },
   "Highway Logistic Group": {
     id: "highway",
@@ -751,20 +749,25 @@ export function createLandmarks(resume) {
         marker: [Math.cos(fallbackAngle) * 180, 363],
       };
       const subsections = project.subsections || job.subsections || [];
+      const stack = project.stack || job.stack || [];
       landmarks.push({
         ...design,
         index,
         name: project.name,
         company: job.company,
-        role: job.role,
+        role: project.role || job.role,
         period: job.period,
         subsections,
         description:
-          design.summary ||
           project.description ||
+          job.description ||
           subsections.flatMap((section) => section.items || [])[0] ||
           job.role,
-        stack: project.stack || job.stack || [],
+        // Keep Go visible in the four-tag roadside preview as well as the full card.
+        stack: [
+          ...stack.filter((tech) => tech === "Go"),
+          ...stack.filter((tech) => tech !== "Go"),
+        ],
         url: project.url || job.companyUrl || null,
         radius: { tower: 5.5, hub: 11.5, showroom: 10 }[design.type] ?? 8,
       });

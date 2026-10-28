@@ -197,6 +197,7 @@
       "projects": [
         {
           "name": "Rowte.io",
+          "role": "Lead Full-Stack Engineer",
           "description": "B2B fintech platform for global education commission payments — multi-currency payouts, per-enrollment reconciliation, automated document verification, and tiered partner management across agencies, sub-agents, and institutions.",
           "url": "https://rowte.io",
           "stack": [
@@ -252,6 +253,7 @@
         },
         {
           "name": "NextStreet",
+          "role": "Full-Stack Engineer",
           "description": "Platform helping small businesses access capital, services, and business support through internal tools, partner integrations, and high-volume data processing workflows.",
           "url": "https://nextstreet.com",
           "stack": [
@@ -299,6 +301,7 @@
         },
         {
           "name": "Supplier Success Accelerator",
+          "role": "Full-Stack Engineer",
           "description": "B2B SaaS platform helping government agencies, CDFIs, and economic development organizations guide suppliers through assessments, goal-setting, coaching, and progress tracking.",
           "stack": [
             "Next.js",
@@ -487,6 +490,7 @@
     {
       "role": "Full-Stack Engineer",
       "company": "CROSSNETICS",
+      "description": "Marketing platform with AI and Web3 features, fault-tolerant REST APIs on AWS, and high-load services migrated to Go microservices.",
       "companyUrl": null,
       "location": "Remote",
       "type": "full-time",
@@ -520,6 +524,7 @@
     {
       "role": "Full-Stack Engineer",
       "company": "FaceStellar",
+      "description": "A beauty salon CRM built with Node.js, Express, and React, with a CI/CD pipeline deploying to Azure App Service.",
       "companyUrl": "https://facestellar.com/",
       "location": "Remote",
       "type": "contract",
@@ -541,6 +546,7 @@
     {
       "role": "Backend Engineer",
       "company": "Highway Logistic Group",
+      "description": "Logistics CRM migrated from PHP 5 to 7.4, with MySQL databases running on Azure Virtual Machines.",
       "companyUrl": "https://hl-group.ru/",
       "location": "Moscow",
       "type": "full-time",

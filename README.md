@@ -80,7 +80,9 @@ props, from parcel lockers and bicycles to a demo stage and a beauty salon patio
 Flags, steam, rooftop fans and soft lights animate nearby; reduced-motion mode
 keeps them still. The drive through both camps and all checkpoints stays clear.
 
-Project content comes from `resume.json`. The map's visual identities and
+Project content, including descriptions and project-specific roles, comes from
+`resume.json`, revalidated on each game load. Go appears first in the technology
+tags so it stays visible in the four-tag roadside previews. The map's visual identities and
 coordinates, road stages and rocky terrain are in `js/rally/world.js`; terrain rendering is in
 `js/rally/terrain.js`, water and crossing meshes are in `js/rally/water.js`,
 car handling is in `js/rally/physics.js`, and lookout interactions and camera

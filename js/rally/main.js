@@ -59,7 +59,9 @@ function populateStack(container, stack, max = stack.length) {
 }
 
 export async function start() {
-  const response = await fetch(new URL("../../resume.json", import.meta.url));
+  const response = await fetch(new URL("../../resume.json", import.meta.url), {
+    cache: "no-cache",
+  });
   if (!response.ok)
     throw new Error(`Could not load resume (${response.status}).`);
   const resume = await response.json();
