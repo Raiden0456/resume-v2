@@ -31,97 +31,25 @@
     "Led a frontend team of 5 on the \"DONT\" project and delivered its Vite + React UI"
   ],
   "techStack": {
-    "Frontend": [
-      "React",
-      "JavaScript",
-      "Next.js",
-      "Vite",
-      "Webpack",
-      "SCSS",
-      "TypeScript",
-      "Tailwind CSS",
-      "Shadcn UI",
-      "TanStack Query",
-      "Redux",
-      "Refine"
-    ],
-    "Backend": [
-      "Node.js",
-      "Go",
-      "Gin",
-      "pgx",
-      "sqlc",
-      "NestJS",
-      "Express",
-      "C#/.NET",
-      "gRPC",
-      "JSON/HTTP",
-      "protobuf",
-      "TypeORM",
-      "Hono",
-      "oRPC",
-      "Prisma",
-      "Better Auth"
-    ],
-    "Databases": [
-      "PostgreSQL",
-      "MySQL",
-      "ClickHouse",
-      "Redis",
-      "MongoDB",
-      "ElasticSearch"
-    ],
-    "Cloud": [
-      "AWS",
-      "EC2",
-      "ALB",
-      "Lambda",
-      "S3",
-      "SNS",
-      "RDS",
-      "Aurora Serverless v2",
-      "CloudFront",
-      "ACM",
-      "Secrets Manager",
-      "SST",
-      "Azure App Service",
-      "Azure Virtual Machines"
-    ],
-    "DevOps": ["Docker", "Nginx", "CI/CD", "Git", "Linux", "Turborepo"],
-    "Messaging / Queues": [
+    "Backend": ["Go", "Node.js", "Gin", "NestJS", "gRPC", "REST APIs"],
+    "Frontend": ["TypeScript", "React", "Next.js", "Vite", "TanStack Query", "Tailwind CSS"],
+    "Data": ["PostgreSQL", "Redis", "ClickHouse", "MySQL", "MongoDB", "Elasticsearch"],
+    "Cloud & DevOps": ["AWS", "Lambda", "Aurora", "Docker", "SST", "CI/CD"],
+    "Messaging & Reliability": [
       "RabbitMQ",
       "Amazon SQS",
-      "Amazon SNS",
-      "Amazon EventBridge",
-      "Kafka"
-    ],
-    "Reliability": [
-      "Event-driven Architecture",
-      "Microservices",
+      "Kafka",
+      "EventBridge",
       "Transactional Outbox",
-      "Idempotency Keys",
-      "Webhook Intake",
-      "Retries with Jittered Backoff",
-      "Circuit Breakers",
-      "Dead Letter Queues"
+      "Idempotency Keys"
     ],
-    "Observability / Testing": [
+    "Observability & Testing": [
       "OpenTelemetry",
-      "slog",
       "Sentry",
       "New Relic",
-      "Alerting",
-      "Amplitude",
       "testcontainers-go",
       "Contract Tests"
-    ],
-    "AI Tooling": [
-      "Claude Code",
-      "Anthropic API",
-      "OpenAI-compatible APIs",
-      "Agent Client Protocol"
-    ],
-    "Other": ["Swagger", "REST API", "JSON API", "Web3", "AI Algorithms"]
+    ]
   },
   "skills": [
     "TypeScript",
@@ -253,6 +181,8 @@
         },
         {
           "name": "NextStreet",
+          "displayName": "NextStreet platform",
+          "client": "NextStreet",
           "role": "Full-Stack Engineer",
           "description": "Platform helping small businesses access capital, services, and business support through internal tools, partner integrations, and high-volume data processing workflows.",
           "url": "https://nextstreet.com",
@@ -301,6 +231,7 @@
         },
         {
           "name": "Supplier Success Accelerator",
+          "client": "NextStreet",
           "role": "Full-Stack Engineer",
           "description": "B2B SaaS platform helping government agencies, CDFIs, and economic development organizations guide suppliers through assessments, goal-setting, coaching, and progress tracking.",
           "stack": [

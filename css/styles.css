@@ -267,7 +267,7 @@
 
 .tech-stack-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-md);
 }
 
@@ -558,6 +558,12 @@
   gap: 4px;
 }
 
+.job-period {
+  color: var(--fg-bright);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
 .job-meta-item i {
   width: 14px;
   height: 14px;
@@ -582,10 +588,21 @@
   color: var(--accent-yellow);
 }
 
-.job-project-divider {
-  border: none;
+.job-project-entry + .job-project-entry {
   border-top: 1px solid var(--color-separator);
-  margin: var(--space-md) 0;
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+}
+
+.job-client-name {
+  color: var(--accent-cyan);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-sm);
+}
+
+.job-client-projects {
+  padding-left: var(--space-sm);
+  border-left: 1px solid var(--color-border);
 }
 
 .job-tech-stack {
@@ -797,7 +814,7 @@
   }
 
   .tech-stack-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .two-col {
@@ -921,7 +938,9 @@
   }
 
   .hero-title,
-  .section-title {
+  .section-title,
+  .job-period,
+  .job-client-name {
     color: #333;
   }
 

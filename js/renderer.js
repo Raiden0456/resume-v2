@@ -290,7 +290,7 @@
       meta.appendChild(
         el(
           "span",
-          { className: "job-meta-item" },
+          { className: "job-meta-item job-period" },
           icon("calendar"),
           " " + job.period,
         ),
@@ -312,8 +312,28 @@
           ? [job.project]
           : [];
 
+      var clientGroups = new Map();
       projects.forEach(function (proj, idx) {
         var isMulti = projects.length > 1;
+        var parent = article;
+        if (proj.client) {
+          var group = clientGroups.get(proj.client);
+          if (!group) {
+            group = el("div", { className: "job-client-projects" });
+            clientGroups.set(proj.client, group);
+            article.appendChild(
+              el(
+                "div",
+                { className: "job-project-entry" },
+                el("h4", { className: "job-client-name" }, proj.client),
+                group,
+              ),
+            );
+          }
+          parent = group;
+        }
+        var entry = el("div", { className: "job-project-entry" });
+        parent.appendChild(entry);
 
         // Project header
         var projContent = document.createElement("div");
@@ -321,7 +341,7 @@
           "job-project" + (isMulti ? " job-project--multi" : "");
         var projHTML =
           "<strong>" +
-          escapeHTML(proj.name) +
+          escapeHTML(proj.displayName || proj.name) +
           "</strong> — " +
           escapeHTML(proj.description);
         if (proj.url) {
@@ -333,7 +353,7 @@
             "</a>";
         }
         projContent.innerHTML = projHTML;
-        article.appendChild(projContent);
+        entry.appendChild(projContent);
 
         // Per-project stack
         var stack = proj.stack || (idx === 0 ? job.stack : null);
@@ -342,7 +362,7 @@
           stack.forEach(function (tech) {
             stackWrap.appendChild(skillTag(tech));
           });
-          article.appendChild(stackWrap);
+          entry.appendChild(stackWrap);
         }
 
         // Per-project subsections
@@ -365,16 +385,11 @@
                 el("div", { className: "job-subsection-title" }, sub.title),
                 detailsWrap,
               );
-              article.appendChild(subsection);
+              entry.appendChild(subsection);
             } else {
-              article.appendChild(detailsWrap);
+              entry.appendChild(detailsWrap);
             }
           });
-        }
-
-        // Divider between projects
-        if (isMulti && idx < projects.length - 1) {
-          article.appendChild(el("hr", { className: "job-project-divider" }));
         }
       });
 
